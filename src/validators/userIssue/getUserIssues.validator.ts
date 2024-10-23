@@ -1,5 +1,8 @@
 import Joi from "joi";
 import Extension from "@joi/date";
+import getLogger from "../../utils/logger";
+
+const log = getLogger('getUserIssuesValidator');
 
 Joi.extend(Extension);
 
@@ -12,6 +15,8 @@ export default function getUserIssuesValidator(reqBody: any): {
         startDate: Joi.date().required(),
         endDate: Joi.date().required(),
     });
+
+    log.debug('reqBody: ', reqBody);
 
     const { error } = schema.validate(reqBody);
 
