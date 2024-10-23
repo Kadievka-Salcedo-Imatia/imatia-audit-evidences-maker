@@ -1,0 +1,15 @@
+components:
+  schemas:
+    GeneralError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 500
+        code:
+          type: number
+          example: 100
+        message:
+          type: string
+          example: General unknown error
+
