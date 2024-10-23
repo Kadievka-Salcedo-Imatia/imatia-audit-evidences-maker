@@ -30,7 +30,8 @@ export default class UserIssueController {
      * @returns users - Array of user's names
      */
     public async getUserIssues(req: any): Promise<any> {
-        const request: IUserIssuesInput = { ...req.body };
+        console.log(req)
+        const request: IUserIssuesInput = { ...req.body, ...req.headers };
         return await this.mainService.getUserIssues(request);
     }
 

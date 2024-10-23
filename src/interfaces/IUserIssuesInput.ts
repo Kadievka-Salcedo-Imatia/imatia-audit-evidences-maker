@@ -1,5 +1,6 @@
 export default interface IUserIssuesInput {
-    userName: string;
+    authorization: string;
+    username: string;
     startDate: string;
     endDate: string;
 }
