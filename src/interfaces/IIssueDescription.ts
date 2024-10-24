@@ -1,6 +1,8 @@
 import IComment from "./IComment";
 
 export default interface IIssueDescription {
-    issue: string;
+    title: string;
+    summary: string;
+    link: string;
     commentStory: IComment[];
 }

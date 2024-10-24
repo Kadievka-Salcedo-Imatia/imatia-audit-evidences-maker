@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { Document, ExternalHyperlink, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from 'docx';
+import fs from 'fs';
+import path from 'path';
 import getLogger from '../utils/logger';
 import IUserIssuesInput from '../interfaces/IUserIssuesInput';
 import IDataIssues from '../interfaces/IDataIssues';
@@ -15,6 +18,8 @@ export default class UserIssueService {
     public static instance: UserIssueService;
 
     private readonly JIRA_CLOUD_URL = process.env.JIRA_CLOUD_URL!
+
+    private readonly FONT = "Segoe UI";
 
     private axiosInstance = axios.create({
         baseURL: this.JIRA_CLOUD_URL,
@@ -71,6 +76,7 @@ export default class UserIssueService {
             maxResults: data.maxResults,
             total: data.total,
             userDisplayName: '',
+            project: '',
             issues: data.issues.map((issue: Record<string, any>) => ({
                 id: issue.id,
                 key: issue.key,
@@ -95,6 +101,7 @@ export default class UserIssueService {
 
         userIssues.issues = await this.getUserIssuesComments(userIssues.issues, request.authorization);
         userIssues.userDisplayName = userIssues.issues[0]?.assignee;
+        userIssues.project = userIssues.issues[0]?.project;
 
         log.info('Finish UserIssueService@getUserIssues method');
         return userIssues;
@@ -165,7 +172,9 @@ export default class UserIssueService {
 
         userIssues.issues.forEach((issue: IUserIssue) => {
 
-            const issueDescription: string = `${issue.type} ${issue.key}: ${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description} Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: ${issue.self}.`;
+            const title: string = `${issue.type} ${issue.key}: `;
+            const summary: string = `${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description} Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+            const link: string = issue.self;
 
             const commentStory: IComment[] = [];
 
@@ -176,17 +185,347 @@ export default class UserIssueService {
                 });
             });
 
-            issuesDescription.push({issue: issueDescription, commentStory})
+            issuesDescription.push({title, summary,link, commentStory});
         })
 
         log.info('Finish UserIssueService@getUserIssuesDescriptions method');
 
         return {
+            project: userIssues.project,
+            userDisplayName: userIssues.userDisplayName,
+            date: formatDateTime((new Date()).toString()).date,
+            month: userIssues.month.toLocaleUpperCase(),
             evidenceStart,
             total: userIssues.total,
             issues: issuesDescription,
         }
 
+    }
+
+    private getIssues(evidences: IEvidences): Paragraph[] {
+
+        let paragraphs : Paragraph[] = [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: evidences.evidenceStart,
+                        size: 20,
+                        font: this.FONT
+                    })
+                ]
+            }),
+        ];
+
+        evidences.issues.forEach(element => {
+            paragraphs.push(
+                new Paragraph(""),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: element.title,
+                            bold: true,
+                            size: 20,
+                            font: this.FONT
+                        }),
+                        new TextRun({
+                            text: element.summary,
+                            size: 20,
+                            font: this.FONT
+                        }),
+                        new ExternalHyperlink({
+                            children: [
+                                new TextRun({
+                                    text: element.link,
+                                    style: "Hyperlink",
+                                }),
+                            ],
+                            link: element.link,
+                        }),
+                    ]
+                })
+            );
+        });
+
+        return paragraphs;
+    }
+
+    /**
+     * Creates Evidence Template Doc
+     * @param {IUserIssuesInput[]} request - the same request to get user issues
+     * @returns {Promise<IEvidences>} Async promise to get Evidence description for the Word Template
+     */
+    public async createTemplate(request: IUserIssuesInput): Promise<string> {
+
+        log.info('Start UserIssueService@createTemplate with username: ', request.username);
+
+        const evidences: IEvidences = await this.getUserIssuesDescriptions(request);
+
+        const newFilePath = __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS 2024' + path.sep + evidences.userDisplayName + path.sep + evidences.month;
+
+        if (!fs.existsSync(newFilePath)) {
+            fs.mkdirSync(newFilePath, { recursive: true });
+        }
+
+        const newFileName = newFilePath + path.sep + 'Plantilla Evidencias - ' + evidences.month.toLowerCase() +'.docx'
+
+        if (fs.existsSync(newFileName)) {
+            fs.rmSync(newFileName);
+        }
+
+        let table1 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "Proyecto: ",
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ],
+                        }),
+                        new TableCell({
+                            width: {
+                                size: 90,
+                                type: WidthType.PERCENTAGE,
+                            },
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "Plataforma Colaboración Corporativa",
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ]
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        let table2 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "Nombre: ",
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ],
+                        }),
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: evidences.userDisplayName,
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ],
+                        }),
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "Rol:",
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ]
+                        }),
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "Programador",
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ],
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        let table3 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "Fecha:",
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ],
+                        }),
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: evidences.date,
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ],
+                        }),
+                    ],
+                }),
+            ],
+        });
+        let table4 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "Breve descripción de la actividad:",
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ],
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        let table5 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: this.getIssues(evidences),
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        let table6 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "Evidencia Técnica",
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ],
+                        }),
+                    ]
+                }),
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "",
+                                            size: 20,
+                                            font: this.FONT
+                                        })
+                                    ]
+                                })
+                            ],
+                        }),
+                    ],
+                }),
+            ],
+        });
+        
+        const doc = new Document({
+            sections: [{
+                children: [
+                    table1,
+                    new Paragraph(""),
+                    table2,
+                    new Paragraph(""),
+                    table3,
+                    new Paragraph(""),
+                    table4,
+                    new Paragraph(""),
+                    table5,
+                    new Paragraph(""),
+                    table6
+                ]
+            }],
+        });
+
+        const newBuffer = await Packer.toBuffer(doc);
+        fs.writeFileSync(newFileName, newBuffer);
+        log.info('Finish UserIssueService@createTemplate: ', newFileName);
+
+        return "Created path";
     }
 
 }

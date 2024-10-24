@@ -20,4 +20,9 @@ router.post('/description', (req, res) => {
     validatorFailed ? response.sendBadRequest(res, message) : response.send(req, res, ResponseStatus.OK, 'getUserIssuesDescriptions');
 });
 
+router.post('/create-template', (req, res) => {
+    const { validatorFailed, message } = getUserIssuesValidator(req.body);
+    validatorFailed ? response.sendBadRequest(res, message) : response.send(req, res, ResponseStatus.OK, 'createTemplate');
+});
+
 export default router;

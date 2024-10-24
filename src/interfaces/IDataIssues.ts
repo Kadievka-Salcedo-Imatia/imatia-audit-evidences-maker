@@ -6,5 +6,6 @@ export default interface IDataIssues {
     total: number;
     issues: IUserIssue[],
     month: string,
+    project: string,
     userDisplayName: string,
 }

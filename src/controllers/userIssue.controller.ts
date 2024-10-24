@@ -35,4 +35,12 @@ export default class UserIssueController {
         return await this.userIssueService.getUserIssuesDescriptions(request);
     }
 
+    /**
+     * Calls create user issue template service.
+     * @returns string with the path to the created template
+     */
+    public async createTemplate(req: any): Promise<any> {
+        const request: IUserIssuesInput = { ...req.body, ...req.headers };
+        return await this.userIssueService.createTemplate(request);
+    }
 }
