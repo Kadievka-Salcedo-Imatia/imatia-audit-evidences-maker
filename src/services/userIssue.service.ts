@@ -18,15 +18,6 @@ const log = getLogger('UserIssueService.service');
 export default class UserIssueService {
     public static instance: UserIssueService;
 
-    private readonly JIRA_CLOUD_URL = process.env.JIRA_CLOUD_URL!
-
-    private readonly FONT = "Segoe UI";
-
-    private axiosInstance = axios.create({
-        baseURL: this.JIRA_CLOUD_URL,
-        timeout: 5000,
-    });
-
     /**
      * Returns the single instance of UserIssueService.
      * @returns {UserIssueService} Singleton instance
@@ -38,6 +29,14 @@ export default class UserIssueService {
         return this.instance;
     }
 
+    private readonly JIRA_CLOUD_URL = process.env.JIRA_CLOUD_URL!;
+
+    private readonly FONT = 'Segoe UI';
+
+    private axiosInstance = axios.create({
+        baseURL: this.JIRA_CLOUD_URL,
+        timeout: 5000,
+    });
 
     /**
      * Returns the user issues as schema
@@ -48,21 +47,20 @@ export default class UserIssueService {
         log.info('Start UserIssueService@getUserIssues method with username: ', request.username);
 
         const startDate: string = `${request.year}-${request.month}-01`;
-        const endDate: string = `${request.year}-${request.month}-${MONTHS(request.year)[request.month-1].days}`;
+        const endDate: string = `${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}`;
 
-        log.info(' UserIssueService@getUserIssues date filters: ', {startDate, endDate});
+        log.info(' UserIssueService@getUserIssues date filters: ', { startDate, endDate });
 
-        const promiseAxios = this.axiosInstance
-        .get('/rest/api/2/search', {
+        const promiseAxios = this.axiosInstance.get('/rest/api/2/search', {
             params: {
-                jql: `assignee in (${request.username}) AND updated >= ${startDate} AND updated <= ${endDate}`
+                jql: `assignee in (${request.username}) AND updated >= ${startDate} AND updated <= ${endDate}`,
             },
             headers: {
-                Authorization: request.authorization
-            }
+                Authorization: request.authorization,
+            },
         });
 
-        let data: Record<string,any> = {};
+        let data: Record<string, any> = {};
 
         try {
             const response = await promiseAxios;
@@ -71,8 +69,8 @@ export default class UserIssueService {
             log.error(error.response.data.errorMessages);
         }
 
-        let userIssue: IDataIssue = {
-            month: MONTHS()[request.month-1].displayName,
+        const userIssue: IDataIssue = {
+            month: MONTHS()[request.month - 1].displayName,
             startAt: data.startAt,
             maxResults: data.maxResults,
             total: data.total,
@@ -81,7 +79,7 @@ export default class UserIssueService {
             issues: data.issues.map((issue: Record<string, any>) => ({
                 id: issue.id,
                 key: issue.key,
-                self: this.JIRA_CLOUD_URL+'/browse/'+issue.key,
+                self: this.JIRA_CLOUD_URL + '/browse/' + issue.key,
                 type: issue.fields.issuetype.name,
                 created: issue.fields.created,
                 updated: issue.fields.updated,
@@ -95,9 +93,9 @@ export default class UserIssueService {
                     maxResults: 0,
                     total: 0,
                     startAt: 0,
-                    comments: []
+                    comments: [],
                 },
-            }))
+            })),
         };
 
         userIssue.issues = await this.getUserIssuesComments(userIssue.issues, request.authorization);
@@ -106,56 +104,6 @@ export default class UserIssueService {
 
         log.info('Finish UserIssueService@getUserIssues method');
         return userIssue;
-    }
-
-    /**
-     * Maps the User Issues ids to get the Comments by Issue id
-     * @param {IUserIssue[]} issues - user issues
-     * @param {string} Authorization - Authorization Header Basic value
-     * @returns {Promise<IUserIssuesInput>} Async user issues as schema
-     */
-    private async getUserIssuesComments(issues: IUserIssue[], Authorization: string): Promise<IUserIssue[]> {
-        log.info(' Start UserIssueService@getUserIssuesComments method');
-        let result: IUserIssue[] = [...issues];
-
-        for (let index = 0; index < issues.length; index++) {
-
-            const promiseAxios = this.axiosInstance
-                .get(`/rest/api/2/issue/${issues[index].id}`, {
-                headers: {
-                    Authorization
-                }
-            });
-
-            let data: Record<string,any> = {};
-
-            try {
-                const response = await promiseAxios;
-                data = response.data;
-            } catch (error: any) {
-                log.error(error.response.data.errorMessages);
-            }
-
-            if(data.fields.comment.total > 0) {
-                result[index].comment.total = data.fields.comment.total;
-                result[index].comment.maxResults = data.fields.comment.maxResults;
-                result[index].comment.startAt = data.fields.comment.startAt;
-
-                data.fields.comment.comments.forEach((element: Record<string, any>) => {
-
-                    result[index].comment.comments.push({
-                        author: element.author.displayName,
-                        body: element.body,
-                        created: element.created,
-                        updated: element.updated,
-                    })
-
-                });
-                ;
-            }
-        }
-        log.info(' Finish UserIssueService@getUserIssuesComments method');
-        return result;
     }
 
     /**
@@ -169,10 +117,9 @@ export default class UserIssueService {
 
         const evidenceStart: string = `En el mes de ${userIssue.month} de ${request.year} se realizaron las siguientes tareas por ${userIssue.userDisplayName}: `;
 
-        let issuesDescription: IIssueDescription[] = [];
+        const issuesDescription: IIssueDescription[] = [];
 
         userIssue.issues.forEach((issue: IUserIssue) => {
-
             const title: string = `${issue.type} ${issue.key}: `;
             const summary: string = `${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description} Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
             const link: string = issue.self;
@@ -180,27 +127,343 @@ export default class UserIssueService {
             const commentStory: IComment[] = [];
 
             issue.comment.comments.forEach((comment: IComment) => {
-                commentStory.push({...comment,
+                commentStory.push({
+                    ...comment,
                     created: `${formatDateTime(comment.created).date} a las ${formatDateTime(comment.created).time}`,
-                    updated: `${formatDateTime(comment.updated).date} a las ${formatDateTime(comment.updated).time}`
+                    updated: `${formatDateTime(comment.updated).date} a las ${formatDateTime(comment.updated).time}`,
                 });
             });
 
-            issuesDescription.push({title, summary,link, commentStory});
-        })
+            issuesDescription.push({ title, summary, link, commentStory });
+        });
 
         log.info('Finish UserIssueService@getUserIssuesDescriptions method');
 
         return {
             project: userIssue.project,
             userDisplayName: userIssue.userDisplayName,
-            date: formatDateTime((new Date()).toString()).date,
+            date: formatDateTime(new Date().toString()).date,
             month: userIssue.month.toLocaleUpperCase(),
             evidenceStart,
             total: userIssue.total,
             issues: issuesDescription,
+        };
+    }
+
+    /**
+     * Creates Evidence Template Doc
+     * @param {IUserIssuesInput[]} request - the same request to get user issues
+     * @returns {Promise<IEvidence>} Async promise to get Evidence description for the Word Template
+     */
+    public async createTemplate(request: IUserIssuesInput): Promise<IEvidence> {
+        log.info('Start UserIssueService@createTemplate with username: ', request.username);
+
+        const evidence: IEvidence = await this.getUserIssuesDescriptions(request);
+
+        const newFilePathYear =
+            __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
+
+        if (!fs.existsSync(newFilePathYear)) {
+            fs.mkdirSync(newFilePathYear, { recursive: true });
         }
 
+        const newFilePath =
+            __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
+
+        if (!fs.existsSync(newFilePath)) {
+            fs.mkdirSync(newFilePath, { recursive: true });
+        }
+
+        const newFileName = newFilePath + path.sep + 'Plantilla Evidencias - ' + evidence.month.toLowerCase() + '.docx';
+
+        if (fs.existsSync(newFileName)) {
+            fs.rmSync(newFileName);
+        }
+
+        const table1 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: 'Proyecto: ',
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                        new TableCell({
+                            width: {
+                                size: 90,
+                                type: WidthType.PERCENTAGE,
+                            },
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: 'Plataforma Colaboración Corporativa',
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        const table2 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: 'Nombre: ',
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: evidence.userDisplayName,
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: 'Rol:',
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: 'Programador',
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        const table3 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: 'Fecha:',
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: evidence.date,
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        const table4 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: 'Breve descripción de la actividad:',
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        const table5 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: this.getIssuesParagraphs(evidence),
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        const table6 = new Table({
+            width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+            },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: 'Evidencia Técnica',
+                                            size: 20,
+                                            font: this.FONT,
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: await this.getEvidenceImages(evidence.issues!, request.authorization),
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        const doc = new Document({
+            sections: [
+                {
+                    children: [table1, new Paragraph(''), table2, new Paragraph(''), table3, new Paragraph(''), table4, new Paragraph(''), table5, new Paragraph(''), table6],
+                },
+            ],
+        });
+
+        const newBuffer = await Packer.toBuffer(doc);
+        fs.writeFileSync(newFileName, newBuffer);
+        log.info('Finish UserIssueService@createTemplate: ', newFileName);
+
+        return {
+            ...evidence,
+            issues: undefined,
+            path: newFileName,
+        };
+    }
+
+    /**
+     * Maps the User Issues ids to get the Comments by Issue id
+     * @param {IUserIssue[]} issues - user issues
+     * @param {string} authorization - Authorization Header Basic value
+     * @returns {Promise<IUserIssuesInput>} Async user issues as schema
+     */
+    private async getUserIssuesComments(issues: IUserIssue[], authorization: string): Promise<IUserIssue[]> {
+        log.info(' Start UserIssueService@getUserIssuesComments method');
+        const result: IUserIssue[] = [...issues];
+
+        for (let index = 0; index < issues.length; index++) {
+            const promiseAxios = this.axiosInstance.get(`/rest/api/2/issue/${issues[index].id}`, {
+                headers: {
+                    Authorization: authorization,
+                },
+            });
+
+            let data: Record<string, any> = {};
+
+            try {
+                const response = await promiseAxios;
+                data = response.data;
+            } catch (error: any) {
+                log.error(error.response.data.errorMessages);
+            }
+
+            if (data.fields.comment.total > 0) {
+                result[index].comment.total = data.fields.comment.total;
+                result[index].comment.maxResults = data.fields.comment.maxResults;
+                result[index].comment.startAt = data.fields.comment.startAt;
+
+                data.fields.comment.comments.forEach((element: Record<string, any>) => {
+                    result[index].comment.comments.push({
+                        author: element.author.displayName,
+                        body: element.body,
+                        created: element.created,
+                        updated: element.updated,
+                    });
+                });
+            }
+        }
+        log.info(' Finish UserIssueService@getUserIssuesComments method');
+        return result;
     }
 
     /**
@@ -210,45 +473,45 @@ export default class UserIssueService {
      */
     private getIssuesParagraphs(evidences: IEvidence): Paragraph[] {
         log.info(' Start UserIssueService@getIssues method');
-        let paragraphs : Paragraph[] = [
+        const paragraphs: Paragraph[] = [
             new Paragraph({
                 children: [
                     new TextRun({
                         text: evidences.evidenceStart,
                         size: 20,
-                        font: this.FONT
-                    })
-                ]
+                        font: this.FONT,
+                    }),
+                ],
             }),
         ];
 
-        evidences.issues!.forEach(element => {
+        evidences.issues!.forEach((element) => {
             paragraphs.push(
-                new Paragraph(""),
+                new Paragraph(''),
                 new Paragraph({
                     children: [
                         new TextRun({
                             text: element.title,
                             bold: true,
                             size: 20,
-                            font: this.FONT
+                            font: this.FONT,
                         }),
                         new TextRun({
                             text: element.summary,
                             size: 20,
-                            font: this.FONT
+                            font: this.FONT,
                         }),
                         new ExternalHyperlink({
                             children: [
                                 new TextRun({
                                     text: element.link,
-                                    style: "Hyperlink",
+                                    style: 'Hyperlink',
                                 }),
                             ],
                             link: element.link,
                         }),
-                    ]
-                })
+                    ],
+                }),
             );
         });
         log.info(' Finish UserIssueService@getIssues method');
@@ -268,10 +531,10 @@ export default class UserIssueService {
         const page = await browser.newPage();
 
         await page.setViewport({ width: 1200, height: 1000 });
-    
+
         await page.goto(url, { waitUntil: 'load' });
 
-        if(isLogin){
+        if (isLogin) {
             const base64Credentials = authorization.split(' ')[1];
 
             const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
@@ -282,9 +545,9 @@ export default class UserIssueService {
 
             await page.type('input[id="login-form-password"]', password);
 
-            await page.focus('input[id=login-form-submit]'); 
+            await page.focus('input[id=login-form-submit]');
 
-            await page.click('input[id=login-form-submit]'); 
+            await page.click('input[id=login-form-submit]');
 
             await page.waitForNavigation();
         }
@@ -314,10 +577,10 @@ export default class UserIssueService {
         log.info(' Start UserIssueService@getEvidenceImages method');
         const browser: Browser = await puppeteer.launch();
 
-        let paragraphs : Paragraph[] = [];
+        const paragraphs: Paragraph[] = [];
 
         for (let index = 0; index < issues.length; index++) {
-            let imageBase64Data = await this.takeScreenshot(issues[index].link, browser, index===0, authorization)
+            const imageBase64Data = await this.takeScreenshot(issues[index].link, browser, index === 0, authorization);
 
             paragraphs.push(
                 new Paragraph({
@@ -327,7 +590,7 @@ export default class UserIssueService {
                             text: issues[index].title,
                             bold: true,
                             size: 20,
-                            font: this.FONT
+                            font: this.FONT,
                         }),
                         new ImageRun({
                             type: 'jpg',
@@ -346,285 +609,4 @@ export default class UserIssueService {
         log.info(' Finish UserIssueService@getEvidenceImages method');
         return paragraphs;
     }
-
-    /**
-     * Creates Evidence Template Doc
-     * @param {IUserIssuesInput[]} request - the same request to get user issues
-     * @returns {Promise<IEvidence>} Async promise to get Evidence description for the Word Template
-     */
-    public async createTemplate(request: IUserIssuesInput): Promise<IEvidence> {
-
-        log.info('Start UserIssueService@createTemplate with username: ', request.username);
-
-        const evidence: IEvidence = await this.getUserIssuesDescriptions(request);
-
-        const newFilePathYear = __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS '+ request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
-
-        if (!fs.existsSync(newFilePathYear)) {
-            fs.mkdirSync(newFilePathYear, { recursive: true });
-        }
-
-        const newFilePath = __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS '+ request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
-
-        if (!fs.existsSync(newFilePath)) {
-            fs.mkdirSync(newFilePath, { recursive: true });
-        }
-
-        const newFileName = newFilePath + path.sep + 'Plantilla Evidencias - ' + evidence.month.toLowerCase() +'.docx'
-
-        if (fs.existsSync(newFileName)) {
-            fs.rmSync(newFileName);
-        }
-
-        let table1 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
-            rows: [
-                new TableRow({
-                    children: [
-                        new TableCell({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: "Proyecto: ",
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ],
-                        }),
-                        new TableCell({
-                            width: {
-                                size: 90,
-                                type: WidthType.PERCENTAGE,
-                            },
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: "Plataforma Colaboración Corporativa",
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ]
-                        }),
-                    ],
-                }),
-            ],
-        });
-
-        let table2 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
-            rows: [
-                new TableRow({
-                    children: [
-                        new TableCell({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: "Nombre: ",
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ],
-                        }),
-                        new TableCell({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: evidence.userDisplayName,
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ],
-                        }),
-                        new TableCell({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: "Rol:",
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ]
-                        }),
-                        new TableCell({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: "Programador",
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ],
-                        }),
-                    ],
-                }),
-            ],
-        });
-
-        let table3 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
-            rows: [
-                new TableRow({
-                    children: [
-                        new TableCell({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: "Fecha:",
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ],
-                        }),
-                        new TableCell({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: evidence.date,
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ],
-                        }),
-                    ],
-                }),
-            ],
-        });
-
-        let table4 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
-            rows: [
-                new TableRow({
-                    children: [
-                        new TableCell({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: "Breve descripción de la actividad:",
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ],
-                        }),
-                    ],
-                }),
-            ],
-        });
-
-        let table5 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
-            rows: [
-                new TableRow({
-                    children: [
-                        new TableCell({
-                            children: this.getIssuesParagraphs(evidence),
-                        }),
-                    ],
-                }),
-            ],
-        });
-
-        let table6 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
-            rows: [
-                new TableRow({
-                    children: [
-                        new TableCell({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: "Evidencia Técnica",
-                                            size: 20,
-                                            font: this.FONT
-                                        })
-                                    ]
-                                })
-                            ],
-                        }),
-                    ]
-                }),
-                new TableRow({
-                    children: [
-                        new TableCell({
-                            children: await this.getEvidenceImages(evidence.issues!, request.authorization),
-                        }),
-                    ],
-                }),
-            ],
-        });
-        
-        const doc = new Document({
-            sections: [{
-                children: [
-                    table1,
-                    new Paragraph(""),
-                    table2,
-                    new Paragraph(""),
-                    table3,
-                    new Paragraph(""),
-                    table4,
-                    new Paragraph(""),
-                    table5,
-                    new Paragraph(""),
-                    table6
-                ]
-            }],
-        });
-
-        const newBuffer = await Packer.toBuffer(doc);
-        fs.writeFileSync(newFileName, newBuffer);
-        log.info('Finish UserIssueService@createTemplate: ', newFileName);
-
-        return {
-            ...evidence,
-            issues: undefined,
-            path: newFileName,
-        };
-    }
-
 }

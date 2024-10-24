@@ -1,4 +1,4 @@
-import IIssueDescription from "./IIssueDescription";
+import IIssueDescription from './IIssueDescription';
 
 export default interface IEvidence {
     project: string;

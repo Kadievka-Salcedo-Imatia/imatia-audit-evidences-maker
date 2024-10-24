@@ -1,10 +1,12 @@
 import IMonth from '../../../interfaces/IMonth';
 
 function getFebruaryDays(year?: number): number {
-    if (!year) return 28;
+    if (!year) {
+        return 28;
+    }
 
-    const isLeapYear = (year: number) => {
-        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    const isLeapYear = (y: number) => {
+        return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
     };
 
     return isLeapYear(year) ? 29 : 28;

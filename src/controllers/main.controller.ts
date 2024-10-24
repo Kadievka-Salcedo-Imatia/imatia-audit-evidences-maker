@@ -13,10 +13,9 @@ export default class MainController {
     }
 
     /**
-     *.
      * @returns Welcome message
      */
     public async sendWelcome(): Promise<string> {
-        return "Welcome";
+        return 'Welcome';
     }
 }

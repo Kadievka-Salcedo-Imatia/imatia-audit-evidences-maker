@@ -1,4 +1,4 @@
-import IComment from "./IComment";
+import IComment from './IComment';
 
 export default interface IUserIssueComment {
     maxResults: number;

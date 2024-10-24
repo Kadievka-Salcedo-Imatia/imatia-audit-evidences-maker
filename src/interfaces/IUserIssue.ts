@@ -1,4 +1,4 @@
-import IUserIssueComment from "./IUserIssueComment";
+import IUserIssueComment from './IUserIssueComment';
 
 export default interface IUserIssue {
     id: string;
