@@ -1,6 +1,6 @@
 import IUserIssue from "./IUserIssue";
 
-export default interface IDataIssues {
+export default interface IDataIssue {
     startAt: number,
     maxResults: number,
     total: number;

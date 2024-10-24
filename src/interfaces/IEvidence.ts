@@ -1,11 +1,12 @@
 import IIssueDescription from "./IIssueDescription";
 
-export default interface IEvidences {
+export default interface IEvidence {
     project: string;
     userDisplayName: string;
     date: string;
     month: string;
     evidenceStart: string;
     total: number;
-    issues: IIssueDescription[]
+    issues?: IIssueDescription[];
+    path?: string;
 }

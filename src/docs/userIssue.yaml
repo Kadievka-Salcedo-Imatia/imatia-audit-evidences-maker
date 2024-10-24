@@ -288,3 +288,97 @@ paths:
                       message:
                         type: string
                         example: "General unknown error"
+  /user-issues/createTemplate:
+    post:
+      tags:
+        - User Issues
+      summary: Create an Evidence Template for month in the dist/src/templates
+      produces:
+        - application/json
+      security:
+        - basicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: carles.dulcet
+                year:
+                  type: number
+                  example: 2024
+                month:
+                  type: number
+                  example: 10
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 200
+                  message:
+                    type: string
+                    example: Ok
+                  data: 
+                    type: object
+                    properties:
+                      evidenceStart:
+                        type: string
+                        example: "En el mes de Mayo de 2024 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: "
+                      total:
+                        type: number
+                        example: 1
+                      path: 
+                        type: string
+                        example: "C:\\Users\\kadievka.salcedo\\code\\imatia\\imatia-audit-evidences-maker\\dist\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Carles Dulcet Buxaderas\\MAYO\\Plantilla Evidencias - abril.docx"
+        400:
+          description: Bad Request error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                    example: Bad request
+                  error: 
+                    type: object
+                    properties:
+                      code:
+                        type: number
+                        example: 1001
+                      message:
+                        type: string
+                        example: "\"endDate\" must be a valid date"
+        500:
+          description: General error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 500
+                  message:
+                    type: string
+                    example: This error message should be displayed with some error message
+                  error: 
+                    type: object
+                    properties:
+                      code:
+                        type: number
+                        example: 100
+                      message:
+                        type: string
+                        example: "General unknown error"
