@@ -19,7 +19,7 @@ To start the express server, run the following
 
 >   npm run start:dev
 
-Open http://localhost:3000 and take a look around.
+Open http://localhost:3000/docs and take a look around the Swagger UI.
 
 ## Steps for read and write access (recommended)
 
@@ -41,4 +41,4 @@ Open http://localhost:3000 and take a look around.
 
 - Final Step:
 
-Open http://localhost:3000 and take a look around.
+Open http://localhost:3000 and take a look around with postman.

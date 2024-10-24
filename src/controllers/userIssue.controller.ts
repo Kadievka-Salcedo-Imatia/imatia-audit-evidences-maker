@@ -26,6 +26,10 @@ export default class UserIssueController {
         return await this.userIssueService.getUserIssues(request);
     }
 
+    /**
+     * Calls get user issues descriptions service.
+     * @returns Array of user issues descriptions
+     */
     public async getUserIssuesDescriptions(req: any): Promise<any> {
         const request: IUserIssuesInput = { ...req.body, ...req.headers };
         return await this.userIssueService.getUserIssuesDescriptions(request);
