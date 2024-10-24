@@ -80,7 +80,7 @@ export default class UserIssueService {
             issues: data.issues.map((issue: Record<string, any>) => ({
                 id: issue.id,
                 key: issue.key,
-                self: issue.self,
+                self: this.JIRA_CLOUD_URL+'/browse/'+issue.key,
                 type: issue.fields.issuetype.name,
                 created: issue.fields.created,
                 updated: issue.fields.updated,
