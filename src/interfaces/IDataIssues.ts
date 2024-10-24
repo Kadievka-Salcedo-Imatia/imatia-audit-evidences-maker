@@ -1,8 +1,10 @@
 import IUserIssue from "./IUserIssue";
 
-export default interface IComment {
+export default interface IDataIssues {
     startAt: number,
     maxResults: number,
     total: number;
-    issues: IUserIssue[]
+    issues: IUserIssue[],
+    month: string,
+    userDisplayName: string,
 }

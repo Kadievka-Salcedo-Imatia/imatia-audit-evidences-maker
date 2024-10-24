@@ -15,25 +15,20 @@ export default class UserIssueController {
         return this.instance;
     }
 
-    private mainService: UserIssueService = UserIssueService.getInstance();
+    private userIssueService: UserIssueService = UserIssueService.getInstance();
 
     /**
-     *.
-     * @returns Welcome message
-     */
-    public async sendWelcome(): Promise<any> {
-        return "Welcome";
-    }
-
-    /**
-     * Calls get users service.
-     * @returns users - Array of user's names
+     * Calls get user issues service.
+     * @returns Array of user issues
      */
     public async getUserIssues(req: any): Promise<any> {
-        console.log(req)
         const request: IUserIssuesInput = { ...req.body, ...req.headers };
-        return await this.mainService.getUserIssues(request);
+        return await this.userIssueService.getUserIssues(request);
     }
 
+    public async getUserIssuesDescriptions(req: any): Promise<any> {
+        const request: IUserIssuesInput = { ...req.body, ...req.headers };
+        return await this.userIssueService.getUserIssuesDescriptions(request);
+    }
 
 }

@@ -12,4 +12,19 @@ components:
         message:
           type: string
           example: General unknown error
-
+    BadRequestError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 400
+        code:
+          type: number
+          example: 200
+        message:
+          type: string
+          example: validation failed
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

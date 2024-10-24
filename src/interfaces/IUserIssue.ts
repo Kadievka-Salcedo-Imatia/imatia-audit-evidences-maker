@@ -10,6 +10,9 @@ export default interface IUserIssue {
     status: string;
     description: string;
     summary: string;
+    project: string;
+    projectTypeKey: string;
+    self: string;
     creator: string;
     reporter: string;
     comment: IUserIssueComment;

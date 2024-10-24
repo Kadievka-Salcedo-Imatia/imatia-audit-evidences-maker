@@ -6,17 +6,8 @@ paths:
       summary: User Issues Schema from Imatia Jira Cloud
       produces:
         - application/json
-      parameters:
-        - name: Content-Type
-          in: header
-          required: true
-          type: string
-          example: application/json
-        - name: Authorization
-          in: header
-          required: true
-          type: string
-          example: Basic xxxxxxxxxx
+      security:
+        - basicAuth: []
       requestBody:
         content:
           application/json:
@@ -25,13 +16,13 @@ paths:
               properties:
                 username:
                   type: string
-                  example: kadievka.salcedo
-                startDate:
-                  type: string
-                  example: 2024/10/01
-                endDate:
-                  type: string
-                  example: 2024/10/31
+                  example: carles.dulcet
+                year:
+                  type: number
+                  example: 2024
+                month:
+                  type: number
+                  example: 10
       responses:
         200:
           description: successful
@@ -49,15 +40,210 @@ paths:
                   data: 
                     type: object
                     properties:
-                      username:
+                      month:
                         type: string
-                        example: kadievka.salcedo
-                      start_date:
+                        example: Octubre
+                      startAt:
+                        type: number
+                        example: 0
+                      maxResults:
+                        type: number
+                        example: 50
+                      total:
+                        type: number
+                        example: 1
+                      userDisplayName:
                         type: string
-                        example: 2024/10/01
-                      end_date:
+                        example: carles.dulcet
+                      issues:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 36971
+                            key:
+                              type: string
+                              example: OUINT-311
+                            self:
+                              type: string
+                              example: https://jira.imatia.com/rest/api/2/issue/36971
+                            type:
+                              type: string
+                              example: Tarea
+                            created:
+                              type: string
+                              example: 2023-12-11T11:05:00.000+0100
+                            updated:
+                              type: string
+                              example: 2024-01-15T09:32:42.000+0100
+                            assignee:
+                              type: string
+                              example: Carles Dulcet Buxaderas
+                            status:
+                              type: string
+                              example: Listo
+                            description:
+                              type: string
+                              example: Realizar pase de la versión de core 3.39.006 que lleva los cambios de PID y un jar facilitado por Ourense.\r\n\r\nEstablecer en el pom.xml el connector viejo de place.\r\n\r\nPase el miércoles 10/01/2024\r\n\r\n 
+                            summary:
+                              type: string
+                              example: OURENSE - Pase PRO - PID
+                            project:
+                              type: string
+                              example: OP-03440 + Concello de Ourense + Implantación de nuevos módulos e integraciones
+                            projectTypeKey:
+                              type: string
+                              example: software
+                            comment:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  maxResults:
+                                    type: number
+                                    example: 1
+                                  total:
+                                    type: number
+                                    example: 1
+                                  startAt:
+                                    type: number
+                                    example: 0
+                                  comments:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        author:
+                                          type: string
+                                          example: Carles Dulcet Buxaderas
+                                        body:
+                                          type: string
+                                          example: Se pospone hasta Enero el pase a petición del cliente.\r\n\r\n 
+                                        created:
+                                          type: string
+                                          example: 2023-12-11T13:09:02.463+0100
+                                        updated:
+                                          type: string
+                                          example: 2023-12-11T13:09:02.463+0100
+
+        400:
+          description: Bad Request error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                    example: Bad request
+                  error: 
+                    type: object
+                    properties:
+                      code:
+                        type: number
+                        example: 1001
+                      message:
                         type: string
-                        example: a2024/10/31
+                        example: "\"endDate\" must be a valid date"
+        500:
+          description: General error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 500
+                  message:
+                    type: string
+                    example: This error message should be displayed with some error message
+                  error: 
+                    type: object
+                    properties:
+                      code:
+                        type: number
+                        example: 100
+                      message:
+                        type: string
+                        example: "General unknown error"
+  /user-issues/description:
+    post:
+      tags:
+        - User Issues
+      summary: User Issues Descriptions from Imatia Audit Evidences Maker
+      produces:
+        - application/json
+      security:
+        - basicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: carles.dulcet
+                year:
+                  type: number
+                  example: 2024
+                month:
+                  type: number
+                  example: 10
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 200
+                  message:
+                    type: string
+                    example: Ok
+                  data: 
+                    type: object
+                    properties:
+                      evidenceStart:
+                        type: string
+                        example: "En el mes de Mayo de 2024 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: "
+                      total:
+                        type: number
+                        example: 1
+                      issues:
+                        type: array
+                        items: 
+                          type: object
+                          properties:
+                            issue:
+                              type: string
+                              example: "Tarea FERR2023-100: PRE - Pruebas registro ferrol sin SIR del proyecto OP-04369 + Concello Ferrol + Suministro conectores y módulos para Cividas e-GOV. Se trataba de Llevar lo último de core (3.39.XXX) al cividas de ferrol (3.40.000_SICRES4).\r\n\r\nRealizar pruebas en ferrol PRE con SIR desactivado.\r\n * Probar con registro externo de ferrol activo\r\n * Probar con registro externo de ferrol parado\r\n\r\n \r\n\r\n  Esta tarea fue creada el día 23/04/2024 a las 15:09 y su ultima actualización fue el día 15/05/2024 a las 10:53 con status Listo. En el siguiente enlace se puede consultar más a detalle esta tarea: https://jira.imatia.com/rest/api/2/issue/39789."
+                            commentStory:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  author:
+                                    type: string
+                                    example: "Carles Dulcet Buxaderas"
+                                  body:
+                                    type: string
+                                    example: "Se han creado a mano las carpetas CividasRegistryInput y CividasRegistryOutput ya que el conector daba error al intentarlo"
+                                  created:
+                                    type: string
+                                    example: "25/04/2024 a las 11:55"
+                                  updated:
+                                    type: string
+                                    example: "25/04/2024 a las 11:56"
         400:
           description: Bad Request error
           content:

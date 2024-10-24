@@ -1,10 +1,7 @@
 import Joi from "joi";
-import Extension from "@joi/date";
 import getLogger from "../../utils/logger";
 
 const log = getLogger('getUserIssuesValidator');
-
-Joi.extend(Extension);
 
 export default function getUserIssuesValidator(reqBody: any): {
     validatorFailed: boolean;
@@ -12,11 +9,25 @@ export default function getUserIssuesValidator(reqBody: any): {
 } {
     const schema = Joi.object({
         username: Joi.string().regex(/^[a-zA-Z]+(\.[a-zA-Z]+)+$/).required(),
-        startDate: Joi.date().required(),
-        endDate: Joi.date().required(),
+        year: Joi.number().positive().required(),
+        month: Joi.number().min(1).max(12).required(),
     });
 
-    log.debug('reqBody: ', reqBody);
+    log.info('reqBody: ', reqBody, !isNaN(reqBody.year));
+
+    if(typeof(reqBody.year)!=='number'){
+        return {
+            validatorFailed: true,
+            message: 'year must be a positive number',
+        }
+    }
+
+    if(typeof(reqBody.month)!=='number'){
+        return {
+            validatorFailed: true,
+            message: 'month must be a number between 1 and 12',
+        }
+    }
 
     const { error } = schema.validate(reqBody);
 
