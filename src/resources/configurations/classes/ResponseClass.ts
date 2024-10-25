@@ -15,7 +15,7 @@ export default class ResponseClass {
     }
 
     /**
-     * Make the request to the app or handles errors.
+     * Makes the request to the app or handles errors.
      * @param {core.Request} req http request object
      * @param {core.Request} res http response object
      * @param {IResponseStatus} responseStatus message and statusCode
