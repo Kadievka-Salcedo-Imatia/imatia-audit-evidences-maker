@@ -1,5 +1,6 @@
 import IUserIssuesInput from '../interfaces/IUserIssuesInput';
 import UserIssueService from '../services/userIssue.service';
+import { getCurrentMonth } from '../utils/dates';
 
 export default class UserIssueController {
     public static instance: UserIssueController;
@@ -37,10 +38,19 @@ export default class UserIssueController {
 
     /**
      * Calls create user issue template service.
-     * @returns string with the path to the created template
+     * @returns user issues descriptions with the path to the created template
      */
     public async createTemplate(req: any): Promise<any> {
         const request: IUserIssuesInput = { ...req.body, ...req.headers };
         return await this.userIssueService.createTemplate(request);
+    }
+
+    /**
+     * Calls create user issue templates from the year service.
+     * @returns templates created
+     */
+    public async createTemplatesYear(req: any): Promise<any> {
+        const request: IUserIssuesInput = { ...req.body, ...req.headers, month: getCurrentMonth() };
+        return await this.userIssueService.createTemplatesYear(request);
     }
 }

@@ -13,3 +13,8 @@ export function formatDateTime(input: string) {
         time: `${hours}:${minutes}`,
     };
 }
+
+export function getCurrentMonth(): number {
+    const date = new Date();
+    return date.getMonth() + 1;
+}

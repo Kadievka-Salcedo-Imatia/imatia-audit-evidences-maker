@@ -12,6 +12,7 @@ import IIssueDescription from '../interfaces/IIssueDescription';
 import IEvidence from '../interfaces/IEvidence';
 import { formatDateTime } from '../utils/dates';
 import puppeteer, { Browser } from 'puppeteer';
+import ICreateTemplateYearResponse from '../interfaces/ICreateTemplateYearResponse';
 
 const log = getLogger('UserIssueService.service');
 
@@ -142,7 +143,7 @@ export default class UserIssueService {
         return {
             project: userIssue.project,
             userDisplayName: userIssue.userDisplayName,
-            date: formatDateTime(new Date().toString()).date,
+            date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
             month: userIssue.month.toLocaleUpperCase(),
             evidenceStart,
             total: userIssue.total,
@@ -176,8 +177,14 @@ export default class UserIssueService {
 
         const newFileName = newFilePath + path.sep + 'Plantilla Evidencias - ' + evidence.month.toLowerCase() + '.docx';
 
+        const response: IEvidence = {
+            ...evidence,
+            issues: undefined,
+            path: newFileName,
+        };
+
         if (fs.existsSync(newFileName)) {
-            fs.rmSync(newFileName);
+            return response; // fs.rmSync(newFileName);
         }
 
         const table1 = new Table({
@@ -414,11 +421,61 @@ export default class UserIssueService {
         fs.writeFileSync(newFileName, newBuffer);
         log.info('Finish UserIssueService@createTemplate: ', newFileName);
 
-        return {
-            ...evidence,
-            issues: undefined,
-            path: newFileName,
+        return response;
+    }
+
+    /**
+     * Creates Evidence Template Doc of the year
+     * @param {IUserIssuesInput[]} request - the request to get user issues
+     * @returns {Promise<IEvidence>} Async promise to get Evidence description for the Word Template
+     */
+    public async createTemplatesYear(request: IUserIssuesInput): Promise<any> {
+        log.info('Start UserIssueService@createTemplatesYear method');
+        const startTime = performance.now();
+
+        const response: ICreateTemplateYearResponse = {
+            userDisplayName: '',
+            evidencesCreated: {
+                total: 0,
+                evidences: [],
+            },
+            evidencesWithErrors: {
+                total: 0,
+                evidences: [],
+            },
         };
+
+        for (let index = 1; index <= request.month; index++) {
+            let evidence: IEvidence;
+
+            try {
+                evidence = await this.createTemplate({ ...request, month: index });
+            } catch (error: any) {
+                response.evidencesWithErrors.evidences.push({
+                    date: `${MONTHS(request.year)[request.month - 1].displayName} de ${request.year}`,
+                    errorMessage: error.message,
+                });
+                response.evidencesWithErrors.total++;
+                continue;
+            }
+
+            if (index === 1) {
+                response.userDisplayName = evidence.userDisplayName;
+            }
+
+            response.evidencesCreated.evidences.push({
+                project: evidence.project,
+                date: evidence.date,
+                month: evidence.month,
+                total: evidence.total,
+                path: evidence.path,
+            });
+            response.evidencesCreated.total++;
+        }
+
+        const endTime = performance.now();
+        log.info(`Finish UserIssueService@createTemplatesYear method in: ${endTime - startTime} ms`);
+        return response;
     }
 
     /**
