@@ -29,9 +29,6 @@ Open http://localhost:3000/docs and take a look around the Swagger UI.
     PROTOCOL_URL=http://
     BASE_URL=localhost:
     PORT=3000
-    CI=1
-    MONGODB_CONNECTION_STRING=mongodb://userExample:passwordExample@localhost:27017/
-    MONGODB_DB_NAME="imatia-audit-evidences-maker-db"
     JIRA_CLOUD_URL=jiracloud-example.com 
 
 
