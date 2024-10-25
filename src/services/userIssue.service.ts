@@ -88,7 +88,7 @@ export default class UserIssueService {
                 description: issue.fields.description,
                 summary: issue.fields.summary,
                 project: issue.fields.project.name,
-                projectTypeKey: issue.fields.project.projectTypeKey
+                projectTypeKey: issue.fields.project.projectTypeKey,
             })),
         };
 

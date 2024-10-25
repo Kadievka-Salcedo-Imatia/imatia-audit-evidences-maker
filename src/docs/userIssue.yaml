@@ -22,7 +22,7 @@ paths:
                   example: 2024
                 month:
                   type: number
-                  example: 10
+                  example: 1
       responses:
         200:
           description: successful
@@ -42,7 +42,7 @@ paths:
                     properties:
                       month:
                         type: string
-                        example: Octubre
+                        example: Enero
                       startAt:
                         type: number
                         example: 0
@@ -118,7 +118,7 @@ paths:
                         example: 1001
                       message:
                         type: string
-                        example: "\"endDate\" must be a valid date"
+                        example: "\"month\" must be a number between 1 and 12"
         500:
           description: General error
           content:
@@ -164,7 +164,7 @@ paths:
                   example: 2024
                 month:
                   type: number
-                  example: 10
+                  example: 4
       responses:
         200:
           description: successful
@@ -182,6 +182,18 @@ paths:
                   data: 
                     type: object
                     properties:
+                      project:
+                        type: string
+                        example: Cividas eGov
+                      userDisplayName:
+                        type: string
+                        example: Carles Dulcet Buxaderas
+                      date:
+                        type: string
+                        example: 31/5/2024
+                      month:
+                        type: string
+                        example: MAYO
                       evidenceStart:
                         type: string
                         example: "En el mes de Mayo de 2024 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: "
@@ -193,9 +205,15 @@ paths:
                         items: 
                           type: object
                           properties:
-                            issue:
+                            title:
                               type: string
-                              example: "Tarea FERR2023-100: PRE - Pruebas registro ferrol sin SIR del proyecto OP-04369 + Concello Ferrol + Suministro conectores y módulos para Cividas e-GOV. Se trataba de Llevar lo último de core (3.39.XXX) al cividas de ferrol (3.40.000_SICRES4).\r\n\r\nRealizar pruebas en ferrol PRE con SIR desactivado.\r\n * Probar con registro externo de ferrol activo\r\n * Probar con registro externo de ferrol parado\r\n\r\n \r\n\r\n  Esta tarea fue creada el día 23/04/2024 a las 15:09 y su ultima actualización fue el día 15/05/2024 a las 10:53 con status Listo. En el siguiente enlace se puede consultar más a detalle esta tarea: https://jira.imatia.com/rest/api/2/issue/39789."
+                              example: "Tarea FERR2023-100: "
+                            summary:
+                              type: string
+                              example: "PRE - Pruebas registro ferrol sin SIR del proyecto OP-04369 + Concello Ferrol + Suministro conectores y módulos para Cividas e-GOV. Se trataba de Llevar lo último de core (3.39.XXX) al cividas de ferrol (3.40.000_SICRES4).\r\n\r\nRealizar pruebas en ferrol PRE con SIR desactivado.\r\n * Probar con registro externo de ferrol activo\r\n * Probar con registro externo de ferrol parado\r\n\r\n \r\n\r\n  Esta tarea fue creada el día 23/04/2024 a las 15:09 y su ultima actualización fue el día 15/05/2024 a las 10:53 con status Listo. En el siguiente enlace se puede consultar más a detalle esta tarea: "
+                            link:
+                              type: string
+                              example: "https://jira.imatia.com/browse/FERR2023-100"
         400:
           description: Bad Request error
           content:
@@ -217,7 +235,7 @@ paths:
                         example: 1001
                       message:
                         type: string
-                        example: "\"endDate\" must be a valid date"
+                        example: "\"month\" must be a number between 1 and 12"
         500:
           description: General error
           content:
@@ -240,11 +258,11 @@ paths:
                       message:
                         type: string
                         example: "General unknown error"
-  /user-issues/createTemplate:
+  /user-issues/create-template:
     post:
       tags:
         - User Issues
-      summary: Create an Evidence Template for month in the dist/src/templates
+      summary: Creates the User Issue Evidence Template Document
       produces:
         - application/json
       security:
@@ -263,7 +281,7 @@ paths:
                   example: 2024
                 month:
                   type: number
-                  example: 10
+                  example: 4
       responses:
         200:
           description: successful
@@ -281,15 +299,27 @@ paths:
                   data: 
                     type: object
                     properties:
+                      project:
+                        type: string
+                        example: Cividas eGov
+                      userDisplayName:
+                        type: string
+                        example: Carles Dulcet Buxaderas
+                      date:
+                        type: string
+                        example: 31/5/2024
+                      month:
+                        type: string
+                        example: MAYO
                       evidenceStart:
                         type: string
                         example: "En el mes de Mayo de 2024 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: "
                       total:
                         type: number
                         example: 1
-                      path: 
+                      path:
                         type: string
-                        example: "C:\\Users\\kadievka.salcedo\\code\\imatia\\imatia-audit-evidences-maker\\dist\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Carles Dulcet Buxaderas\\MAYO\\Plantilla Evidencias - abril.docx"
+                        example: "C:\\Users\\kadievka.salcedo\\code\\imatia\\imatia-audit-evidences-maker\\dist\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Carles Dulcet Buxaderas\\MAYO\\Plantilla Evidencias - mayo.docx"
         400:
           description: Bad Request error
           content:
@@ -311,7 +341,7 @@ paths:
                         example: 1001
                       message:
                         type: string
-                        example: "\"endDate\" must be a valid date"
+                        example: "\"month\" must be a number between 1 and 12"
         500:
           description: General error
           content:
@@ -334,3 +364,133 @@ paths:
                       message:
                         type: string
                         example: "General unknown error"
+  /user-issues/create-template-from-year:
+    post:
+      tags:
+        - User Issues
+      summary: Creates the User Issue Evidence Template Documents of the year until the current month
+      produces:
+        - application/json
+      security:
+        - basicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: carles.dulcet
+                year:
+                  type: number
+                  example: 2024
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 200
+                  message:
+                    type: string
+                    example: Ok
+                  data: 
+                    type: object
+                    properties:
+                      userDisplayName:
+                        type: string
+                        example: Carles Dulcet Buxaderas,
+                      evidencesCreated:
+                        type: object
+                        properties:
+                          total: 
+                            type: number
+                            example: 10,
+                          evidences: 
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                project:
+                                  type: string
+                                  example: "OP-03440 + Concello de Ourense + Implantación de nuevos módulos e integraciones"
+                                date:
+                                  type: string
+                                  example: "31/1/2024"
+                                month:
+                                  type: string
+                                  example: "ENERO"
+                                total:
+                                  type: number
+                                  example: 11
+                                path:
+                                  type: string
+                                  example: "C:\\Users\\kadievka.salcedo\\code\\imatia\\imatia-audit-evidences-maker\\dist\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Carles Dulcet Buxaderas\\ENERO\\Plantilla Evidencias - enero.docx"
+                      evidencesWithErrors:
+                        type: object
+                        properties:
+                          total:
+                            type: number
+                            example: 0,
+                          evidences:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  example: Octubre de 2024
+                                errorMessage:
+                                  type: string
+                                  example: Error timeout 3000 ms
+
+        400:
+          description: Bad Request error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                    example: Bad request
+                  error: 
+                    type: object
+                    properties:
+                      code:
+                        type: number
+                        example: 1001
+                      message:
+                        type: string
+                        example: "\"month\" must be a number between 1 and 12"
+        500:
+          description: General error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 500
+                  message:
+                    type: string
+                    example: This error message should be displayed with some error message
+                  error: 
+                    type: object
+                    properties:
+                      code:
+                        type: number
+                        example: 100
+                      message:
+                        type: string
+                        example: "General unknown error"
+  
