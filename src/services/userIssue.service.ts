@@ -7,7 +7,6 @@ import IUserIssuesInput from '../interfaces/IUserIssuesInput';
 import IDataIssue from '../interfaces/IDataIssue';
 import IUserIssue from '../interfaces/IUserIssue';
 import { MONTHS } from '../resources/configurations/constants/Months';
-import IComment from '../interfaces/IComment';
 import IIssueDescription from '../interfaces/IIssueDescription';
 import IEvidence from '../interfaces/IEvidence';
 import { formatDateTime } from '../utils/dates';
@@ -89,17 +88,11 @@ export default class UserIssueService {
                 description: issue.fields.description,
                 summary: issue.fields.summary,
                 project: issue.fields.project.name,
-                projectTypeKey: issue.fields.project.projectTypeKey,
-                comment: {
-                    maxResults: 0,
-                    total: 0,
-                    startAt: 0,
-                    comments: [],
-                },
+                projectTypeKey: issue.fields.project.projectTypeKey
             })),
         };
 
-        userIssue.issues = await this.getUserIssuesComments(userIssue.issues, request.authorization);
+        userIssue.issues = userIssue.issues;
         userIssue.userDisplayName = userIssue.issues[0]?.assignee;
         userIssue.project = userIssue.issues[0]?.project;
 
@@ -125,17 +118,7 @@ export default class UserIssueService {
             const summary: string = `${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description} Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
             const link: string = issue.self;
 
-            const commentStory: IComment[] = [];
-
-            issue.comment.comments.forEach((comment: IComment) => {
-                commentStory.push({
-                    ...comment,
-                    created: `${formatDateTime(comment.created).date} a las ${formatDateTime(comment.created).time}`,
-                    updated: `${formatDateTime(comment.updated).date} a las ${formatDateTime(comment.updated).time}`,
-                });
-            });
-
-            issuesDescription.push({ title, summary, link, commentStory });
+            issuesDescription.push({ title, summary, link });
         });
 
         log.info('Finish UserIssueService@getUserIssuesDescriptions method');
@@ -476,51 +459,6 @@ export default class UserIssueService {
         const endTime = performance.now();
         log.info(`Finish UserIssueService@createTemplatesYear method in: ${endTime - startTime} ms`);
         return response;
-    }
-
-    /**
-     * Maps the User Issues ids to get the Comments by Issue id
-     * @param {IUserIssue[]} issues - user issues
-     * @param {string} authorization - Authorization Header Basic value
-     * @returns {Promise<IUserIssuesInput>} Async user issues as schema
-     */
-    private async getUserIssuesComments(issues: IUserIssue[], authorization: string): Promise<IUserIssue[]> {
-        log.info(' Start UserIssueService@getUserIssuesComments method');
-        const result: IUserIssue[] = [...issues];
-
-        for (let index = 0; index < issues.length; index++) {
-            const promiseAxios = this.axiosInstance.get(`/rest/api/2/issue/${issues[index].id}`, {
-                headers: {
-                    Authorization: authorization,
-                },
-            });
-
-            let data: Record<string, any> = {};
-
-            try {
-                const response = await promiseAxios;
-                data = response.data;
-            } catch (error: any) {
-                log.error(error.response.data.errorMessages);
-            }
-
-            if (data.fields.comment.total > 0) {
-                result[index].comment.total = data.fields.comment.total;
-                result[index].comment.maxResults = data.fields.comment.maxResults;
-                result[index].comment.startAt = data.fields.comment.startAt;
-
-                data.fields.comment.comments.forEach((element: Record<string, any>) => {
-                    result[index].comment.comments.push({
-                        author: element.author.displayName,
-                        body: element.body,
-                        created: element.created,
-                        updated: element.updated,
-                    });
-                });
-            }
-        }
-        log.info(' Finish UserIssueService@getUserIssuesComments method');
-        return result;
     }
 
     /**

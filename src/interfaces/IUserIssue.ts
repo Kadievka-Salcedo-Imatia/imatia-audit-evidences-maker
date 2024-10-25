@@ -1,5 +1,3 @@
-import IUserIssueComment from './IUserIssueComment';
-
 export default interface IUserIssue {
     id: string;
     key: string;
@@ -15,5 +13,4 @@ export default interface IUserIssue {
     self: string;
     creator: string;
     reporter: string;
-    comment: IUserIssueComment;
 }

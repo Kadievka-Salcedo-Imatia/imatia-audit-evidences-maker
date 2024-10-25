@@ -96,37 +96,6 @@ paths:
                             projectTypeKey:
                               type: string
                               example: software
-                            comment:
-                              type: array
-                              items:
-                                type: object
-                                properties:
-                                  maxResults:
-                                    type: number
-                                    example: 1
-                                  total:
-                                    type: number
-                                    example: 1
-                                  startAt:
-                                    type: number
-                                    example: 0
-                                  comments:
-                                    type: array
-                                    items:
-                                      type: object
-                                      properties:
-                                        author:
-                                          type: string
-                                          example: Carles Dulcet Buxaderas
-                                        body:
-                                          type: string
-                                          example: Se pospone hasta Enero el pase a petición del cliente.\r\n\r\n 
-                                        created:
-                                          type: string
-                                          example: 2023-12-11T13:09:02.463+0100
-                                        updated:
-                                          type: string
-                                          example: 2023-12-11T13:09:02.463+0100
 
         400:
           description: Bad Request error
@@ -227,23 +196,6 @@ paths:
                             issue:
                               type: string
                               example: "Tarea FERR2023-100: PRE - Pruebas registro ferrol sin SIR del proyecto OP-04369 + Concello Ferrol + Suministro conectores y módulos para Cividas e-GOV. Se trataba de Llevar lo último de core (3.39.XXX) al cividas de ferrol (3.40.000_SICRES4).\r\n\r\nRealizar pruebas en ferrol PRE con SIR desactivado.\r\n * Probar con registro externo de ferrol activo\r\n * Probar con registro externo de ferrol parado\r\n\r\n \r\n\r\n  Esta tarea fue creada el día 23/04/2024 a las 15:09 y su ultima actualización fue el día 15/05/2024 a las 10:53 con status Listo. En el siguiente enlace se puede consultar más a detalle esta tarea: https://jira.imatia.com/rest/api/2/issue/39789."
-                            commentStory:
-                              type: array
-                              items:
-                                type: object
-                                properties:
-                                  author:
-                                    type: string
-                                    example: "Carles Dulcet Buxaderas"
-                                  body:
-                                    type: string
-                                    example: "Se han creado a mano las carpetas CividasRegistryInput y CividasRegistryOutput ya que el conector daba error al intentarlo"
-                                  created:
-                                    type: string
-                                    example: "25/04/2024 a las 11:55"
-                                  updated:
-                                    type: string
-                                    example: "25/04/2024 a las 11:56"
         400:
           description: Bad Request error
           content:
