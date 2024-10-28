@@ -27,12 +27,12 @@ export default class JiraService {
     });
 
     /**
-     * Returns the user issues as schema
-     * @param {IUserIssuesInput} request - request body with username, startDate and endDate
-     * @returns {Promise<Record<string, any>>} Async user issues as schema
+     * Returns the user issues from jira
+     * @param {IUserIssuesInput} request - request body with jira_username, startDate and endDate
+     * @returns {Promise<Record<string, any>>} Async user issues data from jira
      */
     public async getUserIssues(request: IUserIssuesInput): Promise<Record<string, any>> {
-        log.info('Start JiraService@getUserIssues method with username: ', request.username);
+        log.info('Start JiraService@getUserIssues method with jira_username: ', request.jira_username);
 
         const startDate: string = `${request.year}-${request.month}-01`;
         const endDate: string = `${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}`;
@@ -41,7 +41,7 @@ export default class JiraService {
 
         const promiseAxios = this.axiosInstance.get('/rest/api/2/search', {
             params: {
-                jql: `assignee in (${request.username}) AND updated >= ${startDate} AND updated <= ${endDate}`,
+                jql: `assignee in (${request.jira_username}) AND updated >= ${startDate} AND updated <= ${endDate}`,
             },
             headers: {
                 Authorization: request.authorization,

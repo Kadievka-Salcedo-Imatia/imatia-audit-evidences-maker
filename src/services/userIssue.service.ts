@@ -8,10 +8,12 @@ import IUserIssue from '../interfaces/IUserIssue';
 import { MONTHS } from '../resources/configurations/constants/Months';
 import IIssueDescription from '../interfaces/IIssueDescription';
 import IEvidence from '../interfaces/IEvidence';
-import { formatDateTime } from '../utils/dates';
+import { formatDateTime, isInDateRange } from '../utils/dates';
 import puppeteer, { Browser } from 'puppeteer';
 import ICreateTemplateYearResponse from '../interfaces/ICreateTemplateYearResponse';
 import JiraService from './jira.service';
+import RedmineService from './redmine.service';
+import { PageTypeEnum } from '../enums/PageTypeEnum';
 
 const log = getLogger('UserIssueService.service');
 
@@ -29,35 +31,49 @@ export default class UserIssueService {
         return this.instance;
     }
 
-    private readonly JIRA_CLOUD_URL = process.env.JIRA_CLOUD_URL!;
+    private readonly JIRA_CLOUD_URL: string = process.env.JIRA_CLOUD_URL!;
+    private readonly REDMINE_URL: string = process.env.REDMINE_URL!;
+    private readonly REDMINE_ISSUE_UPDATE_DATE: string = process.env.REDMINE_ISSUE_UPDATE_DATE!;
 
-    private readonly FONT = 'Segoe UI';
+    private readonly FONT: string = 'Segoe UI';
 
-    private jiraService = JiraService.getInstance();
+    private jiraService: JiraService = JiraService.getInstance();
+
+    private redmineService: RedmineService = RedmineService.getInstance();
 
     /**
      * Returns the user issues as schema
-     * @param {IUserIssuesInput} request - request body with username, startDate and endDate
+     * @param {IUserIssuesInput} request - request body with jira_username, startDate and endDate
      * @returns {Promise<IDataIssue>} Async user issues as schema
      */
     public async getUserIssues(request: IUserIssuesInput): Promise<IDataIssue> {
-        log.info('Start UserIssueService@getUserIssues method with username: ', request.username);
+        log.info('Start UserIssueService@getUserIssues method with jira_username: ', request.jira_username);
 
         const startDate: string = `${request.year}-${request.month}-01`;
         const endDate: string = `${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}`;
 
         log.info(' UserIssueService@getUserIssues date filters: ', { startDate, endDate });
 
-        let data: Record<string, any> = await this.jiraService.getUserIssues(request);
+        let data: Record<string, any> = {};
 
-        const userIssue: IDataIssue = {
+        let userIssue: IDataIssue = {
             month: MONTHS()[request.month - 1].displayName,
-            startAt: data.startAt,
-            maxResults: data.maxResults,
-            total: data.total,
+            startAt: 0,
+            maxResults: 0,
+            total: 0,
             userDisplayName: '',
             project: '',
-            issues: data.issues.map((issue: Record<string, any>) => ({
+            issues: []
+        };
+
+        if(request.jira_username) {
+            data = await this.jiraService.getUserIssues(request);
+
+            userIssue.startAt = data.startAt,
+            userIssue.maxResults = data.maxResults,
+            userIssue.total = data.total,
+
+            userIssue.issues = data.issues.map((issue: Record<string, any>) => ({
                 id: issue.id,
                 key: issue.key,
                 self: this.JIRA_CLOUD_URL + '/browse/' + issue.key,
@@ -70,12 +86,49 @@ export default class UserIssueService {
                 summary: issue.fields.summary,
                 project: issue.fields.project.name,
                 projectTypeKey: issue.fields.project.projectTypeKey,
+                pageType: PageTypeEnum.JIRA
             })),
-        };
 
-        userIssue.issues = userIssue.issues;
-        userIssue.userDisplayName = userIssue.issues[0]?.assignee;
-        userIssue.project = userIssue.issues[0]?.project;
+            userIssue.userDisplayName = userIssue.issues[0]?.assignee;
+            userIssue.project = userIssue.issues[0]?.project;
+        }
+
+        if(request.redmine_id){
+            data = await this.redmineService.getUserIssues(request);
+
+            data.issues.forEach((redmineIssue: Record<string,any>) => {
+
+                if(isInDateRange(redmineIssue[this.REDMINE_ISSUE_UPDATE_DATE], startDate, endDate)){
+
+                    userIssue.maxResults++
+                    userIssue.total++,
+
+                    userIssue.issues.push({
+                        id: redmineIssue.id,
+                        key: redmineIssue.id,
+                        self: `${this.REDMINE_URL}/issues/${redmineIssue.id}`,
+                        type: redmineIssue.tracker.name,
+                        created: redmineIssue.created_on,
+                        updated: redmineIssue[this.REDMINE_ISSUE_UPDATE_DATE],
+                        assignee: redmineIssue.assigned_to.name,
+                        status: redmineIssue.status.name,
+                        description: redmineIssue.subject,
+                        summary: redmineIssue.description,
+                        project: redmineIssue.project.name,
+                        projectTypeKey: redmineIssue.project.id,
+                        creator: redmineIssue.author.name,
+                        reporter: redmineIssue.author.name,
+                        pageType: PageTypeEnum.REDMINE
+                    });
+
+                    userIssue.userDisplayName = !userIssue.userDisplayName ? redmineIssue.assigned_to.name: userIssue.userDisplayName;
+                    userIssue.project = !userIssue.userDisplayName ? redmineIssue.assigned_to.name: userIssue.project;
+
+                }
+
+            });
+
+        }
 
         log.info('Finish UserIssueService@getUserIssues method');
         return userIssue;
@@ -87,7 +140,7 @@ export default class UserIssueService {
      * @returns {Promise<IEvidence>} Async promise to get Evidence description for the Word Template
      */
     public async getUserIssuesDescriptions(request: IUserIssuesInput): Promise<IEvidence> {
-        log.info('Start UserIssueService@getUserIssuesDescriptions with username: ', request.username);
+        log.info('Start UserIssueService@getUserIssuesDescriptions with jira_username: ', request.jira_username);
         const userIssue: IDataIssue = await this.getUserIssues(request);
 
         const evidenceStart: string = `En el mes de ${userIssue.month} de ${request.year} se realizaron las siguientes tareas por ${userIssue.userDisplayName}: `;
@@ -96,10 +149,10 @@ export default class UserIssueService {
 
         userIssue.issues.forEach((issue: IUserIssue) => {
             const title: string = `${issue.type} ${issue.key}: `;
-            const summary: string = `${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description} Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+            const summary: string = this.getIssueSummary(issue);
             const link: string = issue.self;
 
-            issuesDescription.push({ title, summary, link });
+            issuesDescription.push({ title, summary, link , pageType: issue.pageType});
         });
 
         log.info('Finish UserIssueService@getUserIssuesDescriptions method');
@@ -121,7 +174,7 @@ export default class UserIssueService {
      * @returns {Promise<IEvidence>} Async promise to get Evidence description for the Word Template
      */
     public async createTemplate(request: IUserIssuesInput): Promise<IEvidence> {
-        log.info('Start UserIssueService@createTemplate with username: ', request.username);
+        log.info('Start UserIssueService@createTemplate with jira_username: ', request.jira_username);
 
         const evidence: IEvidence = await this.getUserIssuesDescriptions(request);
 
@@ -382,11 +435,17 @@ export default class UserIssueService {
             ,
         ];
 
-        const images = await this.getEvidenceImages(evidence.issues!, request.authorization);
+        const jiraImages: Paragraph[] = await this.getEvidenceImages(evidence.issues!.filter(issue=>(issue.pageType === PageTypeEnum.JIRA)), request.authorization);
 
-        images.forEach((image) =>{
+        jiraImages.forEach((image) =>{
             children.push(image);
-        })
+        });
+
+        const redmineImages: Paragraph[] = await this.getEvidenceImages(evidence.issues!.filter(issue=>(issue.pageType === PageTypeEnum.REDMINE)), request.authorization);
+
+        redmineImages.forEach((image) =>{
+            children.push(image);
+        });
 
         const doc = new Document({
             sections: [
@@ -509,6 +568,13 @@ export default class UserIssueService {
         return paragraphs;
     }
 
+    private getIssueSummary(issue: IUserIssue): string {
+        if(issue.pageType === PageTypeEnum.JIRA){
+            return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description} Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+        }
+        return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description} Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su status fue ${issue.status} el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time}. En el siguiente enlace se puede consultar más a detalle esta tarea: `
+    }
+
     /**
      * Goes to Jira Cloud url, makes login, and takes an screenshot of the issue
      * @param {string} url - Jira Cloud url
@@ -517,38 +583,68 @@ export default class UserIssueService {
      * @param {string} authorization - authorization token to make login
      * @returns {Promise<Buffer>} returns the image buffer to be copied into the template
      */
-    private async takeScreenshot(url: string, browser: Browser, isLogin: boolean, authorization: string): Promise<Buffer> {
-        log.info(' Start UserIssueService@getIssues takeScreenshot with url: ', url);
+    private async takeScreenshot(issue: IIssueDescription, browser: Browser, isLogin: boolean, authorization: string): Promise<Buffer> {
+        log.info(' Start UserIssueService@getIssues takeScreenshot with url: ', issue.link);
         const page = await browser.newPage();
 
-        await page.setViewport({ width: 1200, height: 1000 });
+        if(issue.pageType === PageTypeEnum.JIRA){
+            await page.setViewport({ width: 1200, height: 1000 });
+        }
 
-        await page.goto(url, { waitUntil: 'load' });
+        if(issue.pageType === PageTypeEnum.REDMINE){
+            await page.setViewport({ width: 1600, height: 1400 });
+        }
+
+        await page.goto(issue.link, { waitUntil: 'load' });
 
         if (isLogin) {
+
             const base64Credentials = authorization.split(' ')[1];
 
             const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
 
             const [username, password] = credentials.split(':');
 
-            await page.type('input[id="login-form-username"]', username);
+            if(issue.pageType === PageTypeEnum.JIRA){
+                await page.type('input[id="login-form-username"]', username);
 
-            await page.type('input[id="login-form-password"]', password);
+                await page.type('input[id="login-form-password"]', password);
 
-            await page.focus('input[id=login-form-submit]');
+                await page.focus('input[id=login-form-submit]');
 
-            await page.click('input[id=login-form-submit]');
+                await page.click('input[id=login-form-submit]');
 
-            await page.waitForNavigation();
+                await page.waitForNavigation();
+
+                await page.evaluate(() => {
+                    window.scrollTo(0, 0);
+                    window.addEventListener('scroll', () => {
+                        window.scrollTo(0, 0);
+                    });
+                });
+            }
+
+            if(issue.pageType === PageTypeEnum.REDMINE){
+
+                await page.type('input[id="username"]', username);
+
+                await page.type('input[id="password"]', password);
+    
+                await page.focus('input[id=login-submit]');
+    
+                await page.click('input[id=login-submit]');
+    
+                await page.waitForNavigation();
+
+                await page.evaluate(() => {
+                    window.scrollTo(0, 1400);
+                    window.addEventListener('scroll', () => {
+                        window.scrollTo(0, 1600);
+                    });
+                });
+            }
+
         }
-
-        await page.evaluate(() => {
-            window.scrollTo(0, 0);
-            window.addEventListener('scroll', () => {
-                window.scrollTo(0, 0);
-            });
-        });
 
         const screenshotArray = await page.screenshot();
         const screenshotBuffer = Buffer.from(screenshotArray);
@@ -566,12 +662,12 @@ export default class UserIssueService {
      */
     private async getEvidenceImages(issues: IIssueDescription[], authorization: string): Promise<Paragraph[]> {
         log.info(' Start UserIssueService@getEvidenceImages method');
-        const browser: Browser = await puppeteer.launch();
+        const browser: Browser = await puppeteer.launch({ headless: false }); // to display the browser: { headless: false }
 
         const paragraphs: Paragraph[] = [];
 
         for (let index = 0; index < issues.length; index++) {
-            const imageBase64Data = await this.takeScreenshot(issues[index].link, browser, index === 0, authorization);
+            const imageBase64Data = await this.takeScreenshot(issues[index], browser, index === 0, authorization);
 
             paragraphs.push(
                 new Paragraph({

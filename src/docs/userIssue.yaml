@@ -14,7 +14,7 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                jira_username:
                   type: string
                   example: carles.dulcet
                 year:
@@ -156,7 +156,7 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                jira_username:
                   type: string
                   example: carles.dulcet
                 year:
@@ -273,7 +273,7 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                jira_username:
                   type: string
                   example: carles.dulcet
                 year:
@@ -379,7 +379,7 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                jira_username:
                   type: string
                   example: carles.dulcet
                 year:

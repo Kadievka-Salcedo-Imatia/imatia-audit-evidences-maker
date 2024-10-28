@@ -8,9 +8,10 @@ export default function getUserIssuesValidator(reqBody: any): {
     message: string;
 } {
     const schema = Joi.object({
-        username: Joi.string()
+        jira_username: Joi.string()
             .regex(/^[a-zA-Z]+(\.[a-zA-Z]+)+$/)
-            .required(),
+            .optional(),
+        redmine_id: Joi.number().positive().optional(),
         year: Joi.number().positive().required(),
         month: Joi.number().min(1).max(12).required(),
     });
