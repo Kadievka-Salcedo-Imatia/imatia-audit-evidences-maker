@@ -13,7 +13,7 @@ Clone the repo and install the dependencies.
 
 > npm install
 
-Create the .env file on the root of the project and inject your credentials so it looks like this
+Create the .env file on the root of the project and inject your credentials so it looks like this, check the .env.example file to see credentials
 
 >   NODE_ENV=development
     PROTOCOL_URL=http://

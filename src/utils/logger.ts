@@ -12,6 +12,10 @@ const provider = Log4TSProvider.createProvider('LoggerProvider', {
             expression: new RegExp('@+'),
             level: LogLevel.Debug,
         },
+        {
+            expression: new RegExp('@+'),
+            level: LogLevel.Error,
+        },
     ],
 });
 

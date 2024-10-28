@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { Document, ExternalHyperlink, FileChild, ImageRun, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from 'docx';
 import fs from 'fs';
 import path from 'path';
@@ -12,6 +11,7 @@ import IEvidence from '../interfaces/IEvidence';
 import { formatDateTime } from '../utils/dates';
 import puppeteer, { Browser } from 'puppeteer';
 import ICreateTemplateYearResponse from '../interfaces/ICreateTemplateYearResponse';
+import JiraService from './jira.service';
 
 const log = getLogger('UserIssueService.service');
 
@@ -33,10 +33,7 @@ export default class UserIssueService {
 
     private readonly FONT = 'Segoe UI';
 
-    private axiosInstance = axios.create({
-        baseURL: this.JIRA_CLOUD_URL,
-        timeout: 5000,
-    });
+    private jiraService = JiraService.getInstance();
 
     /**
      * Returns the user issues as schema
@@ -51,23 +48,7 @@ export default class UserIssueService {
 
         log.info(' UserIssueService@getUserIssues date filters: ', { startDate, endDate });
 
-        const promiseAxios = this.axiosInstance.get('/rest/api/2/search', {
-            params: {
-                jql: `assignee in (${request.username}) AND updated >= ${startDate} AND updated <= ${endDate}`,
-            },
-            headers: {
-                Authorization: request.authorization,
-            },
-        });
-
-        let data: Record<string, any> = {};
-
-        try {
-            const response = await promiseAxios;
-            data = response.data;
-        } catch (error: any) {
-            log.error(error.response.data.errorMessages);
-        }
+        let data: Record<string, any> = await this.jiraService.getUserIssues(request);
 
         const userIssue: IDataIssue = {
             month: MONTHS()[request.month - 1].displayName,
