@@ -13,6 +13,14 @@ Clone the repo and install the dependencies.
 
 > npm install
 
+Create the .env file on the root of the project and inject your credentials so it looks like this
+
+>   NODE_ENV=development
+    PROTOCOL_URL=http://
+    BASE_URL=localhost:
+    PORT=3000
+    JIRA_CLOUD_URL=jiracloud-example.com 
+
 ## Steps for read-only access
 
 To start the express server, run the following
@@ -23,19 +31,10 @@ Open http://localhost:3000/docs and take a look around the Swagger UI.
 
 ## Steps for read and write access (recommended)
 
-- Step 1: Open .env file and inject your credentials so it looks like this
-
->   NODE_ENV=development
-    PROTOCOL_URL=http://
-    BASE_URL=localhost:
-    PORT=3000
-    JIRA_CLOUD_URL=jiracloud-example.com 
-
-
-- Step 2: To start the express server, run the following
+- Step 1: To start the express server, run the following
 
 > npm run start:dev
 
 - Final Step:
 
-Open http://localhost:3000 and take a look around with postman.
+Open http://localhost:3000 and take a look around with postman app.

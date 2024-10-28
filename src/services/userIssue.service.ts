@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Document, ExternalHyperlink, ImageRun, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from 'docx';
+import { Document, ExternalHyperlink, FileChild, ImageRun, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from 'docx';
 import fs from 'fs';
 import path from 'path';
 import getLogger from '../utils/logger';
@@ -167,7 +167,7 @@ export default class UserIssueService {
         };
 
         if (fs.existsSync(newFileName)) {
-            return response; // fs.rmSync(newFileName);
+            fs.rmSync(newFileName); //return response; 
         }
 
         const table1 = new Table({
@@ -382,20 +382,35 @@ export default class UserIssueService {
                         }),
                     ],
                 }),
-                new TableRow({
-                    children: [
-                        new TableCell({
-                            children: await this.getEvidenceImages(evidence.issues!, request.authorization),
-                        }),
-                    ],
-                }),
             ],
         });
+
+        const children = [
+            table1,
+            new Paragraph(''),
+            table2,
+            new Paragraph(''),
+            table3,
+            new Paragraph(''),
+            table4,
+            new Paragraph(''),
+            table5,
+            new Paragraph(''),
+            table6,
+            new Paragraph(''),
+            ,
+        ];
+
+        const images = await this.getEvidenceImages(evidence.issues!, request.authorization);
+
+        images.forEach((image) =>{
+            children.push(image);
+        })
 
         const doc = new Document({
             sections: [
                 {
-                    children: [table1, new Paragraph(''), table2, new Paragraph(''), table3, new Paragraph(''), table4, new Paragraph(''), table5, new Paragraph(''), table6],
+                    children: children as FileChild[],
                 },
             ],
         });
@@ -568,7 +583,7 @@ export default class UserIssueService {
      * @param {string} authorization - authorization token to make login
      * @returns {Promise<Buffer>} returns the image buffer to be copied into the template
      */
-    private async getEvidenceImages(issues: IIssueDescription[], authorization: string): Promise<any> {
+    private async getEvidenceImages(issues: IIssueDescription[], authorization: string): Promise<Paragraph[]> {
         log.info(' Start UserIssueService@getEvidenceImages method');
         const browser: Browser = await puppeteer.launch();
 
