@@ -1,6 +1,6 @@
 import axios from 'axios';
 import getLogger from '../utils/logger';
-import IUserIssuesInput from '../interfaces/IUserIssuesInput';
+import IRedmineGetIssuesInput from '../interfaces/IRedmineGetIssuesInput';
 
 const log = getLogger('RedmineService.service');
 
@@ -32,17 +32,19 @@ export default class RedmineService {
      * @param {IUserIssuesInput} request - request body with redmine_id
      * @returns {Promise<Record<string, any>>} Async user issues as schema
      */
-    public async getUserIssues(request: IUserIssuesInput): Promise<Record<string, any>> {
+    public async getUserIssues(request: IRedmineGetIssuesInput): Promise<Record<string, any>> {
         log.info('Start RedmineService@getUserIssues method with redmine_id: ', request.redmine_id);
 
         const promiseAxios = this.axiosInstance.get('/issues.json', {
             params: {
-                status_id:this.REDMINE_ISSUE_STATUS_ID,
-                assigned_to_id:request.redmine_id,
-                limit: this.REDMINE_PAGINATION_LIMIT
+                assigned_to_id: request.redmine_id!,
+
+                status_id: request.status_id || this.REDMINE_ISSUE_STATUS_ID,
+                limit: request.limit || this.REDMINE_PAGINATION_LIMIT,
+                offset: request.offset || '0',
             },
             headers: {
-                Authorization: request.authorization,
+                Authorization: request.authorization!,
             },
         });
 
@@ -55,7 +57,8 @@ export default class RedmineService {
             log.error('RedmineService@getUserIssues', error.response.data.errorMessages);
         }
 
+        log.info('Finish RedmineService@getUserIssues method');
+
         return data;
     }
-
 }

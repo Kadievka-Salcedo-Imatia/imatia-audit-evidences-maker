@@ -14,6 +14,7 @@ export default function getUserIssuesValidator(reqBody: any): {
         redmine_id: Joi.number().positive().optional(),
         year: Joi.number().positive().required(),
         month: Joi.number().min(1).max(12).required(),
+        rewrite_files: Joi.boolean().optional(),
     });
 
     log.info('reqBody: ', reqBody, !isNaN(reqBody.year));

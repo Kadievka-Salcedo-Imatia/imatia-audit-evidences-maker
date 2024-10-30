@@ -13,6 +13,7 @@ export default function getUserIssuesYearValidator(reqBody: any): {
             .optional(),
         redmine_id: Joi.number().positive().optional(),
         year: Joi.number().positive().required(),
+        rewrite_files: Joi.boolean().optional(),
     });
 
     log.info('reqBody: ', reqBody, !isNaN(reqBody.year));

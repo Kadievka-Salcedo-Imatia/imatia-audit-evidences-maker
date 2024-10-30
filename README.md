@@ -38,3 +38,20 @@ Open http://localhost:3000/docs and take a look around the Swagger UI.
 - Final Step:
 
 Open http://localhost:3000 and take a look around with postman app.
+
+## Run scripts
+
+If you want to run scripts from the path src/scripts/script-name.ts use the commands below:
+
+>   npm install -g ts-node
+    ts-node src/scripst/script-name.ts
+
+If the script needs some arguments, use the following:
+
+> ts-node src/scripst/script-name.ts arg1 arg2 arg3 ...
+
+## Docker
+
+### MongoDB
+
+Use the file docker-compose.yml to up the mongodb image and after that, be sure you can connect with the database with a database manager, example MongoDB Compass using the connection string en .env file MONGODB_CONNECTION_STRING=mongodb://userExample:passwordExample@localhost:27017/

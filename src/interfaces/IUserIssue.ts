@@ -1,4 +1,4 @@
-import { PageTypeEnum } from "../enums/PageTypeEnum";
+import { PageTypeEnum } from '../enums/PageTypeEnum';
 
 export default interface IUserIssue {
     id: string;
@@ -6,7 +6,9 @@ export default interface IUserIssue {
     type: string;
     created: string;
     updated: string;
+    closed?: string;
     assignee: string;
+    assignedToId: string;
     status: string;
     description: string;
     summary: string;

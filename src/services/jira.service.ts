@@ -59,5 +59,4 @@ export default class JiraService {
 
         return data;
     }
-
 }

@@ -1,4 +1,4 @@
-export enum PageTypeEnum{
+export enum PageTypeEnum {
     JIRA,
-    REDMINE
+    REDMINE,
 }

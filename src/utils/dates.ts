@@ -1,8 +1,4 @@
-import getLogger from "./logger";
-
-const log = getLogger('utils.dates');
-
-export function formatDateTime(input: string) {
+export function formatDateTime(input: string, separator: string = '/') {
     const date = new Date(input);
 
     const day = String(date.getDate()).padStart(2, '0');
@@ -13,7 +9,7 @@ export function formatDateTime(input: string) {
     const minutes = String(date.getMinutes()).padStart(2, '0');
 
     return {
-        date: `${day}/${month}/${year}`,
+        date: `${day}${separator}${month}${separator}${year}`,
         time: `${hours}:${minutes}`,
     };
 }
@@ -24,8 +20,6 @@ export function getCurrentMonth(): number {
 }
 
 export function isInDateRange(updatedOn: string, startDate: string, endDate: string) {
-    log.info('Start utils.dates@isInDateRange method with params: ', {updatedOn, startDate, endDate});
-
     const updatedDate = new Date(updatedOn);
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -33,8 +27,6 @@ export function isInDateRange(updatedOn: string, startDate: string, endDate: str
     end.setHours(23, 59, 59, 999);
 
     const result: boolean = updatedDate >= start && updatedDate <= end;
-
-    log.info('Finish utils.dates@isInDateRange updatedDate >= startDate && updatedDate <= endDate : ', result);
 
     return result;
 }

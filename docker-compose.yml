@@ -8,6 +8,6 @@ services:
     ports:
       - '27017:27017'
     environment:
-      MONGO_INITDB_ROOT_jira_username: userExample
+      MONGO_INITDB_ROOT_USERNAME: userExample
       MONGO_INITDB_ROOT_PASSWORD: passwordExample
 
