@@ -1,4 +1,5 @@
-# Imatia Audit Evidences Maker
+# Imatia Audit Evidence Maker
+
 This is a project to consume jira cloud rest api and process data to build documents for evidences.
 
 ## Requirements
@@ -15,17 +16,17 @@ Clone the repo and install the dependencies.
 
 Create the .env file on the root of the project and inject your credentials so it looks like this, check the .env.example file to see credentials
 
->   NODE_ENV=development
-    PROTOCOL_URL=http://
-    BASE_URL=localhost:
-    PORT=3000
-    JIRA_CLOUD_URL=jiracloud-example.com 
+> NODE_ENV=development
+> PROTOCOL_URL=http://
+> BASE_URL=localhost:
+> PORT=3000
+> JIRA_CLOUD_URL=jiracloud-example.com
 
 ## Steps for read-only access
 
 To start the express server, run the following
 
->   npm run start:dev
+> npm run start:dev
 
 Open http://localhost:3000/docs and take a look around the Swagger UI.
 
@@ -39,12 +40,24 @@ Open http://localhost:3000/docs and take a look around the Swagger UI.
 
 Open http://localhost:3000 and take a look around with postman app.
 
+## Redmine Sync with MongoDB
+
+If you want to get evidence templates from Redmine, the first endpoint you should use is POST 'http://localhost:3000/user-issues/sync-redmine' with the params:
+
+    {
+	    "status_id":  "*",
+	    "limit":  100,
+	    "offset":  0
+    }
+  
+
 ## Run scripts
 
 If you want to run scripts from the path src/scripts/script-name.ts use the commands below:
 
->   npm install -g ts-node
-    ts-node src/scripst/script-name.ts
+> npm install -g ts-node
+
+ts-node src/scripst/script-name.ts
 
 If the script needs some arguments, use the following:
 
