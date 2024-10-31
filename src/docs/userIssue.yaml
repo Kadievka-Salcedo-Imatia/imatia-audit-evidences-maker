@@ -110,13 +110,17 @@ paths:
                   example: carles.dulcet
                 redmine_id:
                   type: number
-                  example: 800,
+                  example: 800
                 year:
                   type: number
                   example: 2024
                 month:
                   type: number
                   example: 1
+                jira_url:
+                  description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
+                  type: string
+                  example: http://external-jira.com
       responses:
         200:
           description: successful
@@ -255,13 +259,17 @@ paths:
                   example: carles.dulcet
                 redmine_id:
                   type: number
-                  example: 800,
+                  example: 800
                 year:
                   type: number
                   example: 2024
                 month:
                   type: number
                   example: 4
+                jira_url:
+                  description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
+                  type: string
+                  example: http://external-jira.com
       responses:
         200:
           description: successful
@@ -375,13 +383,17 @@ paths:
                   example: carles.dulcet
                 redmine_id:
                   type: number
-                  example: 800,
+                  example: 
                 year:
                   type: number
                   example: 2024
                 month:
                   type: number
                   example: 4
+                jira_url:
+                  description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
+                  type: string
+                  example: http://external-jira.com
       responses:
         200:
           description: successful
@@ -484,10 +496,14 @@ paths:
                   example: carles.dulcet
                 redmine_id:
                   type: number
-                  example: 800,
+                  example: 800
                 year:
                   type: number
                   example: 2024
+                jira_url:
+                  description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
+                  type: string
+                  example: http://external-jira.com
       responses:
         200:
           description: successful

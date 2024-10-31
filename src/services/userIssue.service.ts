@@ -221,7 +221,7 @@ export default class UserIssueService {
                 (userIssue.issues = data.issues.map((issue: Record<string, any>) => ({
                     id: issue.id,
                     key: issue.key,
-                    self: this.JIRA_CLOUD_URL + '/browse/' + issue.key,
+                    self: Boolean(request.jira_url) ? request.jira_url + '/browse/' + issue.key : this.JIRA_CLOUD_URL + '/browse/' + issue.key,
                     type: issue.fields.issuetype.name,
                     created: issue.fields.created,
                     updated: issue.fields.updated,
@@ -565,11 +565,14 @@ export default class UserIssueService {
             ,
         ];
 
-        const images: Paragraph[] = await this.splitIssuesByTypeAndGetImages(evidence, request)
+        if (!Boolean(request.jira_url)) {
+            // can not take screenshots of external jira boards because they could have custom authentication with phone number and other information
+            const images: Paragraph[] = await this.splitIssuesByTypeAndGetImages(evidence, request);
 
-        images.forEach((image) => {
-            children.push(image);
-        });
+            images.forEach((image) => {
+                children.push(image);
+            });
+        }
 
         const doc = new Document({
             sections: [
@@ -586,36 +589,6 @@ export default class UserIssueService {
         log.info(`Finish UserIssueService@createTemplate path: ${newFileName} in time: ${endTime - startTime} ms:`);
 
         return evidence;
-    }
-
-    /**
-     * Split evidence by page type to login each one
-     * @param {IEvidence} evidence
-     * @param {ICreateTemplateInput} request
-     * @returns {Promise<Paragraph[]>} Paragrafs in the Template with the processed Images Buffers
-     */
-    private async splitIssuesByTypeAndGetImages(evidence: IEvidence, request: ICreateTemplateInput): Promise<Paragraph[]>{
-        let images: Paragraph[] = [];
-
-        if(!evidence.issues || evidence.issues.length === 0) {
-            return images;
-        }
-
-        for (const pageType in PageTypeEnum) {
-
-            const issues: IIssueDescription[] = evidence.issues.filter((issue) => {
-                return (issue.pageType === pageType)
-            });
-
-            if(issues.length===0){
-                continue;
-            }
-            const result = await this.getEvidenceImages({...evidence, issues: issues}, request);
-
-            images.concat(result);
-        }
-
-        return images;
     }
 
     /**
@@ -670,6 +643,37 @@ export default class UserIssueService {
         const endTime = performance.now();
         log.info(`Finish UserIssueService@createTemplatesYear method in: ${endTime - startTime} ms`);
         return response;
+    }
+
+    /**
+     * Split evidence by page type to login each one
+     * @param {IEvidence} evidence
+     * @param {ICreateTemplateInput} request
+     * @returns {Promise<Paragraph[]>} Paragrafs in the Template with the processed Images Buffers
+     */
+    private async splitIssuesByTypeAndGetImages(evidence: IEvidence, request: ICreateTemplateInput): Promise<Paragraph[]> {
+        const images: Paragraph[] = [];
+
+        if (!evidence.issues || evidence.issues.length === 0) {
+            return images;
+        }
+
+        for (const pageType in PageTypeEnum) {
+            if (PageTypeEnum.hasOwnProperty(pageType)) {
+                const issues: IIssueDescription[] = evidence.issues.filter((issue) => {
+                    return issue.pageType === pageType;
+                });
+
+                if (issues.length === 0) {
+                    continue;
+                }
+                const result = await this.getEvidenceImages({ ...evidence, issues }, request);
+
+                images.concat(result);
+            }
+        }
+
+        return images;
     }
 
     /**

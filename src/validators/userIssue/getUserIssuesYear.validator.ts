@@ -8,12 +8,11 @@ export default function getUserIssuesYearValidator(reqBody: any): {
     message: string;
 } {
     const schema = Joi.object({
-        jira_username: Joi.string()
-            .regex(/^[a-zA-Z]+(\.[a-zA-Z]+)+$/)
-            .optional(),
+        jira_username: Joi.string().optional(),
         redmine_id: Joi.number().positive().optional(),
         year: Joi.number().positive().required(),
         rewrite_files: Joi.boolean().optional(),
+        jira_url: Joi.string().uri().optional(),
     });
 
     log.info('reqBody: ', reqBody);
