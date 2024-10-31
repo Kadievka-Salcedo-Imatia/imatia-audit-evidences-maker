@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import getLogger from '../../utils/logger';
 
-const log = getLogger('getUserIssuesYearValidator');
+const log = getLogger('getUserIssuesYear.validator.ts');
 
 export default function getUserIssuesYearValidator(reqBody: any): {
     validatorFailed: boolean;
@@ -16,7 +16,7 @@ export default function getUserIssuesYearValidator(reqBody: any): {
         rewrite_files: Joi.boolean().optional(),
     });
 
-    log.info('reqBody: ', reqBody, !isNaN(reqBody.year));
+    log.info('reqBody: ', reqBody);
 
     if (typeof reqBody.year !== 'number') {
         return {

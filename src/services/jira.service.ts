@@ -3,7 +3,7 @@ import getLogger from '../utils/logger';
 import IUserIssuesInput from '../interfaces/IUserIssuesInput';
 import { MONTHS } from '../resources/configurations/constants/Months';
 
-const log = getLogger('JiraService.service');
+const log = getLogger('jira.service.ts');
 
 export default class JiraService {
     public static instance: JiraService;
@@ -37,7 +37,7 @@ export default class JiraService {
         const startDate: string = `${request.year}-${request.month}-01`;
         const endDate: string = `${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}`;
 
-        log.info('Info JiraService@getUserIssues date filters: ', { startDate, endDate });
+        log.info(' Info JiraService@getUserIssues date filters: ', { startDate, endDate });
 
         const promiseAxios = this.axiosInstance.get('/rest/api/2/search', {
             params: {
@@ -57,6 +57,7 @@ export default class JiraService {
             log.error('JiraService@getUserIssues', error.response.data.errorMessages);
         }
 
+        log.info('Finish JiraService@getUserIssues');
         return data;
     }
 }

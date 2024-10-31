@@ -5,7 +5,7 @@ import INTERNAL_ERROR_CODES from '../constants/InternalErrorCodes';
 import IResponseStatus from '../../../interfaces/configurations/IResponseStatus';
 import IResponse from '../../../interfaces/configurations/IResponse';
 
-const log = getLogger('ResponseClass');
+const log = getLogger('ResponseClass.ts');
 
 export default class ResponseClass {
     public controllerInstance: any;

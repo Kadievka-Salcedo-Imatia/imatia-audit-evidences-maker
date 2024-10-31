@@ -94,7 +94,7 @@ paths:
     post:
       tags:
         - User Issues
-      summary: User Issues Schema from Imatia Jira Cloud
+      summary: User Issues Schema from Imatia Jira Cloud and Redmine
       produces:
         - application/json
       security:

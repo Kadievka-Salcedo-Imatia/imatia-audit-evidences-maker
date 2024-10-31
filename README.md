@@ -65,6 +65,8 @@ If the script needs some arguments, use the following:
 
 ## Docker
 
+docker compose -f "docker-compose.yml" up -d --build
+
 ### MongoDB
 
 Use the file docker-compose.yml to up the mongodb image and after that, be sure you can connect with the database with a database manager, example MongoDB Compass using the connection string en .env file MONGODB_CONNECTION_STRING=mongodb://userExample:passwordExample@localhost:27017/

@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import getLogger from '../../utils/logger';
 
-const log = getLogger('syncRedmineUserIssues');
+const log = getLogger('syncRedmineUserIssues.validator.ts');
 
 export default function syncRedmineUserIssues(reqBody: any): {
     validatorFailed: boolean;
@@ -15,7 +15,7 @@ export default function syncRedmineUserIssues(reqBody: any): {
         offset: Joi.number().optional(),
     });
 
-    log.info('reqBody: ', reqBody, !isNaN(reqBody.year));
+    log.info('reqBody: ', reqBody);
 
     const { error } = schema.validate(reqBody);
 

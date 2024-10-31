@@ -6,7 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import mainRoutes from './routes/main.route';
 import userIssueRoutes from './routes/userIssue.route';
 
-const log = getLogger('app.js');
+const log = getLogger('app.ts');
 
 /*--- App ---*/
 const app = express();
@@ -41,5 +41,5 @@ app.use('/user-issues', userIssueRoutes);
 app.use('/', mainRoutes);
 
 app.listen(port, () => {
-    log.info(() => `Briefcase app listen on port ${port}!`);
+    log.info(() => `imatia-audit-evidences-maker app listen on port ${port}!`);
 });

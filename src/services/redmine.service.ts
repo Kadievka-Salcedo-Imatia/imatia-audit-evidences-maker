@@ -2,7 +2,7 @@ import axios from 'axios';
 import getLogger from '../utils/logger';
 import IRedmineGetIssuesInput from '../interfaces/IRedmineGetIssuesInput';
 
-const log = getLogger('RedmineService.service');
+const log = getLogger('redmine.service.ts');
 
 export default class RedmineService {
     public static instance: RedmineService;

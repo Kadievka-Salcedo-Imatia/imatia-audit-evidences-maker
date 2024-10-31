@@ -1,5 +1,8 @@
 // External Dependencies
 import * as mongoDB from 'mongodb';
+import getLogger from '../utils/logger';
+
+const log = getLogger('database.service.ts');
 
 export default class DatabaseService {
     public static instance: DatabaseService;
@@ -22,6 +25,7 @@ export default class DatabaseService {
 
     public constructor() {
         this.mongodbClient = new mongoDB.MongoClient(process.env.MONGODB_CONNECTION_STRING!);
+        log.info('MongoDB client created');
     }
 
     /**

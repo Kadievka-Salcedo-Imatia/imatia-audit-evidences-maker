@@ -24,7 +24,7 @@ import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOu
 import { FindCursor } from 'mongodb';
 import ICreateTemplateInput from '../interfaces/ICreateTemplateInput';
 
-const log = getLogger('UserIssueService.service');
+const log = getLogger('userIssue.service.ts');
 
 const databaseService: DatabaseService = DatabaseService.getInstance();
 
@@ -137,7 +137,7 @@ export default class UserIssueService {
 
         const iterations: number = getPagesNumber(response.total_count, response.limit);
 
-        log.info(' UserIssueService@mapUserIssuesAndSaveInDB iterations: ', iterations);
+        log.info(' UserIssueService@mapUserIssuesAndSaveInDB iterations:', iterations);
 
         for (let index = 1; index < iterations; index++) {
             offset += request.limit;
@@ -165,7 +165,7 @@ export default class UserIssueService {
      * @returns {Promise<any>} user issues information comes from the database
      */
     public async getDbUserIssues(assignedToId: number, startDate: Date, endDate: Date): Promise<FindCursor> {
-        log.info('Start UserIssueService@getDbUserIssues method with params: ', { assignedToId, startDate, endDate });
+        log.info('  Start UserIssueService@getDbUserIssues method with params:', { assignedToId, startDate, endDate });
         let dbUserIssues: FindCursor;
         try {
             await databaseService.connect('user_issues');
@@ -179,27 +179,30 @@ export default class UserIssueService {
                 .sort({ updated: -1, closed: -1 })
                 .toArray();
         } catch (error) {
-            log.error('Error UserIssueService@getDbUserIssues method', error);
+            log.error('  Error UserIssueService@getDbUserIssues method', error);
             throw new BaseErrorClass(INTERNAL_ERROR_CODES.GENERAL_UNKNOWN);
         } finally {
             await databaseService.disconnect();
         }
-        log.info('Finish UserIssueService@getDbUserIssues method');
+        log.info('  Finish UserIssueService@getDbUserIssues method');
         return dbUserIssues;
     }
 
     /**
      * Returns the user issues as schema
-     * @param {IUserIssuesInput} request - request body with jira_username, startDate and endDate
+     * @param {IUserIssuesInput} request - request body with jira_username, redmine_id, startDate and endDate
      * @returns {Promise<IDataIssue>} Async user issues as schema
      */
     public async getUserIssues(request: IUserIssuesInput): Promise<IDataIssue> {
-        log.info('Start UserIssueService@getUserIssues method with jira_username: ', request.jira_username);
+        log.info('  Start UserIssueService@getUserIssues method with params:', {
+            jira_username: request.jira_username,
+            redmine_id: request.redmine_id,
+            year: request.year,
+            month: request.month,
+        });
 
         const startDate: string = `${request.year}-${request.month}-01`;
         const endDate: string = `${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}`;
-
-        log.info(' UserIssueService@getUserIssues date filters: ', { startDate, endDate });
 
         let data: Record<string, any> = {};
 
@@ -248,7 +251,7 @@ export default class UserIssueService {
             }
         }
 
-        log.info('Finish UserIssueService@getUserIssues method');
+        log.info('  Finish UserIssueService@getUserIssues method');
         return userIssue;
     }
 
@@ -258,7 +261,7 @@ export default class UserIssueService {
      * @returns {Promise<IEvidence>} Async promise to get Evidence description for the Word Template
      */
     public async getUserIssuesDescriptions(request: IUserIssuesInput): Promise<IEvidence> {
-        log.info('Start UserIssueService@getUserIssuesDescriptions with jira_username: ', request.jira_username);
+        log.info('Start UserIssueService@getUserIssuesDescriptions with jira_username:', request.jira_username);
         const userIssue: IDataIssue = await this.getUserIssues(request);
 
         const evidenceStart: string = `En el mes de ${userIssue.month} de ${request.year} se realizaron las siguientes tareas por ${userIssue.userDisplayName}: `;
@@ -298,7 +301,8 @@ export default class UserIssueService {
      * @returns {Promise<IEvidence>} Async promise to get Evidence description for the Word Template
      */
     public async createTemplate(request: ICreateTemplateInput): Promise<IEvidence> {
-        log.info('Start UserIssueService@createTemplate with params: ', { jira_username: request.jira_username, redmine_id: request.redmine_id });
+        log.info('Start UserIssueService@createTemplate with params:', { jira_username: request.jira_username, redmine_id: request.redmine_id });
+        const startTime = performance.now();
 
         const evidence: IEvidence = await this.getUserIssuesDescriptions(request);
 
@@ -343,7 +347,7 @@ export default class UserIssueService {
                                 new Paragraph({
                                     children: [
                                         new TextRun({
-                                            text: 'Proyecto: ',
+                                            text: 'Proyecto:',
                                             size: 20,
                                             font: this.FONT,
                                         }),
@@ -386,7 +390,7 @@ export default class UserIssueService {
                                 new Paragraph({
                                     children: [
                                         new TextRun({
-                                            text: 'Nombre: ',
+                                            text: 'Nombre:',
                                             size: 20,
                                             font: this.FONT,
                                         }),
@@ -577,7 +581,9 @@ export default class UserIssueService {
 
         const newBuffer = await Packer.toBuffer(doc);
         fs.writeFileSync(newFileName, newBuffer);
-        log.info('Finish UserIssueService@createTemplate: ', newFileName);
+
+        const endTime = performance.now();
+        log.info(`Finish UserIssueService@createTemplate path: ${newFileName} in time: ${endTime - startTime} ms:`);
 
         return evidence;
     }
@@ -704,7 +710,7 @@ export default class UserIssueService {
      * @returns {Promise<Buffer>} returns the image buffer to be copied into the template
      */
     private async takeScreenshot(issue: IIssueDescription, browser: Browser, isLogin: boolean, authorization: string): Promise<Buffer> {
-        log.info(' Start UserIssueService@getIssues takeScreenshot with params: ', { id: issue.title, url: issue.link });
+        log.info('  Start UserIssueService@getIssues takeScreenshot with params:', { id: issue.title, url: issue.link });
         const page = await browser.newPage();
 
         if (issue.pageType === PageTypeEnum.JIRA) {
@@ -768,7 +774,7 @@ export default class UserIssueService {
 
         await page.close();
 
-        log.info('Finish UserIssueService@getIssues takeScreenshot');
+        log.info('  Finish UserIssueService@getIssues takeScreenshot');
         return screenshotBuffer as Buffer;
     }
 
@@ -785,7 +791,14 @@ export default class UserIssueService {
         const paragraphs: Paragraph[] = [];
 
         for (let index = 0; index < evidence.issues!.length; index++) {
-            const imageBase64Data = await this.takeScreenshot(evidence.issues![index], browser, index === 0, request.authorization);
+            let imageBase64Data;
+
+            try {
+                imageBase64Data = await this.takeScreenshot(evidence.issues![index], browser, index === 0, request.authorization);
+            } catch (error) {
+                log.error(' Error UserIssueService@getEvidenceImages trying to take screenshot');
+                continue;
+            }
 
             paragraphs.push(
                 new Paragraph({
