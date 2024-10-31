@@ -565,7 +565,7 @@ export default class UserIssueService {
             ,
         ];
 
-        const images: Paragraph[] = await this.getEvidenceImages(evidence, request);
+        const images: Paragraph[] = await this.splitIssuesByTypeAndGetImages(evidence, request)
 
         images.forEach((image) => {
             children.push(image);
@@ -586,6 +586,36 @@ export default class UserIssueService {
         log.info(`Finish UserIssueService@createTemplate path: ${newFileName} in time: ${endTime - startTime} ms:`);
 
         return evidence;
+    }
+
+    /**
+     * Split evidence by page type to login each one
+     * @param {IEvidence} evidence
+     * @param {ICreateTemplateInput} request
+     * @returns {Promise<Paragraph[]>} Paragrafs in the Template with the processed Images Buffers
+     */
+    private async splitIssuesByTypeAndGetImages(evidence: IEvidence, request: ICreateTemplateInput): Promise<Paragraph[]>{
+        let images: Paragraph[] = [];
+
+        if(!evidence.issues || evidence.issues.length === 0) {
+            return images;
+        }
+
+        for (const pageType in PageTypeEnum) {
+
+            const issues: IIssueDescription[] = evidence.issues.filter((issue) => {
+                return (issue.pageType === pageType)
+            });
+
+            if(issues.length===0){
+                continue;
+            }
+            const result = await this.getEvidenceImages({...evidence, issues: issues}, request);
+
+            images.concat(result);
+        }
+
+        return images;
     }
 
     /**

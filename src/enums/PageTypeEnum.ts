@@ -1,4 +1,4 @@
 export enum PageTypeEnum {
-    JIRA,
-    REDMINE,
+    JIRA='JIRA',
+    REDMINE='REDMINE',
 }
