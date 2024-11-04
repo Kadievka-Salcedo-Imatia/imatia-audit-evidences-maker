@@ -39,12 +39,9 @@ export default class JiraService {
 
         let axiosInstance: any;
 
-        let jql: string = request.jql
-        ?
-        request.jql
-        :
-        this.DEFAULT_JQL.replace('{{jira_username}}', request.jira_username!).replace('{{startDate}}', startDate).replace('{{endDate}}', endDate);
-
+        const jql: string = request.jql
+            ? request.jql
+            : this.DEFAULT_JQL.replace('{{jira_username}}', request.jira_username!).replace('{{startDate}}', startDate).replace('{{endDate}}', endDate);
 
         if (Boolean(request.jira_base_url)) {
             axiosInstance = axios.create({
@@ -67,11 +64,7 @@ export default class JiraService {
             },
         };
 
-        const url: string = request.jira_url
-        ?
-        request.jira_url
-        :
-        this.JIRA_REST_API_2_SEARCH_URL;
+        const url: string = request.jira_url ? request.jira_url : this.JIRA_REST_API_2_SEARCH_URL;
 
         let data: Record<string, any> = {};
 
@@ -82,7 +75,7 @@ export default class JiraService {
             response = await promiseAxios;
             data = response.data;
         } catch (error: any) {
-            log.error('JiraService@getUserIssues', {error, response: response});
+            log.error('JiraService@getUserIssues', { error, response });
             throw error;
         }
 
