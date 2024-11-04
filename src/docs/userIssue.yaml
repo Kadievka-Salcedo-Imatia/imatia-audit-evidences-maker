@@ -117,10 +117,18 @@ paths:
                 month:
                   type: number
                   example: 1
-                jira_url:
+                jira_base_url:
                   description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
                   type: string
                   example: http://external-jira.com
+                jira_url:
+                  description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
+                  type: string
+                  example: /rest/api/3/search
+                jql:
+                  description: use this field if you want use other jql instead of the default jql that we used as default in this project
+                  type: string
+                  example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
       responses:
         200:
           description: successful
@@ -266,10 +274,18 @@ paths:
                 month:
                   type: number
                   example: 4
-                jira_url:
+                jira_base_url:
                   description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
                   type: string
                   example: http://external-jira.com
+                jira_url:
+                  description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
+                  type: string
+                  example: /rest/api/3/search
+                jql:
+                  description: use this field if you want use other jira endpoint instead of the default jql that we used as default in this project
+                  type: string
+                  example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
       responses:
         200:
           description: successful
@@ -390,10 +406,18 @@ paths:
                 month:
                   type: number
                   example: 4
-                jira_url:
+                jira_base_url:
                   description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
                   type: string
                   example: http://external-jira.com
+                jira_url:
+                  description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
+                  type: string
+                  example: /rest/api/3/search
+                jql:
+                  description: use this field if you want use other jira endpoint instead of the default jql that we used as default in this project
+                  type: string
+                  example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
       responses:
         200:
           description: successful
@@ -500,10 +524,18 @@ paths:
                 year:
                   type: number
                   example: 2024
-                jira_url:
+                jira_base_url:
                   description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
                   type: string
                   example: http://external-jira.com
+                jira_url:
+                  description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
+                  type: string
+                  example: /rest/api/3/search
+                jql:
+                  description: use this field if you want use other jira endpoint instead of the default jql that we used as default in this project
+                  type: string
+                  example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
       responses:
         200:
           description: successful

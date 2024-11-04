@@ -221,7 +221,7 @@ export default class UserIssueService {
                 (userIssue.issues = data.issues.map((issue: Record<string, any>) => ({
                     id: issue.id,
                     key: issue.key,
-                    self: Boolean(request.jira_url) ? request.jira_url + '/browse/' + issue.key : this.JIRA_CLOUD_URL + '/browse/' + issue.key,
+                    self: Boolean(request.jira_base_url) ? request.jira_base_url + '/browse/' + issue.key : this.JIRA_CLOUD_URL + '/browse/' + issue.key,
                     type: issue.fields.issuetype.name,
                     created: issue.fields.created,
                     updated: issue.fields.updated,
@@ -565,7 +565,7 @@ export default class UserIssueService {
             ,
         ];
 
-        if (!Boolean(request.jira_url)) {
+        if (!Boolean(request.jira_base_url)) {
             // can not take screenshots of external jira boards because they could have custom authentication with phone number and other information
             const images: Paragraph[] = await this.splitIssuesByTypeAndGetImages(evidence, request);
 

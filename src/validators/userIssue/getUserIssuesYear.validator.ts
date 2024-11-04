@@ -12,7 +12,9 @@ export default function getUserIssuesYearValidator(reqBody: any): {
         redmine_id: Joi.number().positive().optional(),
         year: Joi.number().positive().required(),
         rewrite_files: Joi.boolean().optional(),
+        jira_base_url: Joi.string().uri().optional(),
         jira_url: Joi.string().uri().optional(),
+        jql: Joi.string().uri().optional(),
     });
 
     log.info('reqBody: ', reqBody);

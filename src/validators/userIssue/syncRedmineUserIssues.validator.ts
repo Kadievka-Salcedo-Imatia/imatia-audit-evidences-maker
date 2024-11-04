@@ -13,7 +13,6 @@ export default function syncRedmineUserIssues(reqBody: any): {
         status_id: Joi.string().optional(),
         limit: Joi.number().positive().optional(),
         offset: Joi.number().optional(),
-        jira_url: Joi.string().uri().optional(),
     });
 
     log.info('reqBody: ', reqBody);

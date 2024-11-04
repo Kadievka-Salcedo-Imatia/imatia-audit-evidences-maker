@@ -13,7 +13,9 @@ export default function getUserIssuesValidator(reqBody: any): {
         year: Joi.number().positive().required(),
         month: Joi.number().min(1).max(12).required(),
         rewrite_files: Joi.boolean().optional(),
+        jira_base_url: Joi.string().uri().optional(),
         jira_url: Joi.string().uri().optional(),
+        jql: Joi.string().uri().optional(),
     });
 
     log.info('reqBody:', reqBody);
