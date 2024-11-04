@@ -1,4 +1,4 @@
-import ICreateTemplateYearResponse from '../interfaces/ICreateTemplateYearResponse';
+import ICreateTemplateYearOutput from '../interfaces/ICreateTemplateYearOutput';
 import IDataIssue from '../interfaces/IDataIssue';
 import IEvidence from '../interfaces/IEvidence';
 import IRedmineGetIssuesInput from '../interfaces/IRedmineGetIssuesInput';
@@ -54,7 +54,7 @@ export default class UserIssueController {
      * Calls create user issue templates from the year service.
      * @returns templates created
      */
-    public async createTemplatesYear(req: any): Promise<ICreateTemplateYearResponse> {
+    public async createTemplatesYear(req: any): Promise<ICreateTemplateYearOutput> {
         const request: IUserIssuesInput = { ...req.body, ...req.headers, month: getCurrentMonth() };
         return await this.userIssueService.createTemplatesYear(request);
     }

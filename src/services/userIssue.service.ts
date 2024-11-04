@@ -10,7 +10,7 @@ import IIssueDescription from '../interfaces/IIssueDescription';
 import IEvidence from '../interfaces/IEvidence';
 import { formatDateTime } from '../utils/dates';
 import puppeteer, { Browser } from 'puppeteer';
-import ICreateTemplateYearResponse from '../interfaces/ICreateTemplateYearResponse';
+import ICreateTemplateYearOutput from '../interfaces/ICreateTemplateYearOutput';
 import JiraService from './jira.service';
 import RedmineService from './redmine.service';
 import { PageTypeEnum } from '../enums/PageTypeEnum';
@@ -48,7 +48,6 @@ export default class UserIssueService {
     private readonly FONT: string = 'Segoe UI';
 
     private jiraService: JiraService = JiraService.getInstance();
-
     private redmineService: RedmineService = RedmineService.getInstance();
 
     /**
@@ -95,7 +94,7 @@ export default class UserIssueService {
     }
 
     /**
-     * Method to map data issues and save them to the database
+     * Method to map redmine user issues data and save them to the database
      * @param {IUserIssuesInput} request - request body
      * @returns {Promise<Record<string, any>>} Async user issues as schema
      */
@@ -158,11 +157,11 @@ export default class UserIssueService {
     }
 
     /**
-     * Gets user issues by redmine id.
+     * Gets user issues by redmine id from MongoDB.
      * @param {number} assignedToId The user redmine_id
-     * @param {string} startDate
-     * @param {string} endDate
-     * @returns {Promise<any>} user issues information comes from the database
+     * @param {Date} startDate
+     * @param {Date} endDate
+     * @returns {Promise<FindCursor>} user issues information comes from the database
      */
     public async getDbUserIssues(assignedToId: number, startDate: Date, endDate: Date): Promise<FindCursor> {
         log.info('  Start UserIssueService@getDbUserIssues method with params:', { assignedToId, startDate, endDate });
@@ -215,7 +214,15 @@ export default class UserIssueService {
         };
 
         if (request.jira_username) {
-            data = await this.jiraService.getUserIssues(request);
+            data = await this.jiraService.getUserIssues({
+                authorization: request.authorization,
+                jira_base_url: request.jira_base_url,
+                jira_url: request.jira_url,
+                jql: request.jql,
+                jira_username: request.jira_username,
+                startDate,
+                endDate,
+            });
 
             (userIssue.total = data.total),
                 (userIssue.issues = data.issues.map((issue: Record<string, any>) => ({
@@ -257,7 +264,7 @@ export default class UserIssueService {
 
     /**
      * Maps the User Issues to create Evidence Description for the document
-     * @param {IUserIssuesInput[]} request - the same request to get user issues
+     * @param {IUserIssuesInput} request - the same request to get user issues
      * @returns {Promise<IEvidence>} Async promise to get Evidence description for the Word Template
      */
     public async getUserIssuesDescriptions(request: IUserIssuesInput): Promise<IEvidence> {
@@ -297,7 +304,7 @@ export default class UserIssueService {
 
     /**
      * Creates Evidence Template Doc
-     * @param {IUserIssuesInput[]} request - the same request to get user issues
+     * @param {ICreateTemplateInput} request - the same request to get user issues
      * @returns {Promise<IEvidence>} Async promise to get Evidence description for the Word Template
      */
     public async createTemplate(request: ICreateTemplateInput): Promise<IEvidence> {
@@ -330,7 +337,7 @@ export default class UserIssueService {
             if (Boolean(request.rewrite_files)) {
                 fs.rmSync(newFileName);
             } else {
-                return evidence;
+                return { ...evidence, path: newFileName };
             }
         }
 
@@ -588,19 +595,19 @@ export default class UserIssueService {
         const endTime = performance.now();
         log.info(`Finish UserIssueService@createTemplate path: ${newFileName} in time: ${endTime - startTime} ms:`);
 
-        return evidence;
+        return { ...evidence, path: newFileName };
     }
 
     /**
      * Creates Evidence Template Doc of the year
-     * @param {IUserIssuesInput[]} request - the request to get user issues
-     * @returns {Promise<ICreateTemplateYearResponse>} Async promise to get Evidence description for the Word Template
+     * @param {ICreateTemplateInput} request - the request to get user issues
+     * @returns {Promise<ICreateTemplateYearOutput>} Async promise to get Evidence description for the Word Template
      */
-    public async createTemplatesYear(request: ICreateTemplateInput): Promise<ICreateTemplateYearResponse> {
+    public async createTemplatesYear(request: ICreateTemplateInput): Promise<ICreateTemplateYearOutput> {
         log.info('Start UserIssueService@createTemplatesYear method');
         const startTime = performance.now();
 
-        const response: ICreateTemplateYearResponse = {
+        const response: ICreateTemplateYearOutput = {
             userDisplayName: '',
             evidencesCreated: {
                 total: 0,
@@ -728,6 +735,11 @@ export default class UserIssueService {
         return paragraphs;
     }
 
+    /**
+     * This method return a issue summary to show inside the document template
+     * @param {IUserIssue} issue - the user issue
+     * @returns {string} summary
+     */
     private getIssueSummary(issue: IUserIssue): string {
         if (issue.pageType === PageTypeEnum.JIRA) {
             return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description} Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
@@ -736,10 +748,10 @@ export default class UserIssueService {
     }
 
     /**
-     * Goes to Jira Cloud url, makes login, and takes an screenshot of the issue
+     * Goes to Jira Cloud or Redmine url, makes login, and takes an screenshot of the issue
      * @param {IIssueDescription} issue - Jira Cloud url
      * @param {Browser} browser - Browser instance
-     * @param {boolean} isLogin - indicates if its the first time going to take screenshot, it needs login first
+     * @param {boolean} isLogin - indicates if it is the first time going to take screenshot, it needs login first
      * @param {string} authorization - authorization token to make login
      * @returns {Promise<Buffer>} returns the image buffer to be copied into the template
      */
@@ -814,9 +826,9 @@ export default class UserIssueService {
 
     /**
      * Maps the User Issues Description to get Evidence Images for the Document Template
-     * @param {IEvidence[]} evidence - issue data array
+     * @param {IEvidence} evidence - issue data array
      * @param {IUserIssuesInput} request - authorization token to make login
-     * @returns {Promise<Buffer>} returns the image buffer to be copied into the template
+     * @returns {Promise<Paragraph[]>} returns the Paragraph with the image to be copied into the template
      */
     private async getEvidenceImages(evidence: IEvidence, request: IUserIssuesInput): Promise<Paragraph[]> {
         log.info(' Start UserIssueService@getEvidenceImages method');

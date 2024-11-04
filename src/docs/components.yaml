@@ -1,30 +1,154 @@
 components:
-  schemas:
+  responses:
     GeneralError:
       type: object
       properties:
         statusCode:
           type: number
           example: 500
-        code:
-          type: number
-          example: 100
         message:
           type: string
-          example: General unknown error
+          example: This error message should be displayed with some error message
+        error: 
+          type: object
+          properties:
+            code:
+              type: number
+              example: 100
+            message:
+              type: string
+              example: "General unknown error"
     BadRequestError:
       type: object
       properties:
         statusCode:
           type: number
           example: 400
-        code:
-          type: number
-          example: 200
         message:
           type: string
-          example: validation failed
+          example: Bad request
+        error: 
+          type: object
+          properties:
+            code:
+              type: number
+              example: 1001
+            message:
+              type: string
+              example: "\"month\" must be a number between 1 and 12"
   securitySchemes:
     basicAuth:
       type: http
       scheme: basic
+  requestBodies:
+    GetUserIssues:
+      type: object
+      properties:
+        jira_username:
+          description: you can fill this field without fill redmine_id if you want create evidence templates for jira only
+          type: string
+          example: carles.dulcet
+        redmine_id:
+          description: you can fill this field without fill jira_username if you want create evidence templates for redmine only
+          type: number
+          example: 800
+        year:
+          type: number
+          example: 2024
+        month:
+          description: 'January: 1, February: 2, March: 3, April: 4, etc...'
+          type: number
+          example: 1
+        jira_base_url:
+          description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
+          type: string
+          example: http://external-jira.com
+        jira_url:
+          description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
+          type: string
+          example: /rest/api/3/search
+        jql:
+          description: use this field if you want use other jql instead of the default jql that we used as default in this project
+          type: string
+          example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
+      required:
+        - jira_username
+        - redmine_id
+        - year
+        - month
+    CreateUserIssuesTemplate:
+      type: object
+      properties:
+        jira_username:
+          description: you can fill this field without fill redmine_id if you want create evidence templates for jira only
+          type: string
+          example: carles.dulcet
+        redmine_id:
+          description: you can fill this field without fill jira_username if you want create evidence templates for redmine only
+          type: number
+          example: 800
+        year:
+          type: number
+          example: 2024
+        month:
+          description: 'January: 1, February: 2, March: 3, April: 4, etc...'
+          type: number
+          example: 1
+        rewrite_files:
+          description: this option is by default false, so if document template already exists then it will be not rewritten, unless you pass true on this field
+          type: boolean
+          example: true
+        jira_base_url:
+          required: false
+          description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
+          type: string
+          example: http://external-jira.com
+        jira_url:
+          description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
+          type: string
+          example: /rest/api/3/search
+        jql:
+          description: use this field if you want use other jql instead of the default jql that we used as default in this project
+          type: string
+          example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
+      required:
+        - jira_username
+        - redmine_id
+        - year
+        - month
+    CreateUserIssuesTemplateOfYear:
+      type: object
+      properties:
+        properties:
+        jira_username:
+          description: you can fill this field without fill redmine_id if you want create evidence templates for jira only
+          type: string
+          example: carles.dulcet
+        redmine_id:
+          description: you can fill this field without fill jira_username if you want create evidence templates for redmine only
+          type: number
+          example: 800
+        year:
+          type: number
+          example: 2024
+        rewrite_files:
+          description: this option is by default false, so if document template already exists then it will be not rewritten, unless you pass true on this field
+          type: boolean
+          example: true
+        jira_base_url:
+          required: false
+          description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
+          type: string
+          example: http://external-jira.com
+        jira_url:
+          description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
+          type: string
+          example: /rest/api/3/search
+        jql:
+          description: use this field if you want use other jql instead of the default jql that we used as default in this project
+          type: string
+          example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
+      required:
+        - jira_username
+        - redmine_id
+        - year

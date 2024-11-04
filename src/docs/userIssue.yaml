@@ -9,6 +9,7 @@ paths:
       security:
         - basicAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -51,45 +52,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 400
-                  message:
-                    type: string
-                    example: Bad request
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 1001
-                      message:
-                        type: string
-                        example: "\"month\" must be a number between 1 and 12"
+                $ref: "#/components/responses/BadRequestError"
         500:
           description: General error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 500
-                  message:
-                    type: string
-                    example: This error message should be displayed with some error message
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 100
-                      message:
-                        type: string
-                        example: "General unknown error"
+                $ref: "#/components/responses/GeneralError"
+
   /user-issues/schema:
     post:
       tags:
@@ -100,35 +70,11 @@ paths:
       security:
         - basicAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                jira_username:
-                  type: string
-                  example: carles.dulcet
-                redmine_id:
-                  type: number
-                  example: 800
-                year:
-                  type: number
-                  example: 2024
-                month:
-                  type: number
-                  example: 1
-                jira_base_url:
-                  description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
-                  type: string
-                  example: http://external-jira.com
-                jira_url:
-                  description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
-                  type: string
-                  example: /rest/api/3/search
-                jql:
-                  description: use this field if you want use other jql instead of the default jql that we used as default in this project
-                  type: string
-                  example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
+                $ref: "#/components/requestBodies/GetUserIssues"
       responses:
         200:
           description: successful
@@ -208,45 +154,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 400
-                  message:
-                    type: string
-                    example: Bad request
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 1001
-                      message:
-                        type: string
-                        example: "\"month\" must be a number between 1 and 12"
+                $ref: "#/components/responses/BadRequestError"
         500:
           description: General error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 500
-                  message:
-                    type: string
-                    example: This error message should be displayed with some error message
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 100
-                      message:
-                        type: string
-                        example: "General unknown error"
+                $ref: "#/components/responses/GeneralError"
   /user-issues/description:
     post:
       tags:
@@ -257,35 +171,11 @@ paths:
       security:
         - basicAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                jira_username:
-                  type: string
-                  example: carles.dulcet
-                redmine_id:
-                  type: number
-                  example: 800
-                year:
-                  type: number
-                  example: 2024
-                month:
-                  type: number
-                  example: 4
-                jira_base_url:
-                  description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
-                  type: string
-                  example: http://external-jira.com
-                jira_url:
-                  description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
-                  type: string
-                  example: /rest/api/3/search
-                jql:
-                  description: use this field if you want use other jira endpoint instead of the default jql that we used as default in this project
-                  type: string
-                  example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
+                $ref: "#/components/requestBodies/GetUserIssues"
       responses:
         200:
           description: successful
@@ -340,45 +230,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 400
-                  message:
-                    type: string
-                    example: Bad request
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 1001
-                      message:
-                        type: string
-                        example: "\"month\" must be a number between 1 and 12"
+                $ref: "#/components/responses/BadRequestError"
         500:
           description: General error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 500
-                  message:
-                    type: string
-                    example: This error message should be displayed with some error message
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 100
-                      message:
-                        type: string
-                        example: "General unknown error"
+                $ref: "#/components/responses/GeneralError"
   /user-issues/create-template:
     post:
       tags:
@@ -389,35 +247,11 @@ paths:
       security:
         - basicAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                jira_username:
-                  type: string
-                  example: carles.dulcet
-                redmine_id:
-                  type: number
-                  example: 
-                year:
-                  type: number
-                  example: 2024
-                month:
-                  type: number
-                  example: 4
-                jira_base_url:
-                  description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
-                  type: string
-                  example: http://external-jira.com
-                jira_url:
-                  description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
-                  type: string
-                  example: /rest/api/3/search
-                jql:
-                  description: use this field if you want use other jira endpoint instead of the default jql that we used as default in this project
-                  type: string
-                  example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
+              $ref: "#/components/requestBodies/CreateUserIssuesTemplate"
       responses:
         200:
           description: successful
@@ -461,45 +295,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 400
-                  message:
-                    type: string
-                    example: Bad request
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 1001
-                      message:
-                        type: string
-                        example: "\"month\" must be a number between 1 and 12"
+                $ref: "#/components/responses/BadRequestError"
         500:
           description: General error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 500
-                  message:
-                    type: string
-                    example: This error message should be displayed with some error message
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 100
-                      message:
-                        type: string
-                        example: "General unknown error"
+                $ref: "#/components/responses/GeneralError"
   /user-issues/create-template-from-year:
     post:
       tags:
@@ -510,32 +312,11 @@ paths:
       security:
         - basicAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                jira_username:
-                  type: string
-                  example: carles.dulcet
-                redmine_id:
-                  type: number
-                  example: 800
-                year:
-                  type: number
-                  example: 2024
-                jira_base_url:
-                  description: use this field if you want to get evidences from externals, but take in mind you need to pass the API token on the auth basic as your password, and your jira_username should be your accountId, you can find it using http://external-jira.com/rest/api/3/myself endpoint, more details are in jira Rest API documentation
-                  type: string
-                  example: http://external-jira.com
-                jira_url:
-                  description: use this field if you want use other jira endpoint instead of '/rest/api/2/search'
-                  type: string
-                  example: /rest/api/3/search
-                jql:
-                  description: use this field if you want use other jira endpoint instead of the default jql that we used as default in this project
-                  type: string
-                  example: 'assignee in (jhon.doe) AND updated >= 2024-09-01 AND updated <= 2024-09-30'
+              $ref: "#/components/requestBodies/CreateUserIssuesTemplateOfYear"
       responses:
         200:
           description: successful
@@ -599,49 +380,16 @@ paths:
                                 errorMessage:
                                   type: string
                                   example: Error timeout 3000 ms
-
         400:
           description: Bad Request error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 400
-                  message:
-                    type: string
-                    example: Bad request
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 1001
-                      message:
-                        type: string
-                        example: "\"month\" must be a number between 1 and 12"
+                $ref: "#/components/responses/BadRequestError"
         500:
           description: General error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statusCode:
-                    type: number
-                    example: 500
-                  message:
-                    type: string
-                    example: This error message should be displayed with some error message
-                  error: 
-                    type: object
-                    properties:
-                      code:
-                        type: number
-                        example: 100
-                      message:
-                        type: string
-                        example: "General unknown error"
+                $ref: "#/components/responses/GeneralError"
   

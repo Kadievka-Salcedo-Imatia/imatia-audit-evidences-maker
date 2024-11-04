@@ -1,7 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import getLogger from '../utils/logger';
-import IUserIssuesInput from '../interfaces/IUserIssuesInput';
-import { MONTHS } from '../resources/configurations/constants/Months';
+import IGetIssueFromJiraInput from '../interfaces/IGetIssueFromJiraInput';
 
 const log = getLogger('jira.service.ts');
 
@@ -26,26 +25,23 @@ export default class JiraService {
 
     /**
      * Returns the user issues from jira
-     * @param {IUserIssuesInput} request - request body with jira_username, startDate and endDate
+     * @param {IGetIssueFromJiraInput} getIssueInput - request body with jira_username, jira_base_url, jira_url, jql, month, year
      * @returns {Promise<Record<string, any>>} Async user issues data from jira
      */
-    public async getUserIssues(request: IUserIssuesInput): Promise<Record<string, any>> {
-        log.info('Start JiraService@getUserIssues method with params:', request);
-
-        const startDate: string = `${request.year}-${request.month}-01`;
-        const endDate: string = `${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}`;
-
-        log.info(' Info JiraService@getUserIssues date filters:', { startDate, endDate });
+    public async getUserIssues(getIssueInput: IGetIssueFromJiraInput): Promise<Record<string, any>> {
+        log.info('Start JiraService@getUserIssues method with params:', getIssueInput);
 
         let axiosInstance: any;
 
-        const jql: string = request.jql
-            ? request.jql
-            : this.DEFAULT_JQL.replace('{{jira_username}}', request.jira_username!).replace('{{startDate}}', startDate).replace('{{endDate}}', endDate);
+        const jql: string = getIssueInput.jql
+            ? getIssueInput.jql
+            : this.DEFAULT_JQL.replace('{{jira_username}}', getIssueInput.jira_username!)
+                  .replace('{{startDate}}', getIssueInput.startDate)
+                  .replace('{{endDate}}', getIssueInput.endDate);
 
-        if (Boolean(request.jira_base_url)) {
+        if (Boolean(getIssueInput.jira_base_url)) {
             axiosInstance = axios.create({
-                baseURL: request.jira_base_url,
+                baseURL: getIssueInput.jira_base_url,
                 timeout: this.TIMEOUT,
             });
         } else {
@@ -60,11 +56,11 @@ export default class JiraService {
                 jql,
             },
             headers: {
-                Authorization: request.authorization,
+                Authorization: getIssueInput.authorization,
             },
         };
 
-        const url: string = request.jira_url ? request.jira_url : this.JIRA_REST_API_2_SEARCH_URL;
+        const url: string = getIssueInput.jira_url ? getIssueInput.jira_url : this.JIRA_REST_API_2_SEARCH_URL;
 
         let data: Record<string, any> = {};
 

@@ -1,6 +1,6 @@
 import IEvidenceShort from './IEvidenceShort';
 
-export default interface ICreateTemplateYearResponse {
+export default interface ICreateTemplateYearOutput {
     userDisplayName: string;
     evidencesCreated: {
         total: number;
