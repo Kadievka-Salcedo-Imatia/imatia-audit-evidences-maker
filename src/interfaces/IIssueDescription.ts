@@ -5,4 +5,5 @@ export default interface IIssueDescription {
     link: string;
     pageType: PageTypeEnum;
     closed: string;
+    project: string;
 }

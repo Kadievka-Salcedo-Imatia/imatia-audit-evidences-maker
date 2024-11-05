@@ -30,7 +30,6 @@ const mongooseModel = mongoose.model(
 );
 
 export default class UserIssueModel {
-
     /**
      * Returns the mongoose model that is basically a MongoDB document
      * @returns {mongoose.Model<any>}
@@ -102,5 +101,4 @@ export default class UserIssueModel {
             pageType: this.pageType,
         };
     }
-
 }

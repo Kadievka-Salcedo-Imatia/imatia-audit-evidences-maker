@@ -281,6 +281,7 @@ export default class UserIssueService {
                 link,
                 pageType: issue.pageType,
                 closed: issue.closed!,
+                project: issue.project,
             });
         });
 
@@ -654,7 +655,7 @@ export default class UserIssueService {
      * @returns {Promise<Paragraph[]>} Paragrafs in the Template with the processed Images Buffers
      */
     private async splitIssuesByTypeAndGetImages(evidence: IEvidence, request: ICreateTemplateInput): Promise<Paragraph[]> {
-        const images: Paragraph[] = [];
+        let images: Paragraph[] = [];
 
         if (!evidence.issues || evidence.issues.length === 0) {
             return images;
@@ -665,13 +666,11 @@ export default class UserIssueService {
                 const issues: IIssueDescription[] = evidence.issues.filter((issue) => {
                     return issue.pageType === pageType;
                 });
-
                 if (issues.length === 0) {
                     continue;
                 }
-                const result = await this.getEvidenceImages({ ...evidence, issues }, request);
-
-                images.concat(result);
+                const result: Paragraph[] = await this.getEvidenceImages({ ...evidence, issues }, request);
+                images = images.concat(result);
             }
         }
 
@@ -865,7 +864,9 @@ export default class UserIssueService {
         }
 
         if (evidence.issues![0].pageType === PageTypeEnum.REDMINE) {
-            const url: string = `${this.REDMINE_BASE_URL}/projects/${evidence.project.toLowerCase()}/activity?from=${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}&user_id=${request.redmine_id}`;
+            const url: string = `${this.REDMINE_BASE_URL}/projects/${evidence.issues![0].project.toLowerCase()}/activity?from=${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}&user_id=${request.redmine_id}`;
+
+            log.info('  UserIssueService@getEvidenceImages last redmine screenshot url:', url);
 
             const page = await browser.newPage();
             await page.setViewport({ width: 1600, height: 1400 });
@@ -894,7 +895,7 @@ export default class UserIssueService {
                             data: screenshotBuffer,
                             transformation: {
                                 width: 600,
-                                height: 500,
+                                height: 800,
                             },
                         }),
                     ],
