@@ -5,6 +5,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import mainRoutes from './routes/main.route';
 import userIssueRoutes from './routes/userIssue.route';
+import mongoose from 'mongoose';
 
 const log = getLogger('app.ts');
 
@@ -41,5 +42,12 @@ app.use('/user-issues', userIssueRoutes);
 app.use('/', mainRoutes);
 
 app.listen(port, () => {
+    mongoose
+        .connect(process.env.MONGODB_CONNECTION_STRING!, {
+            dbName: process.env.MONGODB_DB_NAME!,
+        })
+        .then(() => {
+            log.info('Mongoose connected to MongoDB successfully dbName:', process.env.MONGODB_DB_NAME);
+        });
     log.info(() => `imatia-audit-evidences-maker app listen on port ${port}!`);
 });

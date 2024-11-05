@@ -16,17 +16,11 @@ import RedmineService from './redmine.service';
 import { PageTypeEnum } from '../enums/PageTypeEnum';
 import IRedmineGetIssuesInput from '../interfaces/IRedmineGetIssuesInput';
 import UserIssueModel from '../models/UserIssueModel';
-import BaseErrorClass from '../resources/configurations/classes/BaseErrorClass';
-import INTERNAL_ERROR_CODES from '../resources/configurations/constants/InternalErrorCodes';
 import { getPagesNumber } from '../utils/pagination';
-import MongoDbService from './mongodb.service';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
-import { FindCursor } from 'mongodb';
 import ICreateTemplateInput from '../interfaces/ICreateTemplateInput';
 
 const log = getLogger('userIssue.service.ts');
-
-const databaseService: MongoDbService = MongoDbService.getInstance();
 
 export default class UserIssueService {
     public static instance: UserIssueService;
@@ -51,12 +45,12 @@ export default class UserIssueService {
     private redmineService: RedmineService = RedmineService.getInstance();
 
     /**
-     * Creates a new user issue in MongoDB.
+     * Creates or updates by id an user issue in MongoDB.
      * @param {Record<string, any>} redmineIssue User issue data from redmine endpoint
      * @returns {Promise<IUserIssue>} IUserIssue
      */
     public async createUserIssue(redmineIssue: Record<string, any>): Promise<Record<string, any>> {
-        log.info('  Start UserIssueService@createUserIssue method with id:', redmineIssue.id);
+        log.info('  Start UserIssueService@createUserIssue method');
 
         const userIssueModel: UserIssueModel = new UserIssueModel({
             id: redmineIssue.id,
@@ -79,18 +73,23 @@ export default class UserIssueService {
         });
 
         try {
-            await databaseService.connect('user_issues');
-            const usersCollection = databaseService.collections.user_issues;
-            await usersCollection.insertOne(userIssueModel.mapForDB());
+            const document = UserIssueModel.getMongooseModel();
+
+            const dbRegister = await document.findOne({ id: userIssueModel.id });
+
+            if (Boolean(dbRegister)) {
+                await dbRegister.save(userIssueModel.getProperties());
+                log.info('   UserIssueService@createUserIssue updated', redmineIssue.id);
+            } else {
+                log.info('   UserIssueService@createUserIssue created', redmineIssue.id);
+                document.create(userIssueModel.getProperties());
+            }
         } catch (error) {
-            log.error('  Error UserIssueService@createUserIssue method', error);
-            throw new BaseErrorClass(INTERNAL_ERROR_CODES.GENERAL_UNKNOWN);
-        } finally {
-            await databaseService.disconnect();
+            log.error('   Error UserIssueService@createUserIssue method', error);
         }
 
         log.info('  Finish UserIssueService@createUserIssue method');
-        return userIssueModel.mapForDB();
+        return userIssueModel.getProperties();
     }
 
     /**
@@ -163,26 +162,22 @@ export default class UserIssueService {
      * @param {Date} endDate
      * @returns {Promise<FindCursor>} user issues information comes from the database
      */
-    public async getDbUserIssues(assignedToId: number, startDate: Date, endDate: Date): Promise<FindCursor> {
+    public async getDbUserIssues(assignedToId: number, startDate: Date, endDate: Date): Promise<any> {
         log.info('  Start UserIssueService@getDbUserIssues method with params:', { assignedToId, startDate, endDate });
-        let dbUserIssues: FindCursor;
-        try {
-            await databaseService.connect('user_issues');
-            const usersCollection = databaseService.collections.user_issues;
+        let dbUserIssues;
 
-            dbUserIssues = await usersCollection
+        try {
+            const document = UserIssueModel.getMongooseModel();
+            dbUserIssues = await document
                 .find({
                     assignedToId,
                     $or: [{ updated: { $gte: startDate, $lte: endDate } }, { closed: { $gte: startDate, $lte: endDate } }],
                 })
-                .sort({ updated: -1, closed: -1 })
-                .toArray();
+                .sort({ updated: -1, closed: -1 });
         } catch (error) {
-            log.error('  Error UserIssueService@getDbUserIssues method', error);
-            throw new BaseErrorClass(INTERNAL_ERROR_CODES.GENERAL_UNKNOWN);
-        } finally {
-            await databaseService.disconnect();
+            log.error('  Error UserIssueService@createUserIssue method', error);
         }
+
         log.info('  Finish UserIssueService@getDbUserIssues method');
         return dbUserIssues;
     }

@@ -1,7 +1,44 @@
+import mongoose, { Schema } from 'mongoose';
 import { PageTypeEnum } from '../enums/PageTypeEnum';
 import IUserIssue from '../interfaces/IUserIssue';
 
+const mongooseModel = mongoose.model(
+    'user_issues',
+    new Schema({
+        id: {
+            type: String,
+            unique: true,
+            required: true,
+        },
+        key: String,
+        type: String,
+        created: Date,
+        updated: Date,
+        closed: Date,
+        assignee: String,
+        assignedToId: String,
+        status: String,
+        description: String,
+        summary: String,
+        project: String,
+        projectTypeKey: String,
+        self: String,
+        creator: String,
+        reporter: String,
+        pageType: String,
+    }),
+);
+
 export default class UserIssueModel {
+
+    /**
+     * Returns the mongoose model that is basically a MongoDB document
+     * @returns {mongoose.Model<any>}
+     */
+    public static getMongooseModel(): mongoose.Model<any> {
+        return mongooseModel;
+    }
+
     public id: string;
     public key: string;
     public type: string;
@@ -44,7 +81,7 @@ export default class UserIssueModel {
      * Map user issues's fields for database
      * @returns {IUserIssue} IUserIssue Interface object
      */
-    public mapForDB(): Record<string, any> {
+    public getProperties(): Record<string, any> {
         return {
             id: this.id,
             key: this.key,
@@ -65,4 +102,5 @@ export default class UserIssueModel {
             pageType: this.pageType,
         };
     }
+
 }
