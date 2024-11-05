@@ -36,8 +36,8 @@ export default class JiraService {
         const jql: string = getIssueInput.jql
             ? getIssueInput.jql
             : this.DEFAULT_JQL.replace('{{jira_username}}', getIssueInput.jira_username!)
-                  .replace('{{startDate}}', getIssueInput.startDate)
-                  .replace('{{endDate}}', getIssueInput.endDate);
+                    .replace('{{startDate}}', getIssueInput.startDate)
+                    .replace('{{endDate}}', getIssueInput.endDate);
 
         if (Boolean(getIssueInput.jira_base_url)) {
             axiosInstance = axios.create({

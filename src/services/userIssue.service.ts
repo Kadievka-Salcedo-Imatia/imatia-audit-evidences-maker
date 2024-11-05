@@ -19,14 +19,14 @@ import UserIssueModel from '../models/UserIssueModel';
 import BaseErrorClass from '../resources/configurations/classes/BaseErrorClass';
 import INTERNAL_ERROR_CODES from '../resources/configurations/constants/InternalErrorCodes';
 import { getPagesNumber } from '../utils/pagination';
-import DatabaseService from './database.service';
+import MongoDbService from './mongodb.service';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
 import { FindCursor } from 'mongodb';
 import ICreateTemplateInput from '../interfaces/ICreateTemplateInput';
 
 const log = getLogger('userIssue.service.ts');
 
-const databaseService: DatabaseService = DatabaseService.getInstance();
+const databaseService: MongoDbService = MongoDbService.getInstance();
 
 export default class UserIssueService {
     public static instance: UserIssueService;
@@ -43,7 +43,7 @@ export default class UserIssueService {
     }
 
     private readonly JIRA_CLOUD_URL: string = process.env.JIRA_CLOUD_URL!;
-    private readonly REDMINE_URL: string = process.env.REDMINE_URL!;
+    private readonly REDMINE_BASE_URL: string = process.env.REDMINE_BASE_URL!;
 
     private readonly FONT: string = 'Segoe UI';
 
@@ -51,7 +51,7 @@ export default class UserIssueService {
     private redmineService: RedmineService = RedmineService.getInstance();
 
     /**
-     * Creates a new user issue in DB.
+     * Creates a new user issue in MongoDB.
      * @param {Record<string, any>} redmineIssue User issue data from redmine endpoint
      * @returns {Promise<IUserIssue>} IUserIssue
      */
@@ -61,7 +61,7 @@ export default class UserIssueService {
         const userIssueModel: UserIssueModel = new UserIssueModel({
             id: redmineIssue.id,
             key: redmineIssue.id,
-            self: `${this.REDMINE_URL}/issues/${redmineIssue.id}`,
+            self: `${this.REDMINE_BASE_URL}/issues/${redmineIssue.id}`,
             type: redmineIssue.tracker.name,
             created: redmineIssue.created_on,
             updated: redmineIssue.updated_on,
@@ -870,7 +870,7 @@ export default class UserIssueService {
         }
 
         if (evidence.issues![0].pageType === PageTypeEnum.REDMINE) {
-            const url: string = `${this.REDMINE_URL}/projects/${evidence.project.toLowerCase()}/activity?from=${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}&user_id=${request.redmine_id}`;
+            const url: string = `${this.REDMINE_BASE_URL}/projects/${evidence.project.toLowerCase()}/activity?from=${request.year}-${request.month}-${MONTHS(request.year)[request.month - 1].days}&user_id=${request.redmine_id}`;
 
             const page = await browser.newPage();
             await page.setViewport({ width: 1600, height: 1400 });

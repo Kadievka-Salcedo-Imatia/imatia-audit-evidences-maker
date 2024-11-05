@@ -4,16 +4,16 @@ import getLogger from '../utils/logger';
 
 const log = getLogger('database.service.ts');
 
-export default class DatabaseService {
-    public static instance: DatabaseService;
+export default class MongoDbService {
+    public static instance: MongoDbService;
 
     /**
-     * Returns the single instance of DatabaseService.
-     * @returns DatabaseService - Singleton instance
+     * Returns the single instance of MongoDbService.
+     * @returns MongoDbService - Singleton instance
      */
     public static getInstance() {
         if (!this.instance) {
-            this.instance = new DatabaseService();
+            this.instance = new MongoDbService();
         }
         return this.instance;
     }

@@ -18,12 +18,13 @@ export default class RedmineService {
         return this.instance;
     }
 
-    private readonly REDMINE_URL: string = process.env.REDMINE_URL!;
+    private readonly REDMINE_BASE_URL: string = process.env.REDMINE_BASE_URL!;
     private readonly REDMINE_PAGINATION_LIMIT: number = Number(process.env.REDMINE_PAGINATION_LIMIT!);
     private readonly REDMINE_ISSUE_STATUS_ID: string = process.env.REDMINE_ISSUE_STATUS_ID!;
+    private readonly REDMINE_URL: string = process.env.REDMINE_URL!;
 
     private axiosInstance = axios.create({
-        baseURL: this.REDMINE_URL,
+        baseURL: this.REDMINE_BASE_URL,
         timeout: 5000,
     });
 
@@ -35,7 +36,7 @@ export default class RedmineService {
     public async getUserIssues(request: IRedmineGetIssuesInput): Promise<Record<string, any>> {
         log.info('Start RedmineService@getUserIssues method with redmine_id: ', request.redmine_id);
 
-        const promiseAxios = this.axiosInstance.get('/issues.json', {
+        const promiseAxios = this.axiosInstance.get(this.REDMINE_URL, {
             params: {
                 assigned_to_id: request.redmine_id!,
 

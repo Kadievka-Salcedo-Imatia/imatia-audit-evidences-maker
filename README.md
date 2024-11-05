@@ -16,11 +16,25 @@ Clone the repo and install the dependencies.
 
 Create the .env file on the root of the project and inject your credentials so it looks like this, check the .env.example file to see credentials
 
-> NODE_ENV=development
+> # Project
 > PROTOCOL_URL=http://
 > BASE_URL=localhost:
 > PORT=3000
-> JIRA_CLOUD_URL=jiracloud-example.com
+> 
+> # Jira
+> JIRA_CLOUD_URL=https://jiracloud-example.com
+> JIRA_REST_API_2_SEARCH_URL='/rest/api/2/search'
+> DEFAULT_JQL='assignee in ({{jira_username}}) AND updated >= {{startDate}} AND {{updated}} <= endDate'
+> 
+> # Redmine
+> REDMINE_BASE_URL=https://redmine-examle.com
+> REDMINE_URL=/issues.json
+> REDMINE_PAGINATION_LIMIT=100
+> REDMINE_ISSUE_STATUS_ID=*
+> 
+> # MongoDB is part of Redmine synchronization
+> MONGODB_CONNECTION_STRING=mongodb://userExample:passwordExample@localhost:27017/
+> MONGODB_DB_NAME="imatia-audit-evidences-maker"
 
 ## Steps for read-only access
 
