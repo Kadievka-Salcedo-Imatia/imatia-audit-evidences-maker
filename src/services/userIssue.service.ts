@@ -559,7 +559,7 @@ export default class UserIssueService {
             ],
         });
 
-        const children = [
+        let children = [
             table1,
             new Paragraph(''),
             table2,
@@ -572,16 +572,13 @@ export default class UserIssueService {
             new Paragraph(''),
             table6,
             new Paragraph(''),
-            ,
         ];
 
         if (!Boolean(request.jira_base_url)) {
             // can not take screenshots of external jira boards because they could have custom authentication with phone number and other information
             const images: Paragraph[] = await this.splitIssuesByTypeAndGetImages(evidence, request);
 
-            images.forEach((image) => {
-                children.push(image);
-            });
+            children = children.concat(images);
         }
 
         const doc = new Document({
