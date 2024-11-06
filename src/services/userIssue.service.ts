@@ -36,11 +36,36 @@ export default class UserIssueService {
         return this.instance;
     }
 
+    // env vars
     private readonly JIRA_CLOUD_URL: string = process.env.JIRA_CLOUD_URL!;
     private readonly REDMINE_BASE_URL: string = process.env.REDMINE_BASE_URL!;
 
+    // Document Template styles
     private readonly FONT: string = 'Segoe UI';
+    private readonly SIZE: number = 20;
+    private readonly TABLE_WIDTH = {
+        size: 100,
+        type: WidthType.PERCENTAGE,
+    };
+    private readonly IMAGE_SIZE = {
+        width: 600,
+        height: 500,
+    };
+    private readonly IMAGE_SIZE_LAST_REDMINE_IMAGE = {
+        width: 600,
+        height: 800,
+    };
 
+    // Puppeteer
+    private readonly PUPPETEER_LAUNCH_OPTIONS = {
+        headless: false, // to display the browser: { headless: false }
+    };
+    private readonly VIEWPORT_SIZE = {
+        width: 1600,
+        height: 1400,
+    };
+
+    // Services
     private jiraService: JiraService = JiraService.getInstance();
     private redmineService: RedmineService = RedmineService.getInstance();
 
@@ -338,10 +363,7 @@ export default class UserIssueService {
         }
 
         const table1 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
+            width: this.TABLE_WIDTH,
             rows: [
                 new TableRow({
                     children: [
@@ -351,7 +373,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: 'Proyecto:',
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -368,7 +390,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: 'Plataforma Colaboración Corporativa',
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -381,10 +403,7 @@ export default class UserIssueService {
         });
 
         const table2 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
+            width: this.TABLE_WIDTH,
             rows: [
                 new TableRow({
                     children: [
@@ -394,7 +413,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: 'Nombre:',
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -407,7 +426,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: evidence.userDisplayName,
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -420,7 +439,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: 'Rol:',
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -433,7 +452,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: 'Programador',
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -446,10 +465,7 @@ export default class UserIssueService {
         });
 
         const table3 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
+            width: this.TABLE_WIDTH,
             rows: [
                 new TableRow({
                     children: [
@@ -459,7 +475,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: 'Fecha:',
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -472,7 +488,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: evidence.date,
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -485,10 +501,7 @@ export default class UserIssueService {
         });
 
         const table4 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
+            width: this.TABLE_WIDTH,
             rows: [
                 new TableRow({
                     children: [
@@ -498,7 +511,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: 'Breve descripción de la actividad:',
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -511,10 +524,7 @@ export default class UserIssueService {
         });
 
         const table5 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
+            width: this.TABLE_WIDTH,
             rows: [
                 new TableRow({
                     children: [
@@ -527,10 +537,7 @@ export default class UserIssueService {
         });
 
         const table6 = new Table({
-            width: {
-                size: 100,
-                type: WidthType.PERCENTAGE,
-            },
+            width: this.TABLE_WIDTH,
             rows: [
                 new TableRow({
                     children: [
@@ -540,7 +547,7 @@ export default class UserIssueService {
                                     children: [
                                         new TextRun({
                                             text: 'Evidencia Técnica',
-                                            size: 20,
+                                            size: this.SIZE,
                                             font: this.FONT,
                                         }),
                                     ],
@@ -652,7 +659,7 @@ export default class UserIssueService {
      * Split evidence by page type to login each one
      * @param {IEvidence} evidence
      * @param {ICreateTemplateInput} request
-     * @returns {Promise<Paragraph[]>} Paragrafs in the Template with the processed Images Buffers
+     * @returns {Promise<Paragraph[]>} Paragraphs in the Template with the processed Images Buffers
      */
     private async splitIssuesByTypeAndGetImages(evidence: IEvidence, request: ICreateTemplateInput): Promise<Paragraph[]> {
         let images: Paragraph[] = [];
@@ -689,7 +696,7 @@ export default class UserIssueService {
                 children: [
                     new TextRun({
                         text: evidences.evidenceStart,
-                        size: 20,
+                        size: this.SIZE,
                         font: this.FONT,
                     }),
                 ],
@@ -704,12 +711,12 @@ export default class UserIssueService {
                         new TextRun({
                             text: element.title,
                             bold: true,
-                            size: 20,
+                            size: this.SIZE,
                             font: this.FONT,
                         }),
                         new TextRun({
                             text: element.summary,
-                            size: 20,
+                            size: this.SIZE,
                             font: this.FONT,
                         }),
                         new ExternalHyperlink({
@@ -754,11 +761,11 @@ export default class UserIssueService {
         const page = await browser.newPage();
 
         if (issue.pageType === PageTypeEnum.JIRA) {
-            await page.setViewport({ width: 1200, height: 1000 });
+            await page.setViewport(this.VIEWPORT_SIZE);
         }
 
         if (issue.pageType === PageTypeEnum.REDMINE) {
-            await page.setViewport({ width: 1600, height: 1400 });
+            await page.setViewport(this.VIEWPORT_SIZE);
         }
 
         await page.goto(issue.link, { waitUntil: 'load' });
@@ -826,7 +833,7 @@ export default class UserIssueService {
      */
     private async getEvidenceImages(evidence: IEvidence, request: IUserIssuesInput): Promise<Paragraph[]> {
         log.info(' Start UserIssueService@getEvidenceImages method');
-        const browser: Browser = await puppeteer.launch({ headless: false }); // to display the browser: { headless: false }
+        const browser: Browser = await puppeteer.launch(this.PUPPETEER_LAUNCH_OPTIONS);
 
         const paragraphs: Paragraph[] = [];
 
@@ -847,16 +854,13 @@ export default class UserIssueService {
                         new TextRun({
                             text: evidence.issues![index].title,
                             bold: true,
-                            size: 20,
+                            size: this.SIZE,
                             font: this.FONT,
                         }),
                         new ImageRun({
                             type: 'jpg',
                             data: imageBase64Data,
-                            transformation: {
-                                width: 600,
-                                height: 500,
-                            },
+                            transformation: this.IMAGE_SIZE,
                         }),
                     ],
                 }),
@@ -869,7 +873,7 @@ export default class UserIssueService {
             log.info('  UserIssueService@getEvidenceImages last redmine screenshot url:', url);
 
             const page = await browser.newPage();
-            await page.setViewport({ width: 1600, height: 1400 });
+            await page.setViewport(this.VIEWPORT_SIZE);
 
             await page.goto(url, { waitUntil: 'load' });
 
@@ -887,16 +891,13 @@ export default class UserIssueService {
                         new TextRun({
                             text: `Evidencia de la Actividad de ${evidence.userDisplayName} en Redmine del mes de ${evidence.month}`,
                             bold: true,
-                            size: 20,
+                            size: this.SIZE,
                             font: this.FONT,
                         }),
                         new ImageRun({
                             type: 'jpg',
                             data: screenshotBuffer,
-                            transformation: {
-                                width: 600,
-                                height: 800,
-                            },
+                            transformation: this.IMAGE_SIZE_LAST_REDMINE_IMAGE,
                         }),
                     ],
                 }),
