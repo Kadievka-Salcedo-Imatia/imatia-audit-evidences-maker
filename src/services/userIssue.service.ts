@@ -734,15 +734,24 @@ export default class UserIssueService {
     }
 
     /**
-     * This method return a issue summary to show inside the document template
+     * This method returns a issue summary to show inside the document template
      * @param {IUserIssue} issue - the user issue
      * @returns {string} summary
      */
     private getIssueSummary(issue: IUserIssue): string {
         if (issue.pageType === PageTypeEnum.JIRA) {
-            return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description} Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+            return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${this.getIssueShortDescription(issue.description)}. Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
         }
-        return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${issue.description}. Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su status fue ${issue.status} el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+        return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${this.getIssueShortDescription(issue.description)}. Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su status fue ${issue.status} el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+    }
+
+    /**
+     * This method returns the description shorter if it finds a dot in the description, avoids descriptions too long with irrelevant information
+     * @param {string} description - the user issue description
+     * @returns {string} shorter description
+     */
+    private getIssueShortDescription(description: string): string {
+        return description ? description.split('.')[0].trim() : description;
     }
 
     /**
