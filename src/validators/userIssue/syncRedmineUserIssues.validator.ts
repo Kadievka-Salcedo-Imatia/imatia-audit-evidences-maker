@@ -7,17 +7,26 @@ export default function syncRedmineUserIssues(reqBody: any): {
     validatorFailed: boolean;
     message: string;
 } {
-    const schema = Joi.object({
-        redmine_id: Joi.number().optional(),
-
+    const schema = {
         status_id: Joi.string().optional(),
         limit: Joi.number().positive().optional(),
         offset: Joi.number().optional(),
-    });
+    };
 
     log.info('reqBody: ', reqBody);
 
-    const { error } = schema.validate(reqBody);
+    if (reqBody) {
+        for (const key in reqBody) {
+            if (!(key in schema)) {
+                return {
+                    validatorFailed: true,
+                    message: `the property "${key}" is invalid. Please removed it.`,
+                };
+            }
+        }
+    }
+
+    const { error } = Joi.object(schema).validate(reqBody);
 
     return {
         validatorFailed: Boolean(error),

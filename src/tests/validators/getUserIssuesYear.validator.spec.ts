@@ -1,15 +1,15 @@
-import getUserIssuesValidator from '../../validators/userIssue/getUserIssues.validator';
+import getUserIssuesYearValidator from '../../validators/userIssue/getUserIssuesYear.validator';
 import { getUserIssueReqBodyMock } from '../mocks/getUserIssueRequestMock';
 
-describe('getUserIssuesValidator Unit Tests', () => {
+describe('getUserIssuesYearValidator Unit Tests', () => {
     it('should return validator failed true and message that body can not be empty', () => {
-        const result = getUserIssuesValidator({});
+        const result = getUserIssuesYearValidator({});
         expect(result).toHaveProperty('validatorFailed', true);
         expect(result).toHaveProperty('message', 'request body can not be empty');
     });
 
     it('should return validator failed true and message a invalid property should be removed', () => {
-        const result = getUserIssuesValidator({
+        const result = getUserIssuesYearValidator({
             randomProperty: 1234,
         });
         expect(result).toHaveProperty('validatorFailed', true);
@@ -17,7 +17,7 @@ describe('getUserIssuesValidator Unit Tests', () => {
     });
 
     it('should return validator failed true and message that year is missing', () => {
-        const result = getUserIssuesValidator({
+        const result = getUserIssuesYearValidator({
             jira_username: getUserIssueReqBodyMock.jira_username,
         });
         expect(result).toHaveProperty('validatorFailed', true);
@@ -25,7 +25,7 @@ describe('getUserIssuesValidator Unit Tests', () => {
     });
 
     it('should return validator failed true and message that year should be a positive number', () => {
-        const result = getUserIssuesValidator({
+        const result = getUserIssuesYearValidator({
             jira_username: getUserIssueReqBodyMock.jira_username,
             year: '2014',
         });
@@ -33,40 +33,29 @@ describe('getUserIssuesValidator Unit Tests', () => {
         expect(result).toHaveProperty('message', 'property "year" must be a positive number');
     });
 
-    it('should return validator failed true and message that month is missing', () => {
-        const result = getUserIssuesValidator({
-            jira_username: getUserIssueReqBodyMock.jira_username,
-            year: getUserIssueReqBodyMock.year,
-        });
-        expect(result).toHaveProperty('validatorFailed', true);
-        expect(result).toHaveProperty('message', 'property "month" is required. Please specify a valid month.');
-    });
-
-    it('should return validator failed true and message that month should be a positive number', () => {
-        const result = getUserIssuesValidator({
+    it('should return validator failed true and message that month is invalid', () => {
+        const result = getUserIssuesYearValidator({
             jira_username: getUserIssueReqBodyMock.jira_username,
             year: getUserIssueReqBodyMock.year,
             month: '11',
         });
         expect(result).toHaveProperty('validatorFailed', true);
-        expect(result).toHaveProperty('message', 'property "month" must be a positive number');
+        expect(result).toHaveProperty('message', 'the property "month" is invalid. Please removed it.');
     });
 
     it('should return validator failed false and message that validation passed with the minimum required fields', () => {
-        const result = getUserIssuesValidator({
+        const result = getUserIssuesYearValidator({
             jira_username: getUserIssueReqBodyMock.jira_username,
             year: getUserIssueReqBodyMock.year,
-            month: 11,
         });
         expect(result).toHaveProperty('validatorFailed', false);
         expect(result).toHaveProperty('message', 'validation passed');
     });
 
     it('should return validator failed true and message that "rewrite_files" must be a boolean', () => {
-        const result = getUserIssuesValidator({
+        const result = getUserIssuesYearValidator({
             jira_username: getUserIssueReqBodyMock.jira_username,
             year: getUserIssueReqBodyMock.year,
-            month: 11,
             rewrite_files: 'asd',
         });
         expect(result).toHaveProperty('validatorFailed', true);
@@ -74,10 +63,9 @@ describe('getUserIssuesValidator Unit Tests', () => {
     });
 
     it('should return validator failed true and message that "jira_base_url" must be a valid uri', () => {
-        const result = getUserIssuesValidator({
+        const result = getUserIssuesYearValidator({
             jira_username: getUserIssueReqBodyMock.jira_username,
             year: getUserIssueReqBodyMock.year,
-            month: 11,
             jira_base_url: 'external-jira-base-url',
         });
         expect(result).toHaveProperty('validatorFailed', true);
@@ -85,7 +73,15 @@ describe('getUserIssuesValidator Unit Tests', () => {
     });
 
     it('should return validator failed false and message validation passed when all fields are passed', () => {
-        const result = getUserIssuesValidator({ ...getUserIssueReqBodyMock });
+        const result = getUserIssuesYearValidator({
+            jira_username: getUserIssueReqBodyMock.jira_username,
+            redmine_id: getUserIssueReqBodyMock.redmine_id,
+            year: getUserIssueReqBodyMock.year,
+            rewrite_files: getUserIssueReqBodyMock.rewrite_files,
+            jira_base_url: getUserIssueReqBodyMock.jira_base_url,
+            jira_url: getUserIssueReqBodyMock.jira_url,
+            jql: getUserIssueReqBodyMock.jql,
+        });
         expect(result).toHaveProperty('validatorFailed', false);
         expect(result).toHaveProperty('message', 'validation passed');
     });
