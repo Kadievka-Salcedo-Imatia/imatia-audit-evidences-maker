@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import getLogger from '../utils/logger';
-import IRedmineGetIssuesInput from '../interfaces/IRedmineGetIssuesInput';
+import IGetIssueFromRedmineInput from '../interfaces/IGetIssueFromRedmineInput';
 
 const log = getLogger('redmine.service.ts');
 
@@ -23,37 +23,36 @@ export default class RedmineService {
     private readonly REDMINE_ISSUE_STATUS_ID: string = process.env.REDMINE_ISSUE_STATUS_ID!;
     private readonly REDMINE_URL: string = process.env.REDMINE_URL!;
 
-    private axiosInstance = axios.create({
-        baseURL: this.REDMINE_BASE_URL,
-        timeout: 5000,
-    });
-
     /**
      * Returns the user issues as schema
      * @param {IUserIssuesInput} request - request body with redmine_id
      * @returns {Promise<Record<string, any>>} Async user issues as schema
      */
-    public async getUserIssues(request: IRedmineGetIssuesInput): Promise<Record<string, any>> {
+    public async getUserIssues(request: IGetIssueFromRedmineInput): Promise<Record<string, any>> {
         log.info('Start RedmineService@getUserIssues method with params: ', { status_id: request.status_id, limit: request.limit, offset: request.offset });
 
-        const promiseAxios = this.axiosInstance.get(this.REDMINE_URL, {
-            params: {
-                status_id: request.status_id || this.REDMINE_ISSUE_STATUS_ID,
-                limit: request.limit || this.REDMINE_PAGINATION_LIMIT,
-                offset: request.offset || '0',
-            },
-            headers: {
-                Authorization: request.authorization!,
-            },
+        const axiosInstance: AxiosInstance = axios.create({
+            baseURL: this.REDMINE_BASE_URL,
+            timeout: 5000,
         });
 
         let data: Record<string, any> = {};
 
         try {
-            const response = await promiseAxios;
-            data = response.data;
+            const promiseAxios = await axiosInstance.get(this.REDMINE_URL, {
+                params: {
+                    status_id: request.status_id || this.REDMINE_ISSUE_STATUS_ID,
+                    limit: request.limit || this.REDMINE_PAGINATION_LIMIT,
+                    offset: request.offset || '0',
+                },
+                headers: {
+                    Authorization: request.authorization!,
+                },
+            });
+            data = promiseAxios.data;
         } catch (error: any) {
-            log.error('RedmineService@getUserIssues', error.response.data.errorMessages);
+            log.error('RedmineService@getUserIssues', error);
+            throw error;
         }
 
         log.info('Finish RedmineService@getUserIssues method');

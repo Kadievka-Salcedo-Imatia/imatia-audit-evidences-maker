@@ -1,7 +1,7 @@
 import ICreateTemplateYearOutput from '../interfaces/ICreateTemplateYearOutput';
 import IDataIssue from '../interfaces/IDataIssue';
 import IEvidence from '../interfaces/IEvidence';
-import IRedmineGetIssuesInput from '../interfaces/IRedmineGetIssuesInput';
+import IGetIssueFromRedmineInput from '../interfaces/IGetIssueFromRedmineInput';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
 import IUserIssuesInput from '../interfaces/IUserIssuesInput';
 import UserIssueService from '../services/userIssue.service';
@@ -64,7 +64,7 @@ export default class UserIssueController {
      * @returns templates created
      */
     public async syncRedmineUserIssues(req: any): Promise<ISyncRedmineUserIssuesOutput> {
-        const request: IRedmineGetIssuesInput = { ...req.body, ...req.headers };
+        const request: IGetIssueFromRedmineInput = { ...req.body, ...req.headers };
         return await this.userIssueService.syncRedmineUserIssues(request);
     }
 }

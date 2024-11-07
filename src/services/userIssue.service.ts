@@ -14,7 +14,7 @@ import ICreateTemplateYearOutput from '../interfaces/ICreateTemplateYearOutput';
 import JiraService from './jira.service';
 import RedmineService from './redmine.service';
 import { PageTypeEnum } from '../enums/PageTypeEnum';
-import IRedmineGetIssuesInput from '../interfaces/IRedmineGetIssuesInput';
+import IGetIssueFromRedmineInput from '../interfaces/IGetIssueFromRedmineInput';
 import UserIssueModel from '../models/UserIssueModel';
 import { getPagesNumber } from '../utils/pagination';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
@@ -123,7 +123,7 @@ export default class UserIssueService {
      * @param {IUserIssuesInput} request - request body
      * @returns {Promise<Record<string, any>>} Async user issues as schema
      */
-    public async getIssuesFromRedmineAndSave(request: IRedmineGetIssuesInput): Promise<Record<string, any>> {
+    public async getIssuesFromRedmineAndSave(request: IGetIssueFromRedmineInput): Promise<Record<string, any>> {
         log.info(' Start UserIssueService@getAndSaveIssues method');
         const data = await this.redmineService.getUserIssues(request);
 
@@ -147,7 +147,7 @@ export default class UserIssueService {
      * @param {IUserIssuesInput} request - request body with redmine_id
      * @returns {Promise<Record<string, any>>} Async user issues as schema
      */
-    public async syncRedmineUserIssues(request: IRedmineGetIssuesInput): Promise<ISyncRedmineUserIssuesOutput> {
+    public async syncRedmineUserIssues(request: IGetIssueFromRedmineInput): Promise<ISyncRedmineUserIssuesOutput> {
         log.info('Start UserIssueService@mapUserIssuesAndSaveInDB method');
 
         let createdRegisters = 0;

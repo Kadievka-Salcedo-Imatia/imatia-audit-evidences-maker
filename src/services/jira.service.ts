@@ -64,14 +64,11 @@ export default class JiraService {
 
         let data: Record<string, any> = {};
 
-        let response: any;
-
         try {
             const promiseAxios = await axiosInstance.get(url, axiosConfig);
-            response = await promiseAxios;
-            data = response.data;
+            data = promiseAxios.data;
         } catch (error: any) {
-            log.error('JiraService@getUserIssues', { error, response });
+            log.error('JiraService@getUserIssues', { error });
             throw error;
         }
 

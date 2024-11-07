@@ -69,22 +69,22 @@ describe('JiraService', () => {
                 timeout: 5000,
             });
         });
-    });
 
-    it('should throw an error when fetching data fails', async () => {
-        (axios.create as jest.Mock).mockImplementation(() => ({
-            get: (_url: string, _options?: any) => {
-                throw new Error('error');
-            },
-        }));
+        it('should throw an error when fetching data fails', async () => {
+            (axios.create as jest.Mock).mockImplementation(() => ({
+                get: (_url: string, _options?: any) => {
+                    throw new Error('error');
+                },
+            }));
 
-        const getIssueInput: IGetIssueFromJiraInput = {
-            authorization: getUserIssueReqHeaderMock.Authentication,
-            jira_username: getUserIssueReqBodyMock.jira_username,
-            startDate: '2024-11-01',
-            endDate: '2024-11-31',
-        };
+            const getIssueInput: IGetIssueFromJiraInput = {
+                authorization: getUserIssueReqHeaderMock.Authentication,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                startDate: '2024-11-01',
+                endDate: '2024-11-31',
+            };
 
-        await expect(jiraService.getUserIssues(getIssueInput)).rejects.toThrow();
+            await expect(jiraService.getUserIssues(getIssueInput)).rejects.toThrow();
+        });
     });
 });
