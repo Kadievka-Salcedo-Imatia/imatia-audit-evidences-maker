@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import { PageTypeEnum } from '../enums/PageTypeEnum';
 import IUserIssue from '../interfaces/IUserIssue';
 
-const mongooseModel = mongoose.model(
+export const mongooseModel = mongoose.model(
     'user_issues',
     new Schema({
         id: {
@@ -30,14 +30,6 @@ const mongooseModel = mongoose.model(
 );
 
 export default class UserIssueModel {
-    /**
-     * Returns the mongoose model that is basically a MongoDB document
-     * @returns {mongoose.Model<any>}
-     */
-    public static getMongooseModel(): mongoose.Model<any> {
-        return mongooseModel;
-    }
-
     public id: string;
     public key: string;
     public type: string;

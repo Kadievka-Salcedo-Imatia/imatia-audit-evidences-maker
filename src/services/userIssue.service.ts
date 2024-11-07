@@ -15,7 +15,7 @@ import JiraService from './jira.service';
 import RedmineService from './redmine.service';
 import { PageTypeEnum } from '../enums/PageTypeEnum';
 import IGetIssueFromRedmineInput from '../interfaces/IGetIssueFromRedmineInput';
-import UserIssueModel from '../models/UserIssueModel';
+import UserIssueModel, { mongooseModel } from '../models/UserIssueModel';
 import { getPagesNumber } from '../utils/pagination';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
 import ICreateTemplateInput from '../interfaces/ICreateTemplateInput';
@@ -99,16 +99,14 @@ export default class UserIssueService {
         });
 
         try {
-            const document = UserIssueModel.getMongooseModel();
+            const dbRegister = await mongooseModel.findOne({ id: userIssueModel.id });
 
-            const dbRegister = await document.findOne({ id: userIssueModel.id });
-
-            if (Boolean(dbRegister)) {
+            if (dbRegister) {
                 await dbRegister.save(userIssueModel.getProperties());
                 log.info('   UserIssueService@createUserIssue updated', redmineIssue.id);
             } else {
                 log.info('   UserIssueService@createUserIssue created', redmineIssue.id);
-                document.create(userIssueModel.getProperties());
+                mongooseModel.create(userIssueModel.getProperties());
             }
         } catch (error) {
             log.error('   Error UserIssueService@createUserIssue method', error);
@@ -193,8 +191,7 @@ export default class UserIssueService {
         let dbUserIssues;
 
         try {
-            const document = UserIssueModel.getMongooseModel();
-            dbUserIssues = await document
+            dbUserIssues = await mongooseModel
                 .find({
                     assignedToId,
                     $or: [{ updated: { $gte: startDate, $lte: endDate } }, { closed: { $gte: startDate, $lte: endDate } }],
