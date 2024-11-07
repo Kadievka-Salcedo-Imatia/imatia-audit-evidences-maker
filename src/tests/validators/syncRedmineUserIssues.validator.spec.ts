@@ -1,4 +1,5 @@
 import syncRedmineUserIssues from '../../validators/userIssue/syncRedmineUserIssues.validator';
+import { syncRedmineUserIssuesReqBodyMock } from '../mocks/syncRedmineUserIssuesRequestMock';
 
 describe('syncRedmineUserIssues Unit Tests', () => {
     it('should return validator failed false and message that validation passed when body is undefined', () => {
@@ -46,11 +47,7 @@ describe('syncRedmineUserIssues Unit Tests', () => {
     });
 
     it('should return validator failed false and message validation passed when all fields are passed', () => {
-        const result = syncRedmineUserIssues({
-            status_id: 'closed',
-            limit: 100,
-            offset: 0,
-        });
+        const result = syncRedmineUserIssues(syncRedmineUserIssuesReqBodyMock);
         expect(result).toHaveProperty('validatorFailed', false);
         expect(result).toHaveProperty('message', 'validation passed');
     });

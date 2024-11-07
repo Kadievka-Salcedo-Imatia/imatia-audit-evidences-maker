@@ -1,4 +1,6 @@
-export function formatDateTime(input: string, separator: string = '/') {
+import IDateTime from '../interfaces/IDateTime';
+
+export function formatDateTime(input: string, separator: string = '/'): IDateTime {
     const date = new Date(input);
 
     const day = String(date.getDate()).padStart(2, '0');
@@ -17,16 +19,4 @@ export function formatDateTime(input: string, separator: string = '/') {
 export function getCurrentMonth(): number {
     const date = new Date();
     return date.getMonth() + 1;
-}
-
-export function isInDateRange(updatedOn: string, startDate: string, endDate: string) {
-    const updatedDate = new Date(updatedOn);
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    end.setHours(23, 59, 59, 999);
-
-    const result: boolean = updatedDate >= start && updatedDate <= end;
-
-    return result;
 }

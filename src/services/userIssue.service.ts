@@ -19,6 +19,7 @@ import UserIssueModel from '../models/UserIssueModel';
 import { getPagesNumber } from '../utils/pagination';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
 import ICreateTemplateInput from '../interfaces/ICreateTemplateInput';
+import IDateTime from '../interfaces/IDateTime';
 
 const log = getLogger('userIssue.service.ts');
 
@@ -739,10 +740,16 @@ export default class UserIssueService {
      * @returns {string} summary
      */
     private getIssueSummary(issue: IUserIssue): string {
+        const description = this.getIssueShortDescription(issue.description);
+
+        const createdDateTime: IDateTime = formatDateTime(issue.created);
+
+        const updatedDateTime: IDateTime = formatDateTime(issue.updated);
+
         if (issue.pageType === PageTypeEnum.JIRA) {
-            return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${this.getIssueShortDescription(issue.description)}. Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su ultima actualización fue el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+            return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${description}. Esta tarea fue creada el día ${createdDateTime.date} a las ${createdDateTime.time} y su ultima actualización fue el día ${updatedDateTime.date} a las ${updatedDateTime.time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
         }
-        return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${this.getIssueShortDescription(issue.description)}. Esta tarea fue creada el día ${formatDateTime(issue.created).date} a las ${formatDateTime(issue.created).time} y su status fue ${issue.status} el día ${formatDateTime(issue.updated).date} a las ${formatDateTime(issue.updated).time}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+        return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${description}. Esta tarea fue creada el día ${createdDateTime.date} a las ${createdDateTime.time} y su status fue ${issue.status} el día ${updatedDateTime.date} a las ${updatedDateTime.time}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
     }
 
     /**
