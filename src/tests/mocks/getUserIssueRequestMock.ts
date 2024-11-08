@@ -1,6 +1,6 @@
 export const getUserIssueReqBodyMock = {
     jira_username: 'kadievka.salcedo',
-    redmine_id: '9999',
+    redmine_id: 9999,
     year: 2014,
     month: 11,
     rewrite_files: true,

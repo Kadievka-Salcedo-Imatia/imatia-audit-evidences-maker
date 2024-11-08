@@ -1,21 +1,25 @@
 import { PageTypeEnum } from '../../enums/PageTypeEnum';
 import IUserIssue from '../../interfaces/IUserIssue';
+import { redmineIssuesMock } from './redmineIssuesMock';
+
+const redmineIssue = redmineIssuesMock.issues[0];
 
 export const userIssueMock: IUserIssue = {
-    id: '94886',
-    key: '94886',
-    type: 'Tarea',
-    created: '2024-10-25',
-    updated: '2024-10-25',
-    assignee: 'Adrián López Varela',
-    assignedToId: '918',
-    status: 'Nueva',
-    description: 'Integración DPD CH ALAS | Pruebas en PRE',
-    summary: '',
-    project: 'Integraciones',
-    projectTypeKey: '821',
-    self: 'https://projects.imatia.com/issues/94886',
-    creator: 'Eloy Rodil Carreira',
-    reporter: 'Eloy Rodil Carreira',
+    id: redmineIssue.id,
+    key: redmineIssue.id,
+    self: `${process.env.REDMINE_BASE_URL}/issues/${redmineIssue.id}`,
+    type: redmineIssue.tracker.name,
+    created: redmineIssue.created_on,
+    updated: redmineIssue.updated_on,
+    closed: redmineIssue.closed_on,
+    assignee: redmineIssue.assigned_to.name,
+    assignedToId: redmineIssue.assigned_to.id,
+    status: redmineIssue.status.name,
+    description: redmineIssue.subject,
+    summary: redmineIssue.description,
+    project: redmineIssue.project.name,
+    projectTypeKey: redmineIssue.project.id,
+    creator: redmineIssue.author.name,
+    reporter: redmineIssue.author.name,
     pageType: PageTypeEnum.REDMINE,
 };

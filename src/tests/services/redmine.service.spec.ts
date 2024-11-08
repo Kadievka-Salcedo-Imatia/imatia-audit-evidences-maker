@@ -27,7 +27,7 @@ describe('RedmineService', () => {
             jest.clearAllMocks();
         });
 
-        it('should map request body a return jira data with axios instance by default', async () => {
+        it('should map request body a return redmine data with axios instance by default', async () => {
             (axios.create as jest.Mock).mockImplementation(() => ({
                 get: (_url: string, _options?: any) => ({
                     data: redmineIssuesMock,
@@ -41,7 +41,7 @@ describe('RedmineService', () => {
 
             expect(result).toEqual(redmineIssuesMock);
             expect(axios.create).toHaveBeenCalledWith({
-                baseURL: 'https://redmine-examle.com',
+                baseURL: 'https://redmine-example.com',
                 timeout: 5000,
             });
         });

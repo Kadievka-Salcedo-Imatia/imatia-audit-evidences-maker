@@ -1,3 +1,6 @@
+import IDataIssue from '../../interfaces/IDataIssue';
+import UserIssueService from '../../services/userIssue.service';
+
 export const jiraIssuesMock: Record<string, any> = {
     expand: 'schema,names',
     startAt: 0,
@@ -806,3 +809,11 @@ export const jiraIssuesMock: Record<string, any> = {
         },
     ],
 };
+
+export const jiraIssuesProcessedMock = (jiraBaseUrl?: string): IDataIssue => ({
+    month: 'Noviembre',
+    total: 3,
+    userDisplayName: 'Carles Dulcet Buxaderas',
+    project: 'OP-03440 + Concello de Ourense + Implantación de nuevos módulos e integraciones',
+    issues: UserIssueService.mapIssuesFromJira(jiraIssuesMock.issues, jiraBaseUrl),
+});

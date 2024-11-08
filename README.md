@@ -27,7 +27,7 @@ Create the .env file on the root of the project and inject your credentials so i
 > DEFAULT_JQL='assignee in ({{jira_username}}) AND updated >= {{startDate}} AND {{updated}} <= endDate'
 > 
 > # Redmine
-> REDMINE_BASE_URL=https://redmine-examle.com
+> REDMINE_BASE_URL=https://redmine-example.com
 > REDMINE_URL=/issues.json
 > REDMINE_PAGINATION_LIMIT=100
 > REDMINE_ISSUE_STATUS_ID=*

@@ -1,5 +1,8 @@
+import { getUserIssueReqBodyMock } from './../mocks/getUserIssueRequestMock';
 import { PageTypeEnum } from '../../enums/PageTypeEnum';
+import IDataIssue from '../../interfaces/IDataIssue';
 import IGetIssueFromRedmineInput from '../../interfaces/IGetIssueFromRedmineInput';
+import IUserIssuesInput from '../../interfaces/IUserIssuesInput';
 import UserIssueModel, { mongooseModel } from '../../models/UserIssueModel';
 import RedmineService from '../../services/redmine.service';
 import UserIssueService from '../../services/userIssue.service';
@@ -7,27 +10,13 @@ import { getUserIssueReqHeaderMock } from '../mocks/getUserIssueRequestMock';
 import { redmineIssuesMock } from '../mocks/redmineIssuesMock';
 import { syncRedmineUserIssuesReqBodyMock } from '../mocks/syncRedmineUserIssuesRequestMock';
 import { userIssueMock } from '../mocks/userIssueMock';
+import JiraService from '../../services/jira.service';
+import { jiraIssuesMock, jiraIssuesProcessedMock } from '../mocks/jiraIssuesMock';
+import IUserIssue from '../../interfaces/IUserIssue';
 
 const redmineIssue = redmineIssuesMock.issues[0];
-const userIssueFromDBMock = new UserIssueModel({
-    id: redmineIssue.id,
-    key: redmineIssue.id,
-    self: `${process.env.REDMINE_BASE_URL}/issues/${redmineIssue.id}`,
-    type: redmineIssue.tracker.name,
-    created: redmineIssue.created_on,
-    updated: redmineIssue.updated_on,
-    closed: redmineIssue.closed_on,
-    assignee: redmineIssue.assigned_to.name,
-    assignedToId: redmineIssue.assigned_to.id,
-    status: redmineIssue.status.name,
-    description: redmineIssue.subject,
-    summary: redmineIssue.description,
-    project: redmineIssue.project.name,
-    projectTypeKey: redmineIssue.project.id,
-    creator: redmineIssue.author.name,
-    reporter: redmineIssue.author.name,
-    pageType: PageTypeEnum.REDMINE,
-});
+
+const userIssueFromDBMock = new UserIssueModel(userIssueMock);
 
 describe('UserIssueService', () => {
     beforeEach(() => {
@@ -45,8 +34,8 @@ describe('UserIssueService', () => {
 
     describe('createUserIssue method', () => {
         it('should create an user issue if it does no exist', async () => {
-            const findOneMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(null as unknown as any);
-            const createMock = jest.spyOn(mongooseModel, 'create').mockImplementation(async () => userIssueMock as unknown as any);
+            const findOneMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(null as any);
+            const createMock = jest.spyOn(mongooseModel, 'create').mockImplementation(async () => userIssueMock as any);
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -84,7 +73,7 @@ describe('UserIssueService', () => {
         });
 
         it('should update an user issue if it do exist', async () => {
-            const findOneMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue({ ...userIssueMock, save: async () => userIssueMock } as unknown as any);
+            const findOneMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue({ ...userIssueMock, save: async () => userIssueMock } as any);
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -99,7 +88,7 @@ describe('UserIssueService', () => {
         it('should throw an error if findOne fails', async () => {
             const findOneMock = jest.spyOn(mongooseModel, 'findOne').mockImplementation((async () => {
                 throw new Error('findOne error');
-            }) as unknown as any);
+            }) as any);
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -113,7 +102,7 @@ describe('UserIssueService', () => {
                 save: async () => {
                     throw new Error('save error');
                 },
-            } as unknown as any);
+            } as any);
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -122,10 +111,10 @@ describe('UserIssueService', () => {
         });
 
         it('should throw an error if create fails', async () => {
-            const findOneMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(null as unknown as any);
+            const findOneMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(null as any);
             const createMock = jest.spyOn(mongooseModel, 'create').mockImplementation((async () => {
                 throw new Error('create error');
-            }) as unknown as any);
+            }) as any);
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -135,7 +124,7 @@ describe('UserIssueService', () => {
         });
     });
 
-    describe('getIssuesFromRedmineAndSave', () => {
+    describe('getIssuesFromRedmineAndSave method', () => {
         it('should get issues from redmine and save them successfully', async () => {
             const redmineService = RedmineService.getInstance();
             const userIssueService: UserIssueService = UserIssueService.getInstance();
@@ -201,7 +190,7 @@ describe('UserIssueService', () => {
         });
     });
 
-    describe('syncRedmineUserIssues', () => {
+    describe('syncRedmineUserIssues method', () => {
         it('should get issues from redmine and save them successfully', async () => {
             const redmineService = RedmineService.getInstance();
             const userIssueService: UserIssueService = UserIssueService.getInstance();
@@ -266,6 +255,165 @@ describe('UserIssueService', () => {
 
             await expect(userIssueService.syncRedmineUserIssues(request)).rejects.toThrow('error getting user issue');
             expect(redmineGetUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('getDbUserIssues method', () => {
+        it('should get issues from db', async () => {
+            const findMock = jest.spyOn(mongooseModel, 'find').mockReturnValue({
+                sort: () => userIssueFromDBMock.getProperties(),
+            } as any);
+
+            const assignedToId: number = 1;
+            const startDate: Date = new Date('2024-11-01');
+            const endDate: Date = new Date('2024-11-30');
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.getDbUserIssues(assignedToId, startDate, endDate);
+
+            expect(result).toMatchObject(userIssueFromDBMock.getProperties());
+            expect(findMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should return null if finds nothing', async () => {
+            const findMock = jest.spyOn(mongooseModel, 'find').mockReturnValue({
+                sort: () => null,
+            } as any);
+
+            const assignedToId: number = 1;
+            const startDate: Date = new Date('2024-11-01');
+            const endDate: Date = new Date('2024-11-30');
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.getDbUserIssues(assignedToId, startDate, endDate);
+
+            expect(result).toBe(null);
+            expect(findMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw error if find throws error', async () => {
+            const findMock = jest.spyOn(mongooseModel, 'find').mockReturnValue({
+                sort: () => {
+                    throw new Error('error finding db user issues');
+                },
+            } as any);
+
+            const assignedToId: number = 1;
+            const startDate: Date = new Date('2024-11-01');
+            const endDate: Date = new Date('2024-11-30');
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            await expect(userIssueService.getDbUserIssues(assignedToId, startDate, endDate)).rejects.toThrow('error finding db user issues');
+            expect(findMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('getUserIssues method', () => {
+        it('should call jira service if jira_username is defined in the request', async () => {
+            const jiraService: JiraService = JiraService.getInstance();
+
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
+
+            const request: IUserIssuesInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.getUserIssues(request);
+            const expectedResult: IDataIssue = jiraIssuesProcessedMock();
+
+            expect(result).toMatchObject(expectedResult);
+            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call jira service if jira_username is defined in the request and other jira params', async () => {
+            const jiraService: JiraService = JiraService.getInstance();
+
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
+
+            const request: IUserIssuesInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
+                jira_url: getUserIssueReqBodyMock.jira_url,
+                jql: getUserIssueReqBodyMock.jql,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.getUserIssues(request);
+            const expectedResult: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
+
+            expect(result).toMatchObject(expectedResult);
+            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call get user issues from db service if redmine_id is defined in the request', async () => {
+            const request: IUserIssuesInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const issuesMock: IUserIssue[] = [userIssueMock, userIssueMock, userIssueMock];
+
+            const getDbUserIssuesMock = jest.spyOn(userIssueService, 'getDbUserIssues').mockImplementation((async () => issuesMock) as any);
+
+            const result = await userIssueService.getUserIssues(request);
+
+            const expectedResult: IDataIssue = {
+                month: 'Noviembre',
+                total: 3,
+                userDisplayName: 'Adrián López Varela',
+                project: 'Integraciones',
+                issues: issuesMock,
+            };
+
+            expect(result).toMatchObject(expectedResult);
+            expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle full request', async () => {
+            const jiraService: JiraService = JiraService.getInstance();
+
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
+
+            const request: IUserIssuesInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
+                jira_url: getUserIssueReqBodyMock.jira_url,
+                jql: getUserIssueReqBodyMock.jql,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const issuesMock: IUserIssue[] = [userIssueMock, userIssueMock, userIssueMock];
+            const getDbUserIssuesMock = jest.spyOn(userIssueService, 'getDbUserIssues').mockImplementation((async () => issuesMock) as any);
+
+            const result = await userIssueService.getUserIssues(request);
+            const expectedResult: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
+            expectedResult.issues = expectedResult.issues.concat(issuesMock);
+            expectedResult.total = 6;
+
+            expect(result).toMatchObject(expectedResult);
+            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+            expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
         });
     });
 });
