@@ -13,6 +13,9 @@ import { userIssueMock } from '../mocks/userIssueMock';
 import JiraService from '../../services/jira.service';
 import { jiraIssuesMock, jiraIssuesProcessedMock } from '../mocks/jiraIssuesMock';
 import IUserIssue from '../../interfaces/IUserIssue';
+import IEvidence from '../../interfaces/IEvidence';
+import { MONTHS } from '../../resources/configurations/constants/Months';
+import IIssueDescription from '../../interfaces/IIssueDescription';
 
 const redmineIssue = redmineIssuesMock.issues[0];
 
@@ -410,6 +413,228 @@ describe('UserIssueService', () => {
             const expectedResult: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
             expectedResult.issues = expectedResult.issues.concat(issuesMock);
             expectedResult.total = 6;
+
+            expect(result).toMatchObject(expectedResult);
+            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+            expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('getUserIssuesDescriptions method', () => {
+        it('should call jira service if jira_username is defined in the request', async () => {
+            const jiraService: JiraService = JiraService.getInstance();
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
+
+            const request: IUserIssuesInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = await userIssueService.getUserIssuesDescriptions(request);
+
+            const issuesDescription: IIssueDescription[] = [];
+
+            const getIssuesResultMock: IDataIssue = jiraIssuesProcessedMock();
+            getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
+                const title: string = `${issue.type} #${issue.key}: `;
+                const summary: string = UserIssueService.getIssueSummary(issue);
+                const link: string = issue.self;
+
+                issuesDescription.push({
+                    title,
+                    summary,
+                    link,
+                    pageType: issue.pageType,
+                    closed: issue.closed!,
+                    project: issue.project,
+                });
+            });
+
+            const expectedResult: IEvidence = {
+                project: getIssuesResultMock.project,
+                userDisplayName: getIssuesResultMock.userDisplayName,
+                date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
+                month: getIssuesResultMock.month.toUpperCase(),
+                evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
+                total: 3,
+                issues: issuesDescription,
+            };
+
+            expect(result).toMatchObject(expectedResult);
+            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call jira service if jira_username is defined in the request and other jira params', async () => {
+            const jiraService: JiraService = JiraService.getInstance();
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
+
+            const request: IUserIssuesInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
+                jira_url: getUserIssueReqBodyMock.jira_url,
+                jql: getUserIssueReqBodyMock.jql,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = await userIssueService.getUserIssuesDescriptions(request);
+
+            const issuesDescription: IIssueDescription[] = [];
+
+            const getIssuesResultMock: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
+            getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
+                const title: string = `${issue.type} #${issue.key}: `;
+                const summary: string = UserIssueService.getIssueSummary(issue);
+                const link: string = issue.self;
+
+                issuesDescription.push({
+                    title,
+                    summary,
+                    link,
+                    pageType: issue.pageType,
+                    closed: issue.closed!,
+                    project: issue.project,
+                });
+            });
+            const expectedResult: IEvidence = {
+                project: getIssuesResultMock.project,
+                userDisplayName: getIssuesResultMock.userDisplayName,
+                date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
+                month: getIssuesResultMock.month.toUpperCase(),
+                evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
+                total: 3,
+                issues: issuesDescription,
+            };
+
+            expect(result).toMatchObject(expectedResult);
+            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call get user issues from db service if redmine_id is defined in the request', async () => {
+            const request: IUserIssuesInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = await userIssueService.getUserIssuesDescriptions(request);
+
+            const issuesDescription: IIssueDescription[] = [];
+
+            const issuesMock: IUserIssue[] = [userIssueMock, userIssueMock, userIssueMock];
+            const getDbUserIssuesMock = jest.spyOn(userIssueService, 'getDbUserIssues').mockImplementation((async () => issuesMock) as any);
+            const getIssuesResultMock: IDataIssue = {
+                month: 'Noviembre',
+                total: 3,
+                userDisplayName: 'Adrián López Varela',
+                project: 'Integraciones',
+                issues: issuesMock,
+            };
+            getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
+                const title: string = `${issue.type} #${issue.key}: `;
+                const summary: string = UserIssueService.getIssueSummary(issue);
+                const link: string = issue.self;
+
+                issuesDescription.push({
+                    title,
+                    summary,
+                    link,
+                    pageType: issue.pageType,
+                    closed: issue.closed!,
+                    project: issue.project,
+                });
+            });
+
+            const expectedResult: IEvidence = {
+                project: getIssuesResultMock.project,
+                userDisplayName: getIssuesResultMock.userDisplayName,
+                date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
+                month: getIssuesResultMock.month.toUpperCase(),
+                evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Adrián López Varela: ',
+                total: 3,
+                issues: issuesDescription,
+            };
+
+            expect(result).toMatchObject(expectedResult);
+            expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle full request', async () => {
+            const jiraService: JiraService = JiraService.getInstance();
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
+
+            const request: IUserIssuesInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
+                jira_url: getUserIssueReqBodyMock.jira_url,
+                jql: getUserIssueReqBodyMock.jql,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = await userIssueService.getUserIssuesDescriptions(request);
+
+            const issuesMock: IUserIssue[] = [userIssueMock, userIssueMock, userIssueMock];
+            const getDbUserIssuesMock = jest.spyOn(userIssueService, 'getDbUserIssues').mockImplementation((async () => issuesMock) as any);
+            const getDbIssuesResultMock: IDataIssue = {
+                month: 'Noviembre',
+                total: 3,
+                userDisplayName: 'Adrián López Varela',
+                project: 'Integraciones',
+                issues: issuesMock,
+            };
+
+            const getIssuesResultMock: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
+            const issuesDescription: IIssueDescription[] = [];
+
+            getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
+                const title: string = `${issue.type} #${issue.key}: `;
+                const summary: string = UserIssueService.getIssueSummary(issue);
+                const link: string = issue.self;
+
+                issuesDescription.push({
+                    title,
+                    summary,
+                    link,
+                    pageType: issue.pageType,
+                    closed: issue.closed!,
+                    project: issue.project,
+                });
+            });
+            getDbIssuesResultMock.issues.forEach((issue: IUserIssue) => {
+                const title: string = `${issue.type} #${issue.key}: `;
+                const summary: string = UserIssueService.getIssueSummary(issue);
+                const link: string = issue.self;
+
+                issuesDescription.push({
+                    title,
+                    summary,
+                    link,
+                    pageType: issue.pageType,
+                    closed: issue.closed!,
+                    project: issue.project,
+                });
+            });
+
+            const expectedResult: IEvidence = {
+                project: getIssuesResultMock.project,
+                userDisplayName: getIssuesResultMock.userDisplayName,
+                date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
+                month: getIssuesResultMock.month.toUpperCase(),
+                evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
+                total: 6,
+                issues: issuesDescription,
+            };
 
             expect(result).toMatchObject(expectedResult);
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);

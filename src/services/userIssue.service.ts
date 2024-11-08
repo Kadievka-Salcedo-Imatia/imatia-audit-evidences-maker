@@ -67,6 +67,33 @@ export default class UserIssueService {
         );
     }
 
+    /**
+     * This method returns a issue summary to show inside the document template
+     * @param {IUserIssue} issue - the user issue
+     * @returns {string} summary
+     */
+    public static getIssueSummary(issue: IUserIssue): string {
+        const description = UserIssueService.getIssueShortDescription(issue.description);
+
+        const createdDateTime: IDateTime = formatDateTime(issue.created);
+
+        const updatedDateTime: IDateTime = formatDateTime(issue.updated);
+
+        if (issue.pageType === PageTypeEnum.JIRA) {
+            return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${description}. Esta tarea fue creada el día ${createdDateTime.date} a las ${createdDateTime.time} y su ultima actualización fue el día ${updatedDateTime.date} a las ${updatedDateTime.time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+        }
+        return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${description}. Esta tarea fue creada el día ${createdDateTime.date} a las ${createdDateTime.time} y su status fue ${issue.status} el día ${updatedDateTime.date} a las ${updatedDateTime.time}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
+    }
+
+    /**
+     * This method returns the description shorter if it finds a dot in the description, avoids descriptions too long with irrelevant information
+     * @param {string} description - the user issue description
+     * @returns {string} shorter description
+     */
+    public static getIssueShortDescription(description: string): string {
+        return description ? description.split('.')[0].trim() : description;
+    }
+
     // env vars
     private readonly REDMINE_BASE_URL: string = process.env.REDMINE_BASE_URL!;
 
@@ -307,7 +334,7 @@ export default class UserIssueService {
 
         userIssue.issues.forEach((issue: IUserIssue) => {
             const title: string = `${issue.type} #${issue.key}: `;
-            const summary: string = this.getIssueSummary(issue);
+            const summary: string = UserIssueService.getIssueSummary(issue);
             const link: string = issue.self;
 
             issuesDescription.push({
@@ -741,33 +768,6 @@ export default class UserIssueService {
         });
         log.info(' Finish UserIssueService@getIssues method');
         return paragraphs;
-    }
-
-    /**
-     * This method returns a issue summary to show inside the document template
-     * @param {IUserIssue} issue - the user issue
-     * @returns {string} summary
-     */
-    private getIssueSummary(issue: IUserIssue): string {
-        const description = this.getIssueShortDescription(issue.description);
-
-        const createdDateTime: IDateTime = formatDateTime(issue.created);
-
-        const updatedDateTime: IDateTime = formatDateTime(issue.updated);
-
-        if (issue.pageType === PageTypeEnum.JIRA) {
-            return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${description}. Esta tarea fue creada el día ${createdDateTime.date} a las ${createdDateTime.time} y su ultima actualización fue el día ${updatedDateTime.date} a las ${updatedDateTime.time} con status ${issue.status}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
-        }
-        return `${issue.summary} del proyecto ${issue.project}. Se trataba de ${description}. Esta tarea fue creada el día ${createdDateTime.date} a las ${createdDateTime.time} y su status fue ${issue.status} el día ${updatedDateTime.date} a las ${updatedDateTime.time}. En el siguiente enlace se puede consultar más a detalle esta tarea: `;
-    }
-
-    /**
-     * This method returns the description shorter if it finds a dot in the description, avoids descriptions too long with irrelevant information
-     * @param {string} description - the user issue description
-     * @returns {string} shorter description
-     */
-    private getIssueShortDescription(description: string): string {
-        return description ? description.split('.')[0].trim() : description;
     }
 
     /**
