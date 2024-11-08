@@ -10,5 +10,5 @@ export const getUserIssueReqBodyMock = {
 };
 
 export const getUserIssueReqHeaderMock = {
-    Authentication: 'basic user@password',
+    authorization: 'basic user@password',
 };

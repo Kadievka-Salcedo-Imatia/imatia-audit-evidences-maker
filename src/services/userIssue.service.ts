@@ -23,6 +23,9 @@ import IDateTime from '../interfaces/IDateTime';
 
 const log = getLogger('userIssue.service.ts');
 
+const jiraService: JiraService = JiraService.getInstance();
+const redmineService: RedmineService = RedmineService.getInstance();
+
 export default class UserIssueService {
     public static instance: UserIssueService;
 
@@ -66,10 +69,6 @@ export default class UserIssueService {
         height: 1400,
     };
 
-    // Services
-    private jiraService: JiraService = JiraService.getInstance();
-    private redmineService: RedmineService = RedmineService.getInstance();
-
     /**
      * Creates or updates by id an user issue in MongoDB.
      * @param {Record<string, any>} redmineIssue User issue data from redmine endpoint
@@ -99,17 +98,17 @@ export default class UserIssueService {
         });
 
         try {
-            const dbRegister = await mongooseModel.findOne({ id: userIssueModel.id });
-
+            const dbRegister: any = await mongooseModel.findOne({ id: userIssueModel.id });
             if (dbRegister) {
                 await dbRegister.save(userIssueModel.getProperties());
                 log.info('   UserIssueService@createUserIssue updated', redmineIssue.id);
             } else {
+                await mongooseModel.create(userIssueModel.getProperties());
                 log.info('   UserIssueService@createUserIssue created', redmineIssue.id);
-                mongooseModel.create(userIssueModel.getProperties());
             }
         } catch (error) {
             log.error('   Error UserIssueService@createUserIssue method', error);
+            throw error;
         }
 
         log.info('  Finish UserIssueService@createUserIssue method');
@@ -123,7 +122,7 @@ export default class UserIssueService {
      */
     public async getIssuesFromRedmineAndSave(request: IGetIssueFromRedmineInput): Promise<Record<string, any>> {
         log.info(' Start UserIssueService@getAndSaveIssues method');
-        const data = await this.redmineService.getUserIssues(request);
+        const data = await redmineService.getUserIssues(request);
 
         let createdRegisters: number = 0;
 
@@ -155,14 +154,14 @@ export default class UserIssueService {
         let response = await this.getIssuesFromRedmineAndSave(request);
         createdRegisters = response.createdRegisters;
 
-        let offset: string = request.offset!;
+        let offset: number = request.offset || 0;
 
         const iterations: number = getPagesNumber(response.total_count, response.limit);
 
         log.info(' UserIssueService@mapUserIssuesAndSaveInDB iterations:', iterations);
 
         for (let index = 1; index < iterations; index++) {
-            offset += request.limit;
+            offset += response.limit;
             response = await this.getIssuesFromRedmineAndSave({ ...request, offset });
             createdRegisters += response.createdRegisters;
         }
@@ -232,7 +231,7 @@ export default class UserIssueService {
         };
 
         if (request.jira_username) {
-            data = await this.jiraService.getUserIssues({
+            data = await jiraService.getUserIssues({
                 authorization: request.authorization,
                 jira_base_url: request.jira_base_url,
                 jira_url: request.jira_url,

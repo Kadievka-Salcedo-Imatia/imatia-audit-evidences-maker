@@ -35,7 +35,7 @@ describe('RedmineService', () => {
             }));
 
             const getIssueInput: IGetIssueFromRedmineInput = {
-                authorization: getUserIssueReqHeaderMock.Authentication,
+                authorization: getUserIssueReqHeaderMock.authorization,
             };
             const result: Record<string, any> = await redmineService.getUserIssues(getIssueInput);
 
@@ -54,7 +54,7 @@ describe('RedmineService', () => {
             }));
 
             const getIssueInput: IGetIssueFromRedmineInput = {
-                authorization: getUserIssueReqHeaderMock.Authentication,
+                authorization: getUserIssueReqHeaderMock.authorization,
             };
 
             await expect(redmineService.getUserIssues(getIssueInput)).rejects.toThrow();
