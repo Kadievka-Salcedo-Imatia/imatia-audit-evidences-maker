@@ -8,6 +8,7 @@
     "start:dev": "tsc-watch --noClear -p tsconfig.json --onSuccess \"node --env-file=.env ./dist/src/app.js\"",
     "test": "jest --silent --coverage --collectCoverageFrom='./src/**'",
     "test:w": "jest --watch",
+    "jest": "jest ",
     "format": "npm run format:prettier",
     "format:prettier": "prettier --config .prettierrc \"src/**/*.{ts,css,less,scss,js}\" \"tests/**/*.{ts,css,less,scss,js}\" \"scripts/**/*.{ts,css,less,scss,js}\" --write",
     "lint": "tslint --project tsconfig.json",

@@ -695,7 +695,7 @@ export default class UserIssueService {
      * @param {ICreateTemplateInput} request
      * @returns {Promise<Paragraph[]>} Paragraphs in the Template with the processed Images Buffers
      */
-    private async splitIssuesByTypeAndGetImages(evidence: IEvidence, request: ICreateTemplateInput): Promise<Paragraph[]> {
+    public async splitIssuesByTypeAndGetImages(evidence: IEvidence, request: ICreateTemplateInput): Promise<Paragraph[]> {
         let images: Paragraph[] = [];
 
         if (!evidence.issues || evidence.issues.length === 0) {
@@ -723,7 +723,7 @@ export default class UserIssueService {
      * @param {IEvidence} evidences - evidence text to display in the template
      * @returns {Paragraph[]} returns the list of paragraphs
      */
-    private getIssuesParagraphs(evidences: IEvidence): Paragraph[] {
+    public getIssuesParagraphs(evidences: IEvidence): Paragraph[] {
         log.info(' Start UserIssueService@getIssues method');
         const paragraphs: Paragraph[] = [
             new Paragraph({
@@ -778,7 +778,7 @@ export default class UserIssueService {
      * @param {string} authorization - authorization token to make login
      * @returns {Promise<Buffer>} returns the image buffer to be copied into the template
      */
-    private async takeScreenshot(issue: IIssueDescription, browser: Browser, isLogin: boolean, authorization: string): Promise<Buffer> {
+    public async takeScreenshot(issue: IIssueDescription, browser: Browser, isLogin: boolean, authorization: string): Promise<Buffer> {
         log.info('  Start UserIssueService@getIssues takeScreenshot with params:', { id: issue.title, url: issue.link });
         const page = await browser.newPage();
 
@@ -853,7 +853,7 @@ export default class UserIssueService {
      * @param {IUserIssuesInput} request - authorization token to make login
      * @returns {Promise<Paragraph[]>} returns the Paragraph with the image to be copied into the template
      */
-    private async getEvidenceImages(evidence: IEvidence, request: IUserIssuesInput): Promise<Paragraph[]> {
+    public async getEvidenceImages(evidence: IEvidence, request: IUserIssuesInput): Promise<Paragraph[]> {
         log.info(' Start UserIssueService@getEvidenceImages method');
         const browser: Browser = await puppeteer.launch(this.PUPPETEER_LAUNCH_OPTIONS);
 

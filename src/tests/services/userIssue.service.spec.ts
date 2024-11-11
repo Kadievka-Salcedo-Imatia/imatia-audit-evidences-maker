@@ -16,10 +16,83 @@ import IUserIssue from '../../interfaces/IUserIssue';
 import IEvidence from '../../interfaces/IEvidence';
 import { MONTHS } from '../../resources/configurations/constants/Months';
 import IIssueDescription from '../../interfaces/IIssueDescription';
+import { Paragraph } from 'docx';
+import puppeteer from 'puppeteer';
 
 const redmineIssue = redmineIssuesMock.issues[0];
 
 const userIssueFromDBMock = new UserIssueModel(userIssueMock);
+
+function getEvidenceInfoMock(request?: IUserIssuesInput, issuesMock?: IUserIssue[], includeJiraMocks: boolean = true): IEvidence {
+    if (!request) {
+        request = {
+            authorization: getUserIssueReqHeaderMock.authorization,
+            jira_username: getUserIssueReqBodyMock.jira_username,
+            redmine_id: getUserIssueReqBodyMock.redmine_id,
+            month: getUserIssueReqBodyMock.month,
+            year: getUserIssueReqBodyMock.year,
+        };
+    }
+
+    if (!issuesMock) {
+        issuesMock = [userIssueMock, userIssueMock, userIssueMock];
+    }
+
+    let getIssuesResultMock;
+    const issuesDescriptionsMock: IIssueDescription[] = [];
+
+    if (includeJiraMocks) {
+        getIssuesResultMock = jiraIssuesProcessedMock(request.jira_base_url);
+
+        getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
+            const title: string = `${issue.type} #${issue.key}: `;
+            const summary: string = UserIssueService.getIssueSummary(issue);
+            const link: string = issue.self;
+
+            issuesDescriptionsMock.push({
+                title,
+                summary,
+                link,
+                pageType: issue.pageType,
+                closed: issue.closed!,
+                project: issue.project,
+            });
+        });
+    }
+
+    const getDbIssuesResultMock: IDataIssue = {
+        month: 'Noviembre',
+        total: 3,
+        userDisplayName: 'Adrián López Varela',
+        project: 'Integraciones',
+        issues: issuesMock,
+    };
+
+    getDbIssuesResultMock.issues.forEach((issue: IUserIssue) => {
+        const title: string = `${issue.type} #${issue.key}: `;
+        const summary: string = UserIssueService.getIssueSummary(issue);
+        const link: string = issue.self;
+
+        issuesDescriptionsMock.push({
+            title,
+            summary,
+            link,
+            pageType: issue.pageType,
+            closed: issue.closed!,
+            project: issue.project,
+        });
+    });
+
+    return {
+        project: jiraIssuesProcessedMock().project,
+        userDisplayName: jiraIssuesProcessedMock().userDisplayName,
+        date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
+        month: jiraIssuesProcessedMock().month.toUpperCase(),
+        evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
+        total: 6,
+        issues: issuesDescriptionsMock,
+    };
+}
 
 describe('UserIssueService', () => {
     beforeEach(() => {
@@ -435,7 +508,7 @@ describe('UserIssueService', () => {
             const userIssueService: UserIssueService = UserIssueService.getInstance();
             const result = await userIssueService.getUserIssuesDescriptions(request);
 
-            const issuesDescription: IIssueDescription[] = [];
+            const issuesDescriptionsMock: IIssueDescription[] = [];
 
             const getIssuesResultMock: IDataIssue = jiraIssuesProcessedMock();
             getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
@@ -443,7 +516,7 @@ describe('UserIssueService', () => {
                 const summary: string = UserIssueService.getIssueSummary(issue);
                 const link: string = issue.self;
 
-                issuesDescription.push({
+                issuesDescriptionsMock.push({
                     title,
                     summary,
                     link,
@@ -460,7 +533,7 @@ describe('UserIssueService', () => {
                 month: getIssuesResultMock.month.toUpperCase(),
                 evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
                 total: 3,
-                issues: issuesDescription,
+                issues: issuesDescriptionsMock,
             };
 
             expect(result).toMatchObject(expectedResult);
@@ -484,7 +557,7 @@ describe('UserIssueService', () => {
             const userIssueService: UserIssueService = UserIssueService.getInstance();
             const result = await userIssueService.getUserIssuesDescriptions(request);
 
-            const issuesDescription: IIssueDescription[] = [];
+            const issuesDescriptionsMock: IIssueDescription[] = [];
 
             const getIssuesResultMock: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
             getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
@@ -492,7 +565,7 @@ describe('UserIssueService', () => {
                 const summary: string = UserIssueService.getIssueSummary(issue);
                 const link: string = issue.self;
 
-                issuesDescription.push({
+                issuesDescriptionsMock.push({
                     title,
                     summary,
                     link,
@@ -508,7 +581,7 @@ describe('UserIssueService', () => {
                 month: getIssuesResultMock.month.toUpperCase(),
                 evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
                 total: 3,
-                issues: issuesDescription,
+                issues: issuesDescriptionsMock,
             };
 
             expect(result).toMatchObject(expectedResult);
@@ -526,7 +599,7 @@ describe('UserIssueService', () => {
             const userIssueService: UserIssueService = UserIssueService.getInstance();
             const result = await userIssueService.getUserIssuesDescriptions(request);
 
-            const issuesDescription: IIssueDescription[] = [];
+            const issuesDescriptionsMock: IIssueDescription[] = [];
 
             const issuesMock: IUserIssue[] = [userIssueMock, userIssueMock, userIssueMock];
             const getDbUserIssuesMock = jest.spyOn(userIssueService, 'getDbUserIssues').mockImplementation((async () => issuesMock) as any);
@@ -542,7 +615,7 @@ describe('UserIssueService', () => {
                 const summary: string = UserIssueService.getIssueSummary(issue);
                 const link: string = issue.self;
 
-                issuesDescription.push({
+                issuesDescriptionsMock.push({
                     title,
                     summary,
                     link,
@@ -559,7 +632,7 @@ describe('UserIssueService', () => {
                 month: getIssuesResultMock.month.toUpperCase(),
                 evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Adrián López Varela: ',
                 total: 3,
-                issues: issuesDescription,
+                issues: issuesDescriptionsMock,
             };
 
             expect(result).toMatchObject(expectedResult);
@@ -585,60 +658,252 @@ describe('UserIssueService', () => {
             const result = await userIssueService.getUserIssuesDescriptions(request);
 
             const issuesMock: IUserIssue[] = [userIssueMock, userIssueMock, userIssueMock];
+
             const getDbUserIssuesMock = jest.spyOn(userIssueService, 'getDbUserIssues').mockImplementation((async () => issuesMock) as any);
-            const getDbIssuesResultMock: IDataIssue = {
-                month: 'Noviembre',
-                total: 3,
-                userDisplayName: 'Adrián López Varela',
-                project: 'Integraciones',
-                issues: issuesMock,
-            };
 
-            const getIssuesResultMock: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
-            const issuesDescription: IIssueDescription[] = [];
-
-            getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
-                const title: string = `${issue.type} #${issue.key}: `;
-                const summary: string = UserIssueService.getIssueSummary(issue);
-                const link: string = issue.self;
-
-                issuesDescription.push({
-                    title,
-                    summary,
-                    link,
-                    pageType: issue.pageType,
-                    closed: issue.closed!,
-                    project: issue.project,
-                });
-            });
-            getDbIssuesResultMock.issues.forEach((issue: IUserIssue) => {
-                const title: string = `${issue.type} #${issue.key}: `;
-                const summary: string = UserIssueService.getIssueSummary(issue);
-                const link: string = issue.self;
-
-                issuesDescription.push({
-                    title,
-                    summary,
-                    link,
-                    pageType: issue.pageType,
-                    closed: issue.closed!,
-                    project: issue.project,
-                });
-            });
-
-            const expectedResult: IEvidence = {
-                project: getIssuesResultMock.project,
-                userDisplayName: getIssuesResultMock.userDisplayName,
-                date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
-                month: getIssuesResultMock.month.toUpperCase(),
-                evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
-                total: 6,
-                issues: issuesDescription,
-            };
+            const expectedResult: IEvidence = getEvidenceInfoMock(request, issuesMock);
 
             expect(result).toMatchObject(expectedResult);
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
             expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('takeScreenshot', () => {
+        it('should take screenshot when issue is from jira', async () => {
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock();
+
+            const issue: IIssueDescription = evidenceInfoMock.issues![0];
+
+            const pageMock = {
+                setViewport: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                goto: jest.fn().mockImplementation((_url) => {
+                    return Promise.resolve();
+                }),
+                screenshot: jest.fn().mockImplementation(() => {
+                    return Promise.resolve(Buffer.from(''));
+                }),
+                waitForSelector: jest.fn().mockImplementation((_selector) => {
+                    return Promise.resolve();
+                }),
+                type: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                focus: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                click: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                waitForNavigation: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                evaluate: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                close: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+            };
+
+            const browserLaunchMock = {
+                newPage() {
+                    return Promise.resolve(pageMock);
+                },
+            } as any;
+
+            const isLogin: boolean = true;
+            const authorization: string = getUserIssueReqHeaderMock.authorization;
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = await userIssueService.takeScreenshot(issue, browserLaunchMock, isLogin, authorization);
+
+            expect(result).toBeInstanceOf(Buffer);
+            expect(pageMock.setViewport).toHaveBeenCalledTimes(1);
+            expect(pageMock.goto).toHaveBeenCalledTimes(1);
+            expect(pageMock.screenshot).toHaveBeenCalledTimes(1);
+            expect(pageMock.waitForSelector).toHaveBeenCalledTimes(0);
+            expect(pageMock.type).toHaveBeenCalledTimes(2);
+            expect(pageMock.focus).toHaveBeenCalledTimes(1);
+            expect(pageMock.click).toHaveBeenCalledTimes(1);
+            expect(pageMock.waitForNavigation).toHaveBeenCalledTimes(1);
+            expect(pageMock.evaluate).toHaveBeenCalledTimes(1);
+            expect(pageMock.close).toHaveBeenCalledTimes(1);
+        });
+
+        it('should take screenshot when issue is from redmine', async () => {
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock();
+
+            const issue: IIssueDescription = evidenceInfoMock.issues![3];
+
+            const pageMock = {
+                setViewport: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                goto: jest.fn().mockImplementation((_url) => {
+                    return Promise.resolve();
+                }),
+                screenshot: jest.fn().mockImplementation(() => {
+                    return Promise.resolve(Buffer.from(''));
+                }),
+                waitForSelector: jest.fn().mockImplementation((_selector) => {
+                    return Promise.resolve();
+                }),
+                type: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                focus: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                click: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                waitForNavigation: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                evaluate: jest.fn().mockImplementation((_fn) => {
+                    return Promise.resolve();
+                }),
+                close: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+            };
+
+            const browserLaunchMock = {
+                newPage() {
+                    return Promise.resolve(pageMock);
+                },
+            } as any;
+
+            const isLogin: boolean = true;
+            const authorization: string = getUserIssueReqHeaderMock.authorization;
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = await userIssueService.takeScreenshot(issue, browserLaunchMock, isLogin, authorization);
+
+            expect(result).toBeInstanceOf(Buffer);
+            expect(pageMock.setViewport).toHaveBeenCalledTimes(1);
+            expect(pageMock.goto).toHaveBeenCalledTimes(1);
+            expect(pageMock.screenshot).toHaveBeenCalledTimes(1);
+            expect(pageMock.waitForSelector).toHaveBeenCalledTimes(0);
+            expect(pageMock.type).toHaveBeenCalledTimes(2);
+            expect(pageMock.focus).toHaveBeenCalledTimes(1);
+            expect(pageMock.click).toHaveBeenCalledTimes(1);
+            expect(pageMock.waitForNavigation).toHaveBeenCalledTimes(1);
+            expect(pageMock.evaluate).toHaveBeenCalledTimes(1);
+            expect(pageMock.close).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('getEvidenceImages', () => {
+        it('should return an array of paragraphs with the taken screenshots of jira', async () => {
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock();
+            const request = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementation(async () => Buffer.from(''));
+            const launchBrowserMock = jest.spyOn(puppeteer, 'launch').mockImplementation(
+                async (_options) =>
+                    ({
+                        close: async () => {},
+                    }) as any,
+            );
+
+            const result = await userIssueService.getEvidenceImages(evidenceInfoMock, request);
+
+            expect(result[0]).toBeInstanceOf(Paragraph);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(6);
+            expect(launchBrowserMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should return an array of paragraphs with the taken screenshots of redmine', async () => {
+            const pageMock = {
+                setViewport: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+                goto: jest.fn().mockImplementation((_url) => {
+                    return Promise.resolve();
+                }),
+                waitForSelector: jest.fn().mockImplementation((_selector) => {
+                    return Promise.resolve({
+                        screenshot: () => '',
+                    });
+                }),
+                close: jest.fn().mockImplementation(() => {
+                    return Promise.resolve();
+                }),
+            };
+
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock(undefined, undefined, false);
+            const request = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementation(async () => Buffer.from(''));
+            const launchBrowserMock = jest.spyOn(puppeteer, 'launch').mockImplementation(
+                async (_options) =>
+                    ({
+                        close: async () => {},
+                        newPage: async () => pageMock,
+                    }) as any,
+            );
+
+            const result = await userIssueService.getEvidenceImages(evidenceInfoMock, request);
+
+            expect(result[0]).toBeInstanceOf(Paragraph);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(3);
+            expect(launchBrowserMock).toHaveBeenCalledTimes(1);
+            expect(pageMock.setViewport).toHaveBeenCalledTimes(1);
+            expect(pageMock.goto).toHaveBeenCalledTimes(1);
+            expect(pageMock.waitForSelector).toHaveBeenCalledTimes(1);
+            expect(pageMock.close).toHaveBeenCalledTimes(1);
+        });
+
+        it('should continue taking screenshots even if one throws error', async () => {
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock();
+            const request = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const takeScreenshotMock = jest
+                .spyOn(userIssueService, 'takeScreenshot')
+                .mockImplementationOnce(async () => {
+                    throw new Error('error getting screenshot');
+                })
+                .mockImplementation(async () => Buffer.from(''));
+            const launchBrowserMock = jest.spyOn(puppeteer, 'launch').mockImplementation(
+                async (_options) =>
+                    ({
+                        close: async () => {},
+                    }) as any,
+            );
+
+            const result = await userIssueService.getEvidenceImages(evidenceInfoMock, request);
+
+            expect(result[0]).toBeInstanceOf(Paragraph);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(6);
+            expect(launchBrowserMock).toHaveBeenCalledTimes(1);
         });
     });
 });
