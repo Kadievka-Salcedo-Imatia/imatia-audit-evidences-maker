@@ -27,7 +27,7 @@ describe('getUserIssuesYearValidator Unit Tests', () => {
     it('should return validator failed true and message that year should be a positive number', () => {
         const result = getUserIssuesYearValidator({
             jira_username: getUserIssueReqBodyMock.jira_username,
-            year: '2014',
+            year: '2024',
         });
         expect(result).toHaveProperty('validatorFailed', true);
         expect(result).toHaveProperty('message', 'property "year" must be a positive number');

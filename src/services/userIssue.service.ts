@@ -375,12 +375,12 @@ export default class UserIssueService {
             return evidence;
         }
 
-        const newFilePathYear =
-            __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
+        // const newFilePathYear =
+        //     __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
 
-        if (!fs.existsSync(newFilePathYear)) {
-            fs.mkdirSync(newFilePathYear, { recursive: true });
-        }
+        // if (!fs.existsSync(newFilePathYear)) {
+        //     fs.mkdirSync(newFilePathYear, { recursive: true });
+        // }
 
         const newFilePath =
             __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;

@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { getUserIssueReqBodyMock } from './../mocks/getUserIssueRequestMock';
 import { PageTypeEnum } from '../../enums/PageTypeEnum';
 import IDataIssue from '../../interfaces/IDataIssue';
@@ -18,12 +19,14 @@ import { MONTHS } from '../../resources/configurations/constants/Months';
 import IIssueDescription from '../../interfaces/IIssueDescription';
 import { Paragraph } from 'docx';
 import puppeteer from 'puppeteer';
+import ICreateTemplateInput from '../../interfaces/ICreateTemplateInput';
+import { createTemplateResponseMock } from '../mocks/createTemplateResponseMock';
 
 const redmineIssue = redmineIssuesMock.issues[0];
 
 const userIssueFromDBMock = new UserIssueModel(userIssueMock);
 
-function getEvidenceInfoMock(request?: IUserIssuesInput, issuesMock?: IUserIssue[], includeJiraMocks: boolean = true): IEvidence {
+function getEvidenceInfoMock(issuesMock: IUserIssue[], request?: IUserIssuesInput, includeJiraMocks: boolean = true): IEvidence {
     if (!request) {
         request = {
             authorization: getUserIssueReqHeaderMock.authorization,
@@ -32,10 +35,6 @@ function getEvidenceInfoMock(request?: IUserIssuesInput, issuesMock?: IUserIssue
             month: getUserIssueReqBodyMock.month,
             year: getUserIssueReqBodyMock.year,
         };
-    }
-
-    if (!issuesMock) {
-        issuesMock = [userIssueMock, userIssueMock, userIssueMock];
     }
 
     let getIssuesResultMock;
@@ -88,8 +87,8 @@ function getEvidenceInfoMock(request?: IUserIssuesInput, issuesMock?: IUserIssue
         userDisplayName: jiraIssuesProcessedMock().userDisplayName,
         date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
         month: jiraIssuesProcessedMock().month.toUpperCase(),
-        evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
-        total: 6,
+        evidenceStart: 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ',
+        total: issuesDescriptionsMock.length,
         issues: issuesDescriptionsMock,
     };
 }
@@ -531,7 +530,7 @@ describe('UserIssueService', () => {
                 userDisplayName: getIssuesResultMock.userDisplayName,
                 date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
                 month: getIssuesResultMock.month.toUpperCase(),
-                evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
+                evidenceStart: 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ',
                 total: 3,
                 issues: issuesDescriptionsMock,
             };
@@ -579,7 +578,7 @@ describe('UserIssueService', () => {
                 userDisplayName: getIssuesResultMock.userDisplayName,
                 date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
                 month: getIssuesResultMock.month.toUpperCase(),
-                evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: ',
+                evidenceStart: 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ',
                 total: 3,
                 issues: issuesDescriptionsMock,
             };
@@ -630,7 +629,7 @@ describe('UserIssueService', () => {
                 userDisplayName: getIssuesResultMock.userDisplayName,
                 date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
                 month: getIssuesResultMock.month.toUpperCase(),
-                evidenceStart: 'En el mes de Noviembre de 2014 se realizaron las siguientes tareas por Adrián López Varela: ',
+                evidenceStart: 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Adrián López Varela: ',
                 total: 3,
                 issues: issuesDescriptionsMock,
             };
@@ -661,7 +660,7 @@ describe('UserIssueService', () => {
 
             const getDbUserIssuesMock = jest.spyOn(userIssueService, 'getDbUserIssues').mockImplementation((async () => issuesMock) as any);
 
-            const expectedResult: IEvidence = getEvidenceInfoMock(request, issuesMock);
+            const expectedResult: IEvidence = getEvidenceInfoMock(issuesMock, request);
 
             expect(result).toMatchObject(expectedResult);
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
@@ -671,7 +670,7 @@ describe('UserIssueService', () => {
 
     describe('takeScreenshot', () => {
         it('should take screenshot when issue is from jira', async () => {
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock();
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([]);
 
             const issue: IIssueDescription = evidenceInfoMock.issues![0];
 
@@ -734,7 +733,7 @@ describe('UserIssueService', () => {
         });
 
         it('should take screenshot when issue is from redmine', async () => {
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock();
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock, userIssueMock]);
 
             const issue: IIssueDescription = evidenceInfoMock.issues![3];
 
@@ -799,7 +798,7 @@ describe('UserIssueService', () => {
 
     describe('getEvidenceImages', () => {
         it('should return an array of paragraphs with the taken screenshots of jira', async () => {
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock();
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([]);
             const request = {
                 authorization: getUserIssueReqHeaderMock.authorization,
                 jira_username: getUserIssueReqBodyMock.jira_username,
@@ -821,7 +820,7 @@ describe('UserIssueService', () => {
             const result = await userIssueService.getEvidenceImages(evidenceInfoMock, request);
 
             expect(result[0]).toBeInstanceOf(Paragraph);
-            expect(takeScreenshotMock).toHaveBeenCalledTimes(6);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(3);
             expect(launchBrowserMock).toHaveBeenCalledTimes(1);
         });
 
@@ -843,7 +842,7 @@ describe('UserIssueService', () => {
                 }),
             };
 
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock(undefined, undefined, false);
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock, userIssueMock], undefined, false);
             const request = {
                 authorization: getUserIssueReqHeaderMock.authorization,
                 jira_username: getUserIssueReqBodyMock.jira_username,
@@ -875,7 +874,7 @@ describe('UserIssueService', () => {
         });
 
         it('should continue taking screenshots even if one throws error', async () => {
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock();
+            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([]);
             const request = {
                 authorization: getUserIssueReqHeaderMock.authorization,
                 jira_username: getUserIssueReqBodyMock.jira_username,
@@ -902,8 +901,402 @@ describe('UserIssueService', () => {
             const result = await userIssueService.getEvidenceImages(evidenceInfoMock, request);
 
             expect(result[0]).toBeInstanceOf(Paragraph);
-            expect(takeScreenshotMock).toHaveBeenCalledTimes(6);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(3);
             expect(launchBrowserMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('createTemplate', () => {
+        it('should return and empty array of issues if the user has not evidences', async () => {
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
+
+            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request, false));
+
+            const result = await userIssueService.createTemplate(request);
+
+            expect(result).toHaveProperty('project', 'Project Name Test');
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('date', '30/11/2024');
+            expect(result).toHaveProperty('month', 'NOVIEMBRE');
+            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
+            expect(result).toHaveProperty('total', 0);
+            expect(result.issues?.length).toBe(0);
+
+            expect(result.path).toBeUndefined();
+
+            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
+            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(0);
+        });
+
+        it('should create a new folder for the year if it does no exist and the evidences files too', async () => {
+            const fsExistsSyncMock = jest
+                .spyOn(fs, 'existsSync')
+                .mockImplementationOnce((_pathName) => false) // exist the folder of the year?
+                .mockImplementationOnce((_pathName) => false); // exist the file of evidences?
+
+            const fsMkdirSync = jest.spyOn(fs, 'mkdirSync').mockImplementationOnce((_pathName, _options) => ''); // creates the folder of the year if does not exist
+
+            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
+
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
+
+            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
+
+            const result = await userIssueService.createTemplate(request);
+
+            expect(result).toHaveProperty('project', 'Project Name Test');
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('date', '30/11/2024');
+            expect(result).toHaveProperty('month', 'NOVIEMBRE');
+            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
+            expect(result).toHaveProperty('total', 3);
+            expect(result.issues?.length).toBe(3);
+            expect(result).toHaveProperty('path');
+
+            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
+                result.path?.includes(word),
+            );
+            expect(includesTheWords).toBe(true);
+
+            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
+            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(1);
+
+            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
+            expect(fsMkdirSync).toHaveBeenCalledTimes(1);
+            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
+        });
+
+        it('should return only the template info if evidence files already exists and rewrite files request is false', async () => {
+            const fsExistsSyncMock = jest
+                .spyOn(fs, 'existsSync')
+                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
+                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
+
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
+
+            const result = await userIssueService.createTemplate(request);
+
+            expect(result).toHaveProperty('project', 'Project Name Test');
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('date', '30/11/2024');
+            expect(result).toHaveProperty('month', 'NOVIEMBRE');
+            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
+            expect(result).toHaveProperty('total', 3);
+            expect(result.issues?.length).toBe(3);
+            expect(result).toHaveProperty('path');
+
+            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
+                result.path?.includes(word),
+            );
+            expect(includesTheWords).toBe(true);
+
+            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
+
+            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
+        });
+
+        it('should delete and create again the evidence document if evidence files already exists and rewrite files request is true', async () => {
+            const fsExistsSyncMock = jest
+                .spyOn(fs, 'existsSync')
+                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
+                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
+
+            const fsRmSync = jest.spyOn(fs, 'rmSync').mockImplementationOnce((_pathName) => {}); // remove file if exists and rewrite is true
+
+            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
+
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                rewrite_files: true,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
+
+            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
+
+            const result = await userIssueService.createTemplate(request);
+
+            expect(result).toHaveProperty('project', 'Project Name Test');
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('date', '30/11/2024');
+            expect(result).toHaveProperty('month', 'NOVIEMBRE');
+            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
+            expect(result).toHaveProperty('total', 3);
+            expect(result.issues?.length).toBe(3);
+            expect(result).toHaveProperty('path');
+
+            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
+                result.path?.includes(word),
+            );
+            expect(includesTheWords).toBe(true);
+
+            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
+            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(1);
+
+            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
+            expect(fsRmSync).toHaveBeenCalledTimes(1);
+            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle request with redmine_id only', async () => {
+            const fsExistsSyncMock = jest
+                .spyOn(fs, 'existsSync')
+                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
+                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
+
+            const fsRmSync = jest.spyOn(fs, 'rmSync').mockImplementationOnce((_pathName) => {}); // remove file if exists and rewrite is true
+
+            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
+
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                rewrite_files: true,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
+
+            const getUserIssuesDescriptionsMock = jest
+                .spyOn(userIssueService, 'getUserIssuesDescriptions')
+                .mockImplementation(async () => getEvidenceInfoMock([userIssueMock, userIssueMock, userIssueMock], request, false));
+
+            const result = await userIssueService.createTemplate(request);
+
+            expect(result).toHaveProperty('project', 'Project Name Test');
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('date', '30/11/2024');
+            expect(result).toHaveProperty('month', 'NOVIEMBRE');
+            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
+            expect(result).toHaveProperty('total', 3);
+            expect(result.issues?.length).toBe(3);
+            expect(result).toHaveProperty('path');
+
+            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
+                result.path?.includes(word),
+            );
+            expect(includesTheWords).toBe(true);
+
+            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
+            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(1);
+
+            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
+            expect(fsRmSync).toHaveBeenCalledTimes(1);
+            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle request with redmine_id and jira_username', async () => {
+            const fsExistsSyncMock = jest
+                .spyOn(fs, 'existsSync')
+                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
+                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
+
+            const fsRmSync = jest.spyOn(fs, 'rmSync').mockImplementationOnce((_pathName) => {}); // remove file if exists and rewrite is true
+
+            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
+
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                rewrite_files: true,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
+
+            const getUserIssuesDescriptionsMock = jest
+                .spyOn(userIssueService, 'getUserIssuesDescriptions')
+                .mockImplementation(async () => getEvidenceInfoMock([userIssueMock, userIssueMock, userIssueMock], request));
+
+            const result = await userIssueService.createTemplate(request);
+
+            expect(result).toHaveProperty('project', 'Project Name Test');
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('date', '30/11/2024');
+            expect(result).toHaveProperty('month', 'NOVIEMBRE');
+            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
+            expect(result).toHaveProperty('total', 6);
+            expect(result.issues?.length).toBe(6);
+            expect(result).toHaveProperty('path');
+
+            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
+                result.path?.includes(word),
+            );
+            expect(includesTheWords).toBe(true);
+
+            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
+            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(2);
+
+            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
+            expect(fsRmSync).toHaveBeenCalledTimes(1);
+            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle request with jira_base_url', async () => {
+            const fsExistsSyncMock = jest
+                .spyOn(fs, 'existsSync')
+                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
+                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
+
+            const fsRmSync = jest.spyOn(fs, 'rmSync').mockImplementationOnce((_pathName) => {}); // remove file if exists and rewrite is true
+
+            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
+
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
+                jira_url: getUserIssueReqBodyMock.jira_url,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                rewrite_files: true,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
+
+            const result = await userIssueService.createTemplate(request);
+
+            expect(result).toHaveProperty('project', 'Project Name Test');
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('date', '30/11/2024');
+            expect(result).toHaveProperty('month', 'NOVIEMBRE');
+            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
+            expect(result).toHaveProperty('total', 3);
+            expect(result.issues?.length).toBe(3);
+            expect(result).toHaveProperty('path');
+
+            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
+                result.path?.includes(word),
+            );
+            expect(includesTheWords).toBe(true);
+
+            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
+
+            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
+            expect(fsRmSync).toHaveBeenCalledTimes(1);
+            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('createTemplatesYear', () => {
+        it('should create evidences of the year', async () => {
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                rewrite_files: true,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const createTemplateMock = jest.spyOn(userIssueService, 'createTemplate').mockImplementation(async () => createTemplateResponseMock as any);
+
+            const result = await userIssueService.createTemplatesYear(request);
+
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('evidencesCreated');
+            expect(result).toHaveProperty('evidencesWithErrors');
+
+            expect(result.evidencesCreated.total).toBe(11);
+            expect(result.evidencesWithErrors.total).toBe(0);
+
+            result.evidencesCreated.evidences.forEach((element) => {
+                expect(element).toHaveProperty('project');
+                expect(element).toHaveProperty('date');
+                expect(element).toHaveProperty('month');
+                expect(element).toHaveProperty('total');
+                expect(element).toHaveProperty('path');
+            });
+
+            expect(createTemplateMock).toHaveBeenCalledTimes(11);
+        });
+
+        it('should create evidences of the year and could have an evidence with error', async () => {
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                rewrite_files: true,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const createTemplateMock = jest
+                .spyOn(userIssueService, 'createTemplate')
+                .mockImplementationOnce(async () => createTemplateResponseMock as any)
+                .mockImplementationOnce(async () => {
+                    throw new Error('timeout error');
+                })
+                .mockImplementation(async () => createTemplateResponseMock as any);
+
+            const result = await userIssueService.createTemplatesYear(request);
+
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('evidencesCreated');
+            expect(result).toHaveProperty('evidencesWithErrors');
+
+            expect(result.evidencesCreated.total).toBe(10);
+            expect(result.evidencesWithErrors.total).toBe(1);
+
+            result.evidencesCreated.evidences.forEach((element) => {
+                expect(element).toHaveProperty('project');
+                expect(element).toHaveProperty('date');
+                expect(element).toHaveProperty('month');
+                expect(element).toHaveProperty('total');
+                expect(element).toHaveProperty('path');
+            });
+
+            result.evidencesWithErrors.evidences.forEach((element) => {
+                expect(element).toHaveProperty('date');
+                expect(element).toHaveProperty('errorMessage', 'timeout error');
+            });
+
+            expect(createTemplateMock).toHaveBeenCalledTimes(11);
         });
     });
 });

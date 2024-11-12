@@ -1,7 +1,7 @@
 export const getUserIssueReqBodyMock = {
     jira_username: 'kadievka.salcedo',
     redmine_id: 9999,
-    year: 2014,
+    year: 2024,
     month: 11,
     rewrite_files: true,
     jira_base_url: 'http://external-jira-base-url.com',

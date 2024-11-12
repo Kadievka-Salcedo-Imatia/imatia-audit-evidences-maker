@@ -131,7 +131,7 @@ paths:
                               example: 2024-01-15T09:32:42.000+0100
                             assignee:
                               type: string
-                              example: Carles Dulcet Buxaderas
+                              example: Jhon Doe
                             status:
                               type: string
                               example: Listo
@@ -143,7 +143,7 @@ paths:
                               example: OURENSE - Pase PRO - PID
                             project:
                               type: string
-                              example: OP-03440 + Concello de Ourense + Implantación de nuevos módulos e integraciones
+                              example: Project Name Test
                             projectTypeKey:
                               type: string
                               example: software
@@ -197,7 +197,7 @@ paths:
                         example: Cividas eGov
                       userDisplayName:
                         type: string
-                        example: Carles Dulcet Buxaderas
+                        example: Jhon Doe
                       date:
                         type: string
                         example: 31/5/2024
@@ -206,7 +206,7 @@ paths:
                         example: MAYO
                       evidenceStart:
                         type: string
-                        example: "En el mes de Mayo de 2024 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: "
+                        example: "En el mes de Mayo de 2024 se realizaron las siguientes tareas por Jhon Doe: "
                       total:
                         type: number
                         example: 1
@@ -273,7 +273,7 @@ paths:
                         example: Cividas eGov
                       userDisplayName:
                         type: string
-                        example: Carles Dulcet Buxaderas
+                        example: Jhon Doe
                       date:
                         type: string
                         example: 31/5/2024
@@ -282,13 +282,13 @@ paths:
                         example: MAYO
                       evidenceStart:
                         type: string
-                        example: "En el mes de Mayo de 2024 se realizaron las siguientes tareas por Carles Dulcet Buxaderas: "
+                        example: "En el mes de Mayo de 2024 se realizaron las siguientes tareas por Jhon Doe: "
                       total:
                         type: number
                         example: 1
                       path:
                         type: string
-                        example: "C:\\Users\\kadievka.salcedo\\code\\imatia\\imatia-audit-evidences-maker\\dist\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Carles Dulcet Buxaderas\\MAYO\\Plantilla Evidencias - mayo.docx"
+                        example: "C:\\Users\\kadievka.salcedo\\code\\imatia\\imatia-audit-evidences-maker\\dist\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\MAYO\\Plantilla Evidencias - mayo.docx"
         400:
           description: Bad Request error
           content:
@@ -335,7 +335,7 @@ paths:
                     properties:
                       userDisplayName:
                         type: string
-                        example: Carles Dulcet Buxaderas,
+                        example: Jhon Doe,
                       evidencesCreated:
                         type: object
                         properties:
@@ -349,7 +349,7 @@ paths:
                               properties:
                                 project:
                                   type: string
-                                  example: "OP-03440 + Concello de Ourense + Implantación de nuevos módulos e integraciones"
+                                  example: "Project Name Test"
                                 date:
                                   type: string
                                   example: "31/1/2024"
@@ -361,7 +361,7 @@ paths:
                                   example: 11
                                 path:
                                   type: string
-                                  example: "C:\\Users\\kadievka.salcedo\\code\\imatia\\imatia-audit-evidences-maker\\dist\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Carles Dulcet Buxaderas\\ENERO\\Plantilla Evidencias - enero.docx"
+                                  example: "C:\\Users\\kadievka.salcedo\\code\\imatia\\imatia-audit-evidences-maker\\dist\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\ENERO\\Plantilla Evidencias - enero.docx"
                       evidencesWithErrors:
                         type: object
                         properties:
