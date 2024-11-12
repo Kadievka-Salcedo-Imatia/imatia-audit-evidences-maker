@@ -810,12 +810,7 @@ export default class UserIssueService {
 
                 await page.waitForNavigation();
 
-                await page.evaluate(() => {
-                    window.scrollTo(0, 0);
-                    window.addEventListener('scroll', () => {
-                        window.scrollTo(0, 0);
-                    });
-                });
+                await page.evaluate(this.forceScroll());
             }
 
             if (issue.pageType === PageTypeEnum.REDMINE) {
@@ -829,12 +824,7 @@ export default class UserIssueService {
 
                 await page.waitForNavigation();
 
-                await page.evaluate(() => {
-                    window.scrollTo(0, 1400);
-                    window.addEventListener('scroll', () => {
-                        window.scrollTo(0, 1600);
-                    });
-                });
+                await page.evaluate(this.forceScroll);
             }
         }
 
@@ -845,6 +835,15 @@ export default class UserIssueService {
 
         log.info('  Finish UserIssueService@getIssues takeScreenshot');
         return screenshotBuffer as Buffer;
+    }
+
+    public forceScroll(): () => void {
+        return () => {
+            window.scrollTo(0, 0);
+            window.addEventListener('scroll', () => {
+                window.scrollTo(0, 0);
+            });
+        };
     }
 
     /**

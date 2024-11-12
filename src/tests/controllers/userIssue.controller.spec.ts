@@ -7,7 +7,7 @@ import UserIssueService from '../../services/userIssue.service';
 import { getEvidenceInfoMock } from '../mocks/evidenceDescriptionResponseMock';
 import { getUserIssueReqBodyMock, getUserIssueReqHeaderMock } from '../mocks/getUserIssueRequestMock';
 import { jiraIssuesProcessedMock } from '../mocks/jiraIssuesMock';
-import { userIssueMock } from '../mocks/userIssueMock';
+import { userIssueMock, userIssueMock2 } from '../mocks/userIssueMock';
 
 const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -67,7 +67,7 @@ describe('UserIssueController', () => {
                 },
             };
 
-            const expectedResult: IEvidence = getEvidenceInfoMock([userIssueMock]);
+            const expectedResult: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock2]);
 
             const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => expectedResult);
 
@@ -95,7 +95,7 @@ describe('UserIssueController', () => {
                 },
             };
 
-            const expectedResult: IEvidence = getEvidenceInfoMock([userIssueMock]);
+            const expectedResult: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock2]);
 
             const createTemplateMock = jest.spyOn(userIssueService, 'createTemplate').mockImplementation(async () => expectedResult);
 

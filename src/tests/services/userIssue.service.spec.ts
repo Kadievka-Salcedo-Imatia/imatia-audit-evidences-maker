@@ -1232,5 +1232,83 @@ describe('UserIssueService', () => {
 
             expect(createTemplateMock).toHaveBeenCalledTimes(11);
         });
+
+        it('should create evidences of the year no leap', async () => {
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                month: getUserIssueReqBodyMock.month,
+                year: 2023,
+                rewrite_files: true,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const createTemplateMock = jest
+                .spyOn(userIssueService, 'createTemplate')
+                .mockImplementationOnce(async () => createTemplateResponseMock as any)
+                .mockImplementationOnce(async () => {
+                    throw new Error('timeout error');
+                })
+                .mockImplementation(async () => createTemplateResponseMock as any);
+
+            const result = await userIssueService.createTemplatesYear(request);
+
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('evidencesCreated');
+            expect(result).toHaveProperty('evidencesWithErrors');
+
+            expect(result.evidencesCreated.total).toBe(10);
+            expect(result.evidencesWithErrors.total).toBe(1);
+
+            result.evidencesCreated.evidences.forEach((element) => {
+                expect(element).toHaveProperty('project');
+                expect(element).toHaveProperty('date');
+                expect(element).toHaveProperty('month');
+                expect(element).toHaveProperty('total');
+                expect(element).toHaveProperty('path');
+            });
+
+            result.evidencesWithErrors.evidences.forEach((element) => {
+                expect(element).toHaveProperty('date');
+                expect(element).toHaveProperty('errorMessage', 'timeout error');
+            });
+
+            expect(createTemplateMock).toHaveBeenCalledTimes(11);
+        });
+    });
+
+    describe('splitIssuesByTypeAndGetImages', () => {
+        it('should test the case issues are empty', async () => {
+            const request: ICreateTemplateInput = {
+                authorization: 'dsdfsafds',
+                month: 11,
+                year: 2024,
+            };
+
+            const evidence: IEvidence = {
+                project: 'Project name',
+                userDisplayName: 'Jhon Doe',
+                date: 'Noviembre 2024',
+                month: 'NOVIEMBRE',
+                evidenceStart: '1',
+                total: 0,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result: Paragraph[] = await userIssueService.splitIssuesByTypeAndGetImages(evidence, request);
+
+            expect(result.length === 0).toBeTruthy();
+        });
+    });
+
+    describe('forceScroll', () => {
+        it('should test forceScroll method', () => {
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = userIssueService.forceScroll();
+
+            expect(result).toBeDefined();
+        });
     });
 });

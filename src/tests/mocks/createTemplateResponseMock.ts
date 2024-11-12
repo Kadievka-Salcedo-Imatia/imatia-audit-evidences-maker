@@ -61,7 +61,7 @@ export const createTemplateResponseMock = {
             project: 'Integraciones',
         },
     ],
-    paths: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\NOVIEMBRE\\Plantilla Evidencias - noviembre.docx',
+    path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\NOVIEMBRE\\Plantilla Evidencias - noviembre.docx',
 };
 
 export const createTemplatesYearResponseMock = {

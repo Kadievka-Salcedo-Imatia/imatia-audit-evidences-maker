@@ -95,7 +95,7 @@ export const redmineIssuesMock: Record<string, any> = {
             ],
             created_on: '2024-10-25T12:33:46Z',
             updated_on: '2024-10-25T12:33:46Z',
-            closed_on: null,
+            closed_on: '2024-10-25T12:33:46Z',
         },
         {
             id: 94885,
