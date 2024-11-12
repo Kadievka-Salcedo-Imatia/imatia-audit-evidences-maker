@@ -21,77 +21,11 @@ import { Paragraph } from 'docx';
 import puppeteer from 'puppeteer';
 import ICreateTemplateInput from '../../interfaces/ICreateTemplateInput';
 import { createTemplateResponseMock } from '../mocks/createTemplateResponseMock';
+import { getEvidenceInfoMock } from '../mocks/evidenceDescriptionResponseMock';
 
 const redmineIssue = redmineIssuesMock.issues[0];
 
 const userIssueFromDBMock = new UserIssueModel(userIssueMock);
-
-function getEvidenceInfoMock(issuesMock: IUserIssue[], request?: IUserIssuesInput, includeJiraMocks: boolean = true): IEvidence {
-    if (!request) {
-        request = {
-            authorization: getUserIssueReqHeaderMock.authorization,
-            jira_username: getUserIssueReqBodyMock.jira_username,
-            redmine_id: getUserIssueReqBodyMock.redmine_id,
-            month: getUserIssueReqBodyMock.month,
-            year: getUserIssueReqBodyMock.year,
-        };
-    }
-
-    let getIssuesResultMock;
-    const issuesDescriptionsMock: IIssueDescription[] = [];
-
-    if (includeJiraMocks) {
-        getIssuesResultMock = jiraIssuesProcessedMock(request.jira_base_url);
-
-        getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
-            const title: string = `${issue.type} #${issue.key}: `;
-            const summary: string = UserIssueService.getIssueSummary(issue);
-            const link: string = issue.self;
-
-            issuesDescriptionsMock.push({
-                title,
-                summary,
-                link,
-                pageType: issue.pageType,
-                closed: issue.closed!,
-                project: issue.project,
-            });
-        });
-    }
-
-    const getDbIssuesResultMock: IDataIssue = {
-        month: 'Noviembre',
-        total: 3,
-        userDisplayName: 'Adrián López Varela',
-        project: 'Integraciones',
-        issues: issuesMock,
-    };
-
-    getDbIssuesResultMock.issues.forEach((issue: IUserIssue) => {
-        const title: string = `${issue.type} #${issue.key}: `;
-        const summary: string = UserIssueService.getIssueSummary(issue);
-        const link: string = issue.self;
-
-        issuesDescriptionsMock.push({
-            title,
-            summary,
-            link,
-            pageType: issue.pageType,
-            closed: issue.closed!,
-            project: issue.project,
-        });
-    });
-
-    return {
-        project: jiraIssuesProcessedMock().project,
-        userDisplayName: jiraIssuesProcessedMock().userDisplayName,
-        date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
-        month: jiraIssuesProcessedMock().month.toUpperCase(),
-        evidenceStart: 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ',
-        total: issuesDescriptionsMock.length,
-        issues: issuesDescriptionsMock,
-    };
-}
 
 describe('UserIssueService', () => {
     beforeEach(() => {

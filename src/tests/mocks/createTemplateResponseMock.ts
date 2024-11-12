@@ -63,3 +63,91 @@ export const createTemplateResponseMock = {
     ],
     paths: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\NOVIEMBRE\\Plantilla Evidencias - noviembre.docx',
 };
+
+export const createTemplatesYearResponseMock = {
+    userDisplayName: 'Jhon Doe',
+    evidencesCreated: {
+        total: 10,
+        evidences: [
+            {
+                project: 'Project Name Test',
+                date: 'Enero 2024',
+                month: 'ENERO',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\ENERO\\Plantilla Evidencias - enero.docx',
+            },
+            {
+                project: 'Project Name Test',
+                date: 'Marzo 2024',
+                month: 'MARZO',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\MARZO\\Plantilla Evidencias - marzo.docx',
+            },
+            {
+                project: 'Project Name Test',
+                date: 'Abril 2024',
+                month: 'ABRIL',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\ABRIL\\Plantilla Evidencias - abril.docx',
+            },
+            {
+                project: 'Project Name Test',
+                date: 'Mayo 2024',
+                month: 'MAYO',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\MAYO\\Plantilla Evidencias - mayo.docx',
+            },
+            {
+                project: 'Project Name Test',
+                date: 'Junio 2024',
+                month: 'JUNIO',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\JUNIO\\Plantilla Evidencias - junio.docx',
+            },
+            {
+                project: 'Project Name Test',
+                date: 'Julio 2024',
+                month: 'JULIO',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\JULIO\\Plantilla Evidencias - julio.docx',
+            },
+            {
+                project: 'Project Name Test',
+                date: 'Agosto 2024',
+                month: 'AGOSTO',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\AGOSTO\\Plantilla Evidencias - agosto.docx',
+            },
+            {
+                project: 'Project Name Test',
+                date: 'Septiembre 2024',
+                month: 'SEPTIEMBRE',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\SEPTIEMBRE\\Plantilla Evidencias - septiembre.docx',
+            },
+            {
+                project: 'Project Name Test',
+                date: 'Octubre 2024',
+                month: 'OCTUBRE',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\OCTUBRE\\Plantilla Evidencias - octubre.docx',
+            },
+            {
+                project: 'Project Name Test',
+                date: 'Noviembre 2024',
+                month: 'NOVIEMBRE',
+                total: 6,
+                path: 'imatia-audit-evidences-maker\\src\\services\\..\\templates\\EVIDENCIAS 2024\\Jhon Doe\\NOVIEMBRE\\Plantilla Evidencias - noviembre.docx',
+            },
+        ],
+    },
+    evidencesWithErrors: {
+        total: 1,
+        evidences: [
+            {
+                date: 'Febrero 2024',
+                errorMessage: 'Timeout',
+            },
+        ],
+    },
+};
