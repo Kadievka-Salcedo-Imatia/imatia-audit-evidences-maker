@@ -55,6 +55,12 @@ describe('ResponseClass Unit Tests', () => {
             expect(result).toBeUndefined();
         });
 
+        it('should use send method with Response Status OK without data', async () => {
+            const responseClass: ResponseClass = new ResponseClass(controllerMockClass);
+            const result = await responseClass.send(reqMock, resMock as unknown as core.Response, RESPONSE_STATUS_CODES.OK, 'controllerClassMethodDataNull');
+            expect(result).toBeUndefined();
+        });
+
         it('should use send method with Response Status CREATED', async () => {
             const responseClass: ResponseClass = new ResponseClass(controllerMockClass);
             const result = await responseClass.send(reqMock, resMock as unknown as core.Response, RESPONSE_STATUS_CODES.CREATED, 'controllerClassMethod');
@@ -107,6 +113,52 @@ describe('ResponseClass Unit Tests', () => {
             const responseClass: ResponseClass = new ResponseClass(controllerMockClass);
             const result = await responseClass.send(reqMock, resMock as unknown as core.Response, RESPONSE_STATUS_CODES.INTERNAL_SERVER_ERROR, 'controllerClassMethod');
             expect(result).toBeUndefined();
+        });
+    });
+
+    describe('sendBadRequest', () => {
+        it('should use sendBadRequest method with Response Status BAD REQUEST and custom error message', async () => {
+            const responseClass: ResponseClass = new ResponseClass(controllerMockClass);
+
+            const sendMock = jest.fn().mockImplementation((_response) => {});
+
+            const responseMock = {
+                status: () => ({
+                    send: sendMock,
+                }),
+            };
+
+            const result = await responseClass.sendBadRequest(responseMock as any, 'error message');
+
+            expect(result).toBeUndefined();
+            expect(sendMock).toHaveBeenCalledTimes(1);
+            expect(sendMock).toHaveBeenCalledWith({
+                error: { code: 1001, message: 'error message' },
+                message: 'Bad request',
+                statusCode: 400,
+            });
+        });
+
+        it('should use sendBadRequest method with Response Status BAD REQUEST with bad request', async () => {
+            const responseClass: ResponseClass = new ResponseClass(controllerMockClass);
+
+            const sendMock = jest.fn().mockImplementation((_response) => {});
+
+            const responseMock = {
+                status: () => ({
+                    send: sendMock,
+                }),
+            };
+
+            const result = await responseClass.sendBadRequest(responseMock as any, '');
+
+            expect(result).toBeUndefined();
+            expect(sendMock).toHaveBeenCalledTimes(1);
+            expect(sendMock).toHaveBeenCalledWith({
+                error: { code: 1001, message: 'Bad request' },
+                message: 'Bad request',
+                statusCode: 400,
+            });
         });
     });
 });

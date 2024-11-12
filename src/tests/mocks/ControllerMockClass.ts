@@ -4,4 +4,6 @@ export default class ControllerMockClass {
             data: 'data',
         };
     }
+
+    public async controllerClassMethodDataNull(): Promise<void> {}
 }
