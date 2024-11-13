@@ -20,11 +20,19 @@ import { getPagesNumber } from '../utils/pagination';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
 import ICreateTemplateInput from '../interfaces/ICreateTemplateInput';
 import IDateTime from '../interfaces/IDateTime';
+import { getCredentialsFromBasicAuth } from '../utils/authorization';
+import UserTemplateService from './userTemplate.service';
+import IUserTemplate from '../interfaces/IUserTemplate';
+import IGetDownloadLinksInput from '../interfaces/IGetDownloadLinksInput';
+import IGetDownloadLinksOutput from '../interfaces/IGetDownloadLinksOutput';
+import BaseErrorClass from '../resources/configurations/classes/BaseErrorClass';
+import INTERNAL_ERROR_CODES from '../resources/configurations/constants/InternalErrorCodes';
 
 const log = getLogger('userIssue.service.ts');
 
 const jiraService: JiraService = JiraService.getInstance();
 const redmineService: RedmineService = RedmineService.getInstance();
+const userTemplateService: UserTemplateService = UserTemplateService.getInstance();
 
 export default class UserIssueService {
     public static instance: UserIssueService;
@@ -43,7 +51,7 @@ export default class UserIssueService {
     /**
      * Maps data from jira and returns the user issues as standard user issues
      * @param {Array<Record<string, any>>} issues jira array of issues
-     * @param {string | undefined} jira_base_url if there's a external jira url
+     * @param {string | undefined} jiraBaseUrl if there's a external jira url
      * @returns {IUserIssue[]} array of user issues
      */
     public static mapIssuesFromJira(issues: Array<Record<string, any>>, jiraBaseUrl?: string): IUserIssue[] {
@@ -96,6 +104,9 @@ export default class UserIssueService {
 
     // env vars
     private readonly REDMINE_BASE_URL: string = process.env.REDMINE_BASE_URL!;
+    private readonly PROTOCOL_URL: string = process.env.PROTOCOL_URL!;
+    private readonly BASE_URL: string = process.env.BASE_URL!;
+    private readonly PORT: string = process.env.PORT!;
 
     // Document Template styles
     private readonly FONT: string = 'Segoe UI';
@@ -375,15 +386,14 @@ export default class UserIssueService {
             return evidence;
         }
 
-        // const newFilePathYear =
-        //     __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
+        const pageType = this.getPageType(request);
 
-        // if (!fs.existsSync(newFilePathYear)) {
-        //     fs.mkdirSync(newFilePathYear, { recursive: true });
-        // }
-
-        const newFilePath =
+        let newFilePath: string =
             __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
+
+        if(Boolean(pageType)){
+            newFilePath = __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + pageType + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
+        }
 
         if (!fs.existsSync(newFilePath)) {
             fs.mkdirSync(newFilePath, { recursive: true });
@@ -629,10 +639,42 @@ export default class UserIssueService {
         const newBuffer = await Packer.toBuffer(doc);
         fs.writeFileSync(newFileName, newBuffer);
 
+        const [username] = getCredentialsFromBasicAuth(request.authorization);
+        const createTemplateInput: IUserTemplate = {
+            username,
+            path: newFileName,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            evidenceUserDisplayName: evidence.userDisplayName,
+            pageType: this.getPageType(request),
+            year: request.year,
+            month: evidence.month,
+        };
+        try {
+            await userTemplateService.createUserTemplate(createTemplateInput);
+        } catch (error) {
+            log.error('Error UserIssueService@createTemplate creating the user template in DB', error);
+        }
+
         const endTime = performance.now();
         log.info(`Finish UserIssueService@createTemplate path: ${newFileName} in time: ${endTime - startTime} ms:`);
 
         return { ...evidence, path: newFileName };
+    }
+
+    /**
+     * Determines by the request body if evidence template is only for jira or redmine
+     * @param {ICreateTemplateInput} request - the request to get user issues
+     * @returns {PageTypeEnum | undefined} returns page type enum or undefined
+     */
+    public getPageType(request: ICreateTemplateInput): PageTypeEnum | undefined {
+        if (Boolean(request.jira_username) && !Boolean(request.redmine_id)) {
+            return PageTypeEnum.JIRA;
+        }
+        if (!Boolean(request.jira_username) && Boolean(request.redmine_id)) {
+            return PageTypeEnum.REDMINE;
+        }
+        return undefined;
     }
 
     /**
@@ -793,11 +835,7 @@ export default class UserIssueService {
         await page.goto(issue.link, { waitUntil: 'load' });
 
         if (isLogin) {
-            const base64Credentials = authorization.split(' ')[1];
-
-            const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
-
-            const [username, password] = credentials.split(':');
+            const [username, password] = getCredentialsFromBasicAuth(authorization);
 
             if (issue.pageType === PageTypeEnum.JIRA) {
                 await page.type('input[id="login-form-username"]', username);
@@ -928,5 +966,58 @@ export default class UserIssueService {
         await browser.close();
         log.info(' Finish UserIssueService@getEvidenceImages method');
         return paragraphs;
+    }
+
+    /**
+     * Gets download links response
+     * @param {IGetDownloadLinksInput} request year offset and limit get params
+     * @returns {Promise<IUserTemplate[]>} returns user templates array with download url
+     */
+    public async getDownloadLinks(request: IGetDownloadLinksInput): Promise<IGetDownloadLinksOutput[]> {
+        log.info('Start UserIssueService@getDownloadLinks method');
+
+        const [username] = getCredentialsFromBasicAuth(request.authorization);
+
+        const userTemplates = await userTemplateService.getUserTemplates({
+            username,
+            year: request.year,
+            offset: request.offset,
+            limit: request.limit,
+        });
+
+        log.info('Finish UserIssueService@getDownloadLinks');
+        return userTemplates.map((template) => {
+            const register = template.toObject();
+            return {
+                pageType: register.pageType,
+                year: register.year,
+                downloadUrl: this.PROTOCOL_URL! + this.BASE_URL! + this.PORT! + '/user-issues/download/' + register._id,
+            };
+        });
+    }
+
+    /**
+     * Gets download links response
+     * @param {string} id year offset and limit get params
+     * @returns {Promise<IUserTemplate[]>} returns user templates array with download url
+     */
+    public async downloadTemplate(id: string | undefined): Promise<Record<string, any>> {
+        log.info('Start UserIssueService@downloadTemplate method with id:', id);
+
+        if (!id) {
+            throw new BaseErrorClass(INTERNAL_ERROR_CODES.BAD_REQUEST);
+        }
+
+        let userTemplate;
+
+        try {
+            userTemplate = await userTemplateService.getById(id);
+        } catch (error) {
+            log.info('Error UserIssueService@downloadTemplate', error);
+            throw new BaseErrorClass(INTERNAL_ERROR_CODES.GENERAL_UNKNOWN);
+        }
+
+        log.info('Finish UserIssueService@downloadTemplate');
+        return { path: userTemplate.path };
     }
 }

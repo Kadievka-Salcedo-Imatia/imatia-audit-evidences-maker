@@ -1,6 +1,8 @@
 import ICreateTemplateYearOutput from '../interfaces/ICreateTemplateYearOutput';
 import IDataIssue from '../interfaces/IDataIssue';
 import IEvidence from '../interfaces/IEvidence';
+import IGetDownloadLinksInput from '../interfaces/IGetDownloadLinksInput';
+import IGetDownloadLinksOutput from '../interfaces/IGetDownloadLinksOutput';
 import IGetIssueFromRedmineInput from '../interfaces/IGetIssueFromRedmineInput';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
 import IUserIssuesInput from '../interfaces/IUserIssuesInput';
@@ -66,5 +68,28 @@ export default class UserIssueController {
     public async syncRedmineUserIssues(req: any): Promise<ISyncRedmineUserIssuesOutput> {
         const request: IGetIssueFromRedmineInput = { ...req.body, ...req.headers };
         return await userIssueService.syncRedmineUserIssues(request);
+    }
+
+    /**
+     * Maps request and calls getDownloadLinks service.
+     * @returns templates created
+     */
+    public async getDownloadLinks(req: any): Promise<IGetDownloadLinksOutput[]> {
+        const request: IGetDownloadLinksInput = {
+            authorization: req.headers.authorization || req.headers.Authorization,
+            year: req.query.year ? Number(req.query.year) : undefined,
+            offset: req.query.offset ? Number(req.query.offset) : undefined,
+            limit: req.query.limit ? Number(req.query.limit) : undefined,
+        };
+        return await userIssueService.getDownloadLinks(request);
+    }
+
+    /**
+     * Maps request and calls getDownloadLinks service.
+     * @returns file path string to download
+     */
+    public async downloadTemplate(req: any): Promise<any> {
+        const id: string = req.params.id;
+        return await userIssueService.downloadTemplate(id);
     }
 }

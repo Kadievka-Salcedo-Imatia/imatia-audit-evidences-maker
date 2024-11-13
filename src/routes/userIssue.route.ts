@@ -5,6 +5,7 @@ import ResponseClass from '../resources/configurations/classes/ResponseClass';
 import getUserIssuesValidator from '../validators/userIssue/getUserIssues.validator';
 import getUserIssuesYearValidator from '../validators/userIssue/getUserIssuesYear.validator';
 import syncRedmineUserIssues from '../validators/userIssue/syncRedmineUserIssues.validator';
+import getDownloadLinks from '../validators/userIssue/getDownloadLinks';
 
 const router = express.Router();
 
@@ -35,6 +36,15 @@ router.post('/create-template-from-year', (req, res) => {
 router.post('/sync-redmine', (req, res) => {
     const { validatorFailed, message } = syncRedmineUserIssues(req.body);
     validatorFailed ? response.sendBadRequest(res, message) : response.send(req, res, ResponseStatus.OK, 'syncRedmineUserIssues');
+});
+
+router.get('/download-links', (req, res) => {
+    const { validatorFailed, message } = getDownloadLinks(req.query);
+    validatorFailed ? response.sendBadRequest(res, message) : response.send(req, res, ResponseStatus.OK, 'getDownloadLinks');
+});
+
+router.get('/download/:id', (req, res) => {
+    response.download(req, res, ResponseStatus.OK, 'downloadTemplate');
 });
 
 export default router;

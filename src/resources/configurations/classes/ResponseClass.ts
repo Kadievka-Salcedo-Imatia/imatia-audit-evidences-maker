@@ -32,10 +32,10 @@ export default class ResponseClass {
         try {
             const data: any = await this.controllerInstance[method](req);
             response.data = data ? data : {};
-        } catch (err) {
-            log.error('send method failed with error: ', err);
+        } catch (error) {
+            log.error('send method failed with error: ', error);
 
-            handleErrorResponse(err, response);
+            handleErrorResponse(error, response);
         }
 
         res.status(response.statusCode).send(response);
@@ -58,21 +58,50 @@ export default class ResponseClass {
         };
         res.status(response.statusCode).send(response);
     }
+
+    /**
+     * Makes the request to the app or handles errors.
+     * @param {core.Request} req http request object
+     * @param {core.Request} res http response object
+     * @param {IResponseStatus} responseStatus message and statusCode
+     * @param {string} method The name of the controller's function to be called
+     * @param {string | undefined} message The message that must be displayed
+     * @returns {Promise<void>} void
+     */
+    public async download(req: core.Request, res: core.Response, responseStatus: IResponseStatus, method: string, message?: string): Promise<any> {
+        const response: IResponse = {
+            message: message || responseStatus?.message,
+            statusCode: responseStatus.statusCode,
+        };
+
+        let data: any;
+
+        try {
+            data = await this.controllerInstance[method](req);
+        } catch (err) {
+            log.error('send method failed with error: ', err);
+            handleErrorResponse(err, response);
+        }
+
+        if (data && data.path) {
+            res.status(response.statusCode).download(data.path);
+        } else {
+            res.status(response.statusCode).send(response);
+        }
+    }
 }
 
-export function handleErrorResponse(err: unknown, response: IResponse): void {
-    const e = err as unknown as Error;
-
-    if (err instanceof BaseErrorClass) {
-        response.statusCode = err.responseStatus.statusCode;
-        response.message = err.responseStatus.message;
+export function handleErrorResponse(error: any, response: IResponse): void {
+    if (error instanceof BaseErrorClass) {
+        response.statusCode = error.responseStatus.statusCode;
+        response.message = error.responseStatus.message;
         response.error = {
-            code: err.code,
-            message: err.message,
+            code: error.code,
+            message: error.message,
         };
     } else {
         response.statusCode = INTERNAL_ERROR_CODES.GENERAL_UNKNOWN.responseStatus.statusCode;
-        response.message = e.message ? e.message : INTERNAL_ERROR_CODES.GENERAL_UNKNOWN.responseStatus.message;
+        response.message = error.message ? error.message : INTERNAL_ERROR_CODES.GENERAL_UNKNOWN.responseStatus.message;
         response.error = {
             code: INTERNAL_ERROR_CODES.GENERAL_UNKNOWN.code,
             message: INTERNAL_ERROR_CODES.GENERAL_UNKNOWN.message,
