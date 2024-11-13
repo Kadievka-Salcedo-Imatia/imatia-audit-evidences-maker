@@ -391,8 +391,22 @@ export default class UserIssueService {
         let newFilePath: string =
             __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
 
-        if(Boolean(pageType)){
-            newFilePath = __dirname + path.sep + '..' + path.sep + 'templates' + path.sep + pageType + path.sep + 'EVIDENCIAS ' + request.year + path.sep + evidence.userDisplayName + path.sep + evidence.month;
+        if (Boolean(pageType)) {
+            newFilePath =
+                __dirname +
+                path.sep +
+                '..' +
+                path.sep +
+                'templates' +
+                path.sep +
+                pageType +
+                path.sep +
+                'EVIDENCIAS ' +
+                request.year +
+                path.sep +
+                evidence.userDisplayName +
+                path.sep +
+                evidence.month;
         }
 
         if (!fs.existsSync(newFilePath)) {
@@ -1001,7 +1015,7 @@ export default class UserIssueService {
      * @param {string} id year offset and limit get params
      * @returns {Promise<IUserTemplate[]>} returns user templates array with download url
      */
-    public async downloadTemplate(id: string | undefined): Promise<Record<string, any>> {
+    public async downloadTemplate(id?: string): Promise<Record<string, any>> {
         log.info('Start UserIssueService@downloadTemplate method with id:', id);
 
         if (!id) {
@@ -1017,7 +1031,23 @@ export default class UserIssueService {
             throw new BaseErrorClass(INTERNAL_ERROR_CODES.GENERAL_UNKNOWN);
         }
 
-        log.info('Finish UserIssueService@downloadTemplate');
+        if (!userTemplate || !userTemplate.path) {
+            throw new BaseErrorClass({
+                code: INTERNAL_ERROR_CODES.USER_TEMPLATE_NOT_FOUND.code,
+                message: INTERNAL_ERROR_CODES.USER_TEMPLATE_NOT_FOUND.message + id,
+                responseStatus: INTERNAL_ERROR_CODES.USER_TEMPLATE_NOT_FOUND.responseStatus,
+            });
+        }
+
+        if (!fs.existsSync(userTemplate.path)) {
+            throw new BaseErrorClass({
+                code: INTERNAL_ERROR_CODES.FILE_NOT_FOUND.code,
+                message: INTERNAL_ERROR_CODES.FILE_NOT_FOUND.message + userTemplate.path,
+                responseStatus: INTERNAL_ERROR_CODES.FILE_NOT_FOUND.responseStatus,
+            });
+        }
+
+        log.info('Finish UserIssueService@downloadTemplate path:', userTemplate.path);
         return { path: userTemplate.path };
     }
 }

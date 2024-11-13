@@ -22,10 +22,15 @@ import puppeteer from 'puppeteer';
 import ICreateTemplateInput from '../../interfaces/ICreateTemplateInput';
 import { createTemplateResponseMock } from '../mocks/createTemplateResponseMock';
 import { getEvidenceInfoMock } from '../mocks/evidenceDescriptionResponseMock';
+import UserTemplateService from '../../services/userTemplate.service';
+import IGetDownloadLinksInput from '../../interfaces/IGetDownloadLinksInput';
+import { userTemplateJiraMock, userTemplateRedmineMock } from '../mocks/userTemplateMock';
 
 const redmineIssue = redmineIssuesMock.issues[0];
 
 const userIssueFromDBMock = new UserIssueModel(userIssueMock);
+
+const userTemplateService = UserTemplateService.getInstance();
 
 describe('UserIssueService', () => {
     beforeEach(() => {
@@ -841,6 +846,8 @@ describe('UserIssueService', () => {
     });
 
     describe('createTemplate', () => {
+        const createUserTemplateMock = jest.spyOn(userTemplateService, 'createUserTemplate').mockImplementation((async () => {}) as any);
+
         it('should return and empty array of issues if the user has not evidences', async () => {
             const request: ICreateTemplateInput = {
                 authorization: getUserIssueReqHeaderMock.authorization,
@@ -869,6 +876,8 @@ describe('UserIssueService', () => {
 
             expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
             expect(getEvidenceImagesMock).toHaveBeenCalledTimes(0);
+
+            expect(createUserTemplateMock).toHaveBeenCalledTimes(0);
         });
 
         it('should create a new folder for the year if it does no exist and the evidences files too', async () => {
@@ -916,6 +925,61 @@ describe('UserIssueService', () => {
             expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
             expect(fsMkdirSync).toHaveBeenCalledTimes(1);
             expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
+
+            expect(createUserTemplateMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should log error if create user template on the DB fails', async () => {
+            createUserTemplateMock.mockImplementationOnce(() => {
+                throw new Error('create the template on DB error');
+            });
+
+            const fsExistsSyncMock = jest
+                .spyOn(fs, 'existsSync')
+                .mockImplementationOnce((_pathName) => false) // exist the folder of the year?
+                .mockImplementationOnce((_pathName) => false); // exist the file of evidences?
+
+            const fsMkdirSync = jest.spyOn(fs, 'mkdirSync').mockImplementationOnce((_pathName, _options) => ''); // creates the folder of the year if does not exist
+
+            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
+
+            const request: ICreateTemplateInput = {
+                authorization: getUserIssueReqHeaderMock.authorization,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
+
+            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
+
+            const result = await userIssueService.createTemplate(request);
+
+            expect(result).toHaveProperty('project', 'Project Name Test');
+            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
+            expect(result).toHaveProperty('date', '30/11/2024');
+            expect(result).toHaveProperty('month', 'NOVIEMBRE');
+            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
+            expect(result).toHaveProperty('total', 3);
+            expect(result.issues?.length).toBe(3);
+            expect(result).toHaveProperty('path');
+
+            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
+                result.path?.includes(word),
+            );
+            expect(includesTheWords).toBe(true);
+
+            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
+            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(1);
+
+            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
+            expect(fsMkdirSync).toHaveBeenCalledTimes(1);
+            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
+
+            expect(createUserTemplateMock).toHaveBeenCalledTimes(1);
         });
 
         it('should return only the template info if evidence files already exists and rewrite files request is false', async () => {
@@ -954,6 +1018,7 @@ describe('UserIssueService', () => {
             expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
 
             expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
+            expect(createUserTemplateMock).toHaveBeenCalledTimes(0);
         });
 
         it('should delete and create again the evidence document if evidence files already exists and rewrite files request is true', async () => {
@@ -1002,6 +1067,8 @@ describe('UserIssueService', () => {
             expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
             expect(fsRmSync).toHaveBeenCalledTimes(1);
             expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
+
+            expect(createUserTemplateMock).toHaveBeenCalledTimes(1);
         });
 
         it('should handle request with redmine_id only', async () => {
@@ -1150,6 +1217,7 @@ describe('UserIssueService', () => {
             expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
             expect(fsRmSync).toHaveBeenCalledTimes(1);
             expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
+            expect(createUserTemplateMock).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -1309,6 +1377,115 @@ describe('UserIssueService', () => {
             const result = userIssueService.forceScroll();
 
             expect(result).toBeDefined();
+        });
+    });
+
+    describe('getDownloadLinks', () => {
+        it('should get some download links', async () => {
+            const request: IGetDownloadLinksInput = {
+                authorization: 'Basic auth string',
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const getUserTemplatesMock = jest.spyOn(userTemplateService, 'getUserTemplates').mockImplementation(
+                async () =>
+                    [
+                        {
+                            toObject: () => userTemplateJiraMock,
+                        },
+                        {
+                            toObject: () => userTemplateRedmineMock,
+                        },
+                    ] as any,
+            );
+
+            const result = await userIssueService.getDownloadLinks(request);
+
+            result.forEach((element) => {
+                expect(element).toHaveProperty('pageType');
+                expect(element).toHaveProperty('year');
+                expect(element).toHaveProperty('downloadUrl');
+            });
+
+            expect(getUserTemplatesMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('downloadTemplate', () => {
+        it('should throw error if id is undefined', async () => {
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            await expect(userIssueService.downloadTemplate()).rejects.toThrow('Bad request');
+        });
+
+        it('should throw error if getById fails', async () => {
+            const getByIdMock = jest.spyOn(userTemplateService, 'getById').mockImplementation(async () => {
+                throw new Error('error getting by id');
+            });
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            await expect(userIssueService.downloadTemplate('6734c5429411eee699ab6257')).rejects.toThrow('General unknown error');
+
+            expect(getByIdMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw error if the DB document does not exist', async () => {
+            const getByIdMock = jest.spyOn(userTemplateService, 'getById').mockImplementation(async () => undefined);
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            await expect(userIssueService.downloadTemplate('6734c5429411eee699ab6257')).rejects.toThrow(
+                'The specified user template id does not exist in the DB: 6734c5429411eee699ab6257',
+            );
+
+            expect(getByIdMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw error if the DB document path does not exist', async () => {
+            const getByIdMock = jest.spyOn(userTemplateService, 'getById').mockImplementation(async () => ({
+                fields: 'other fields',
+            }));
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            await expect(userIssueService.downloadTemplate('6734c5429411eee699ab6257')).rejects.toThrow(
+                'The specified user template id does not exist in the DB: 6734c5429411eee699ab6257',
+            );
+
+            expect(getByIdMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw error if the file does not exist', async () => {
+            const getByIdMock = jest.spyOn(userTemplateService, 'getById').mockImplementation(async () => ({
+                path: '/this_directory_does_not_exist',
+            }));
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            await expect(userIssueService.downloadTemplate('6734c5429411eee699ab6257')).rejects.toThrow(
+                'The specified file path does not exist in the directory: /this_directory_does_not_exist',
+            );
+
+            expect(getByIdMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw error if the file does not exist', async () => {
+            const getByIdMock = jest.spyOn(userTemplateService, 'getById').mockImplementation(async () => ({
+                path: '/test_path',
+            }));
+
+            const fsExistsSyncMock = jest.spyOn(fs, 'existsSync').mockImplementationOnce((_pathName) => true);
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.downloadTemplate('6734c5429411eee699ab6257');
+
+            expect(result).toMatchObject({ path: '/test_path' });
+
+            expect(getByIdMock).toHaveBeenCalledTimes(1);
+            expect(fsExistsSyncMock).toHaveBeenCalledTimes(1);
         });
     });
 });

@@ -17,6 +17,16 @@ const INTERNAL_ERROR_CODES: Record<string, BaseError> = {
         message: 'Please authenticate',
         responseStatus: RESPONSE_STATUS_CODES.UNAUTHORIZED,
     },
+    FILE_NOT_FOUND: {
+        code: 4003,
+        message: 'The specified file path does not exist in the directory: ',
+        responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
+    },
+    USER_TEMPLATE_NOT_FOUND: {
+        code: 4004,
+        message: 'The specified user template id does not exist in the DB: ',
+        responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
+    },
 };
 
 export default INTERNAL_ERROR_CODES;
