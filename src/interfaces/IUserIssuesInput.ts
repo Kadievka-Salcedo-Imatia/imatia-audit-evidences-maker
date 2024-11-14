@@ -1,5 +1,8 @@
 export default interface IUserIssuesInput {
-    authorization: string;
+    header: {
+        getCredentials: string[];
+        authorization: string;
+    };
     jira_base_url?: string;
     jira_url?: string;
     jql?: string;

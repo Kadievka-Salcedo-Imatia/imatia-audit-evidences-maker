@@ -1,5 +1,8 @@
 export default interface IGetIssueFromRedmineInput {
-    authorization: string;
+    header: {
+        getCredentials: string[];
+        authorization: string;
+    };
     status_id?: string;
     limit?: number;
     offset?: number;

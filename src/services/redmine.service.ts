@@ -46,7 +46,7 @@ export default class RedmineService {
                     offset: request.offset || '0',
                 },
                 headers: {
-                    Authorization: request.authorization!,
+                    Authorization: request.header.authorization!,
                 },
             });
             data = promiseAxios.data;

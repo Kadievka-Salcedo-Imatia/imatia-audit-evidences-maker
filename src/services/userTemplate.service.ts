@@ -81,12 +81,14 @@ export default class UserTemplateService {
         log.info('  Start UserIssueService@getUserTemplates method with params:', request);
         let userTemplates;
 
+        let findParameters: Record<string, any> = {
+            username: request.username,
+        };
+        findParameters = this.addFilters(request, ['pageType', 'year'], findParameters);
+
         try {
             userTemplates = await mongooseModel
-                .find({
-                    username: request.username,
-                    year: request.year,
-                })
+                .find(findParameters)
                 .skip(request.offset || 0)
                 .limit(request.limit || this.USER_TEMPLATES_LIMIT_DEFAULT)
                 .sort({ updatedAt: -1 });
@@ -106,5 +108,21 @@ export default class UserTemplateService {
      */
     public async getById(id: string): Promise<any> {
         return await mongooseModel.findById({ _id: id });
+    }
+
+    /**
+     * Creates or updates by username and path an user template in MongoDB.
+     * @param {Record<string,any>} request the request body
+     * @param {string[]} filters array of filters name
+     * @param {Record<string, any>} findParameters findParameters to send to mongoose model find method
+     * @returns {Record<string, any>} returns the new findParameters with added filters
+     */
+    private addFilters(request: Record<string, any>, filters: string[], findParameters: Record<string, any>): Record<string, any> {
+        filters.forEach((filter) => {
+            if (request[filter]) {
+                findParameters[filter] = request[filter];
+            }
+        });
+        return findParameters;
     }
 }

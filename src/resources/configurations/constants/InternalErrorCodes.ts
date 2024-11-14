@@ -14,7 +14,7 @@ const INTERNAL_ERROR_CODES: Record<string, BaseError> = {
     },
     UNAUTHORIZED: {
         code: 4002,
-        message: 'Please authenticate',
+        message: 'Authorization required',
         responseStatus: RESPONSE_STATUS_CODES.UNAUTHORIZED,
     },
     FILE_NOT_FOUND: {

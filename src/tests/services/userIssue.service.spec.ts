@@ -147,7 +147,7 @@ describe('UserIssueService', () => {
             const createUserIssueMock = jest.spyOn(userIssueService, 'createUserIssue').mockReturnValue(userIssueFromDBMock as any);
 
             const request: IGetIssueFromRedmineInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 status_id: syncRedmineUserIssuesReqBodyMock.status_id,
                 limit: syncRedmineUserIssuesReqBodyMock.limit,
                 offset: syncRedmineUserIssuesReqBodyMock.offset,
@@ -172,7 +172,7 @@ describe('UserIssueService', () => {
                 }) as any);
 
             const request: IGetIssueFromRedmineInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 status_id: syncRedmineUserIssuesReqBodyMock.status_id,
                 limit: syncRedmineUserIssuesReqBodyMock.limit,
                 offset: syncRedmineUserIssuesReqBodyMock.offset,
@@ -193,7 +193,7 @@ describe('UserIssueService', () => {
             }) as any);
 
             const request: IGetIssueFromRedmineInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 status_id: syncRedmineUserIssuesReqBodyMock.status_id,
                 limit: syncRedmineUserIssuesReqBodyMock.limit,
                 offset: syncRedmineUserIssuesReqBodyMock.offset,
@@ -213,7 +213,7 @@ describe('UserIssueService', () => {
             const createUserIssueMock = jest.spyOn(userIssueService, 'createUserIssue').mockReturnValue(userIssueFromDBMock as any);
 
             const request: IGetIssueFromRedmineInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 status_id: syncRedmineUserIssuesReqBodyMock.status_id,
                 limit: syncRedmineUserIssuesReqBodyMock.limit,
                 offset: syncRedmineUserIssuesReqBodyMock.offset,
@@ -239,7 +239,7 @@ describe('UserIssueService', () => {
             const createUserIssueMock = jest.spyOn(userIssueService, 'createUserIssue').mockReturnValue(userIssueFromDBMock as any);
 
             const request: IGetIssueFromRedmineInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 status_id: syncRedmineUserIssuesReqBodyMock.status_id,
                 limit: 1,
                 offset: syncRedmineUserIssuesReqBodyMock.offset,
@@ -261,7 +261,7 @@ describe('UserIssueService', () => {
             }) as any);
 
             const request: IGetIssueFromRedmineInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 status_id: syncRedmineUserIssuesReqBodyMock.status_id,
                 limit: syncRedmineUserIssuesReqBodyMock.limit,
                 offset: syncRedmineUserIssuesReqBodyMock.offset,
@@ -332,7 +332,7 @@ describe('UserIssueService', () => {
             const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
 
             const request: IUserIssuesInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -353,7 +353,7 @@ describe('UserIssueService', () => {
             const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
 
             const request: IUserIssuesInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 jira_base_url: getUserIssueReqBodyMock.jira_base_url,
                 jira_url: getUserIssueReqBodyMock.jira_url,
@@ -373,7 +373,7 @@ describe('UserIssueService', () => {
 
         it('should call get user issues from db service if redmine_id is defined in the request', async () => {
             const request: IUserIssuesInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -405,7 +405,7 @@ describe('UserIssueService', () => {
             const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
 
             const request: IUserIssuesInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 jira_base_url: getUserIssueReqBodyMock.jira_base_url,
                 jira_url: getUserIssueReqBodyMock.jira_url,
@@ -437,7 +437,7 @@ describe('UserIssueService', () => {
             const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
 
             const request: IUserIssuesInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -483,7 +483,7 @@ describe('UserIssueService', () => {
             const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
 
             const request: IUserIssuesInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 jira_base_url: getUserIssueReqBodyMock.jira_base_url,
                 jira_url: getUserIssueReqBodyMock.jira_url,
@@ -528,7 +528,7 @@ describe('UserIssueService', () => {
 
         it('should call get user issues from db service if redmine_id is defined in the request', async () => {
             const request: IUserIssuesInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -582,7 +582,7 @@ describe('UserIssueService', () => {
             const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
 
             const request: IUserIssuesInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 jira_base_url: getUserIssueReqBodyMock.jira_base_url,
                 jira_url: getUserIssueReqBodyMock.jira_url,
@@ -653,10 +653,10 @@ describe('UserIssueService', () => {
             } as any;
 
             const isLogin: boolean = true;
-            const authorization: string = getUserIssueReqHeaderMock.authorization;
+            const getCredentials: string[] = getUserIssueReqHeaderMock.header.getCredentials;
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
-            const result = await userIssueService.takeScreenshot(issue, browserLaunchMock, isLogin, authorization);
+            const result = await userIssueService.takeScreenshot(issue, browserLaunchMock, isLogin, getCredentials);
 
             expect(result).toBeInstanceOf(Buffer);
             expect(pageMock.setViewport).toHaveBeenCalledTimes(1);
@@ -716,10 +716,10 @@ describe('UserIssueService', () => {
             } as any;
 
             const isLogin: boolean = true;
-            const authorization: string = getUserIssueReqHeaderMock.authorization;
+            const getCredentials: string[] = getUserIssueReqHeaderMock.header.getCredentials;
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
-            const result = await userIssueService.takeScreenshot(issue, browserLaunchMock, isLogin, authorization);
+            const result = await userIssueService.takeScreenshot(issue, browserLaunchMock, isLogin, getCredentials);
 
             expect(result).toBeInstanceOf(Buffer);
             expect(pageMock.setViewport).toHaveBeenCalledTimes(1);
@@ -739,7 +739,7 @@ describe('UserIssueService', () => {
         it('should return an array of paragraphs with the taken screenshots of jira', async () => {
             const evidenceInfoMock: IEvidence = getEvidenceInfoMock([]);
             const request = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
@@ -783,7 +783,7 @@ describe('UserIssueService', () => {
 
             const evidenceInfoMock: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock, userIssueMock], undefined, false);
             const request = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
@@ -815,7 +815,7 @@ describe('UserIssueService', () => {
         it('should continue taking screenshots even if one throws error', async () => {
             const evidenceInfoMock: IEvidence = getEvidenceInfoMock([]);
             const request = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
@@ -850,7 +850,7 @@ describe('UserIssueService', () => {
 
         it('should return and empty array of issues if the user has not evidences', async () => {
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -891,7 +891,7 @@ describe('UserIssueService', () => {
             const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
 
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -944,7 +944,7 @@ describe('UserIssueService', () => {
             const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
 
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -989,7 +989,7 @@ describe('UserIssueService', () => {
                 .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
 
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -1032,7 +1032,7 @@ describe('UserIssueService', () => {
             const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
 
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -1082,7 +1082,7 @@ describe('UserIssueService', () => {
             const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
 
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
                 year: getUserIssueReqBodyMock.year,
@@ -1132,7 +1132,7 @@ describe('UserIssueService', () => {
             const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
 
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
@@ -1183,7 +1183,7 @@ describe('UserIssueService', () => {
             const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
 
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 jira_base_url: getUserIssueReqBodyMock.jira_base_url,
                 jira_url: getUserIssueReqBodyMock.jira_url,
@@ -1224,7 +1224,7 @@ describe('UserIssueService', () => {
     describe('createTemplatesYear', () => {
         it('should create evidences of the year', async () => {
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
@@ -1258,7 +1258,7 @@ describe('UserIssueService', () => {
 
         it('should create evidences of the year and could have an evidence with error', async () => {
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
@@ -1303,7 +1303,7 @@ describe('UserIssueService', () => {
 
         it('should create evidences of the year no leap', async () => {
             const request: ICreateTemplateInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
                 month: getUserIssueReqBodyMock.month,
@@ -1350,7 +1350,7 @@ describe('UserIssueService', () => {
     describe('splitIssuesByTypeAndGetImages', () => {
         it('should test the case issues are empty', async () => {
             const request: ICreateTemplateInput = {
-                authorization: 'dsdfsafds',
+                header: getUserIssueReqHeaderMock.header,
                 month: 11,
                 year: 2024,
             };
@@ -1383,7 +1383,10 @@ describe('UserIssueService', () => {
     describe('getDownloadLinks', () => {
         it('should get some download links', async () => {
             const request: IGetDownloadLinksInput = {
-                authorization: 'Basic auth string',
+                header: {
+                    getCredentials: ['jhon.doe', '21231322'],
+                    authorization: 'Basic auth string',
+                },
             };
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();

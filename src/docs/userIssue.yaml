@@ -53,6 +53,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/responses/BadRequestError"
+        401:
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/UnauthorizedError"
         500:
           description: General error
           content:
@@ -154,6 +160,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/responses/BadRequestError"
+        401:
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/UnauthorizedError"
         500:
           description: General error
           content:
@@ -230,6 +242,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/responses/BadRequestError"
+        401:
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/UnauthorizedError"
         500:
           description: General error
           content:
@@ -295,6 +313,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/responses/BadRequestError"
+        401:
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/UnauthorizedError"
         500:
           description: General error
           content:
@@ -335,7 +359,7 @@ paths:
                     properties:
                       userDisplayName:
                         type: string
-                        example: Jhon Doe,
+                        example: Jhon Doe
                       evidencesCreated:
                         type: object
                         properties:
@@ -385,6 +409,154 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/responses/BadRequestError"
+        401:
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/UnauthorizedError"
+        500:
+          description: General error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/GeneralError"
+  /user-issues/download-links:
+    get:
+      tags:
+        - Templates download links
+      summary: Returns a list of download url for created user templates
+      produces:
+        - application/json
+      security:
+        - basicAuth: []
+      parameters:
+        - in: query
+          name: year
+          description: Filters by year
+          schema:
+            type: number
+            example: 2024
+        - in: query
+          name: offset
+          description: Select skip items
+          schema:
+            type: number
+            example: 0
+        - in: query
+          name: limit
+          description: Limit of items to return
+          schema:
+            type: number
+            example: 100
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 200
+                  message:
+                    type: string
+                    example: Ok
+                  data: 
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        pageType:
+                          type: string
+                          example: JIRA
+                        year:
+                          type: number
+                          example: 2024
+                        downloadUrl:
+                          type: string
+                          example: "http://localhost:3000/user-issues/download/6734c5429411eee699ab6257"
+        400:
+          description: Bad Request error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/BadRequestError"
+        401:
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/UnauthorizedError"
+        500:
+          description: General error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/GeneralError"
+  /user-issues/download/{id}:
+    get:
+      tags:
+        - Templates download links
+      summary: Directly download the specified file with the id
+      produces:
+        - application/json
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: File document id
+          schema:
+            type: string
+            example: 6734c5429411eee699ab6257
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 200
+                  message:
+                    type: string
+                    example: Ok
+                  data: 
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        pageType:
+                          type: string
+                          example: JIRA
+                        year:
+                          type: number
+                          example: 2024
+                        downloadUrl:
+                          type: string
+                          example: "http://localhost:3000/user-issues/download/6734c5429411eee699ab6257"
+        400:
+          description: Bad Request error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/BadRequestError"
+        401:
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/UnauthorizedError"
+        404:
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/NotFoundError"
         500:
           description: General error
           content:

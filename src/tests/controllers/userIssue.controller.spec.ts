@@ -28,9 +28,7 @@ describe('UserIssueController', () => {
     describe('getUserIssues method', () => {
         it('should map the request parameters and return the service response', async () => {
             const request = {
-                headers: {
-                    authorization: getUserIssueReqHeaderMock.authorization,
-                },
+                header: getUserIssueReqHeaderMock.header,
                 body: {
                     jira_username: getUserIssueReqBodyMock.jira_username,
                     redmine_id: getUserIssueReqBodyMock.redmine_id,
@@ -56,9 +54,7 @@ describe('UserIssueController', () => {
     describe('getUserIssuesDescriptions method', () => {
         it('should map the request parameters and return the service response', async () => {
             const request = {
-                headers: {
-                    authorization: getUserIssueReqHeaderMock.authorization,
-                },
+                header: getUserIssueReqHeaderMock.header,
                 body: {
                     jira_username: getUserIssueReqBodyMock.jira_username,
                     redmine_id: getUserIssueReqBodyMock.redmine_id,
@@ -84,9 +80,7 @@ describe('UserIssueController', () => {
     describe('createTemplate method', () => {
         it('should map the request parameters and return the service response', async () => {
             const request = {
-                headers: {
-                    authorization: getUserIssueReqHeaderMock.authorization,
-                },
+                header: getUserIssueReqHeaderMock.header,
                 body: {
                     jira_username: getUserIssueReqBodyMock.jira_username,
                     redmine_id: getUserIssueReqBodyMock.redmine_id,
@@ -112,9 +106,7 @@ describe('UserIssueController', () => {
     describe('createTemplateYear method', () => {
         it('should map the request parameters and return the service response', async () => {
             const request = {
-                headers: {
-                    authorization: getUserIssueReqHeaderMock.authorization,
-                },
+                header: getUserIssueReqHeaderMock.header,
                 body: {
                     jira_username: getUserIssueReqBodyMock.jira_username,
                     redmine_id: getUserIssueReqBodyMock.redmine_id,
@@ -144,9 +136,7 @@ describe('UserIssueController', () => {
     describe('syncRedmineUserIssues method', () => {
         it('should map the request parameters and return the service response', async () => {
             const request = {
-                headers: {
-                    authorization: getUserIssueReqHeaderMock.authorization,
-                },
+                header: getUserIssueReqHeaderMock.header,
                 body: {
                     status_id: '*',
                     limit: 100,

@@ -11,7 +11,7 @@ import { jiraIssuesProcessedMock } from './jiraIssuesMock';
 export function getEvidenceInfoMock(issuesMock: IUserIssue[], request?: IUserIssuesInput, includeJiraMocks: boolean = true): IEvidence {
     if (!request) {
         request = {
-            authorization: getUserIssueReqHeaderMock.authorization,
+            header: getUserIssueReqHeaderMock.header,
             jira_username: getUserIssueReqBodyMock.jira_username,
             redmine_id: getUserIssueReqBodyMock.redmine_id,
             month: getUserIssueReqBodyMock.month,

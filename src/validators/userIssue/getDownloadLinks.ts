@@ -8,6 +8,7 @@ export default function getDownloadLinks(reqQuery: any): {
     message: string;
 } {
     const schema = {
+        pageType: Joi.string().optional(),
         year: Joi.number().positive().optional(),
         offset: Joi.number().optional(),
         limit: Joi.number().positive().optional(),

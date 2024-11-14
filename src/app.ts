@@ -6,6 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import mainRoutes from './routes/main.route';
 import userIssueRoutes from './routes/userIssue.route';
 import mongoose from 'mongoose';
+import { basicAuthMiddleware } from './middlewares/basicAuth.middleware';
 
 const log = getLogger('app.ts');
 
@@ -37,7 +38,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use('/user-issues', userIssueRoutes);
+app.use('/user-issues', basicAuthMiddleware, userIssueRoutes);
 
 app.use('/', mainRoutes);
 

@@ -1,5 +1,9 @@
 export default interface IGetDownloadLinksInput {
-    authorization: string;
+    header: {
+        getCredentials: string[];
+        authorization: string;
+    };
+    pageType?: string;
     year?: number;
     offset?: number;
     limit?: number;

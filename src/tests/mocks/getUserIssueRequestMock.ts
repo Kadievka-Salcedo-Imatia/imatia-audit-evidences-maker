@@ -1,5 +1,5 @@
 export const getUserIssueReqBodyMock = {
-    jira_username: 'kadievka.salcedo',
+    jira_username: 'jhon.doe',
     redmine_id: 9999,
     year: 2024,
     month: 11,
@@ -10,5 +10,8 @@ export const getUserIssueReqBodyMock = {
 };
 
 export const getUserIssueReqHeaderMock = {
-    authorization: 'basic user@password',
+    header: {
+        getCredentials: ['jhon.doe', '1234809832474091'],
+        authorization: 'basic user@password',
+    },
 };

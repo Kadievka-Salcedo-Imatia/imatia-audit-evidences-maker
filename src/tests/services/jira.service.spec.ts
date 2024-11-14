@@ -31,7 +31,7 @@ describe('JiraService', () => {
             }));
 
             const getIssueInput: IGetIssueFromJiraInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                authorization: getUserIssueReqHeaderMock.header.authorization,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 startDate: '2024-11-01',
                 endDate: '2024-11-31',
@@ -53,7 +53,7 @@ describe('JiraService', () => {
             }));
 
             const getIssueInput: IGetIssueFromJiraInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                authorization: getUserIssueReqHeaderMock.header.authorization,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 startDate: '2024-11-01',
                 endDate: '2024-11-31',
@@ -78,7 +78,7 @@ describe('JiraService', () => {
             }));
 
             const getIssueInput: IGetIssueFromJiraInput = {
-                authorization: getUserIssueReqHeaderMock.authorization,
+                authorization: getUserIssueReqHeaderMock.header.authorization,
                 jira_username: getUserIssueReqBodyMock.jira_username,
                 startDate: '2024-11-01',
                 endDate: '2024-11-31',

@@ -20,7 +20,6 @@ import { getPagesNumber } from '../utils/pagination';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
 import ICreateTemplateInput from '../interfaces/ICreateTemplateInput';
 import IDateTime from '../interfaces/IDateTime';
-import { getCredentialsFromBasicAuth } from '../utils/authorization';
 import UserTemplateService from './userTemplate.service';
 import IUserTemplate from '../interfaces/IUserTemplate';
 import IGetDownloadLinksInput from '../interfaces/IGetDownloadLinksInput';
@@ -297,7 +296,7 @@ export default class UserIssueService {
 
         if (request.jira_username) {
             data = await jiraService.getUserIssues({
-                authorization: request.authorization,
+                authorization: request.header.authorization,
                 jira_base_url: request.jira_base_url,
                 jira_url: request.jira_url,
                 jql: request.jql,
@@ -653,7 +652,7 @@ export default class UserIssueService {
         const newBuffer = await Packer.toBuffer(doc);
         fs.writeFileSync(newFileName, newBuffer);
 
-        const [username] = getCredentialsFromBasicAuth(request.authorization);
+        const [username] = request.header.getCredentials;
         const createTemplateInput: IUserTemplate = {
             username,
             path: newFileName,
@@ -831,10 +830,10 @@ export default class UserIssueService {
      * @param {IIssueDescription} issue - Jira Cloud url
      * @param {Browser} browser - Browser instance
      * @param {boolean} isLogin - indicates if it is the first time going to take screenshot, it needs login first
-     * @param {string} authorization - authorization token to make login
+     * @param {string} getCredentials - getCredentials header to make login
      * @returns {Promise<Buffer>} returns the image buffer to be copied into the template
      */
-    public async takeScreenshot(issue: IIssueDescription, browser: Browser, isLogin: boolean, authorization: string): Promise<Buffer> {
+    public async takeScreenshot(issue: IIssueDescription, browser: Browser, isLogin: boolean, getCredentials: string[]): Promise<Buffer> {
         log.info('  Start UserIssueService@getIssues takeScreenshot with params:', { id: issue.title, url: issue.link });
         const page = await browser.newPage();
 
@@ -849,7 +848,7 @@ export default class UserIssueService {
         await page.goto(issue.link, { waitUntil: 'load' });
 
         if (isLogin) {
-            const [username, password] = getCredentialsFromBasicAuth(authorization);
+            const [username, password] = getCredentials;
 
             if (issue.pageType === PageTypeEnum.JIRA) {
                 await page.type('input[id="login-form-username"]', username);
@@ -914,7 +913,7 @@ export default class UserIssueService {
             let imageBase64Data;
 
             try {
-                imageBase64Data = await this.takeScreenshot(evidence.issues![index], browser, index === 0, request.authorization);
+                imageBase64Data = await this.takeScreenshot(evidence.issues![index], browser, index === 0, request.header.getCredentials);
             } catch (error) {
                 log.error(' Error UserIssueService@getEvidenceImages trying to take screenshot');
                 continue;
@@ -990,10 +989,11 @@ export default class UserIssueService {
     public async getDownloadLinks(request: IGetDownloadLinksInput): Promise<IGetDownloadLinksOutput[]> {
         log.info('Start UserIssueService@getDownloadLinks method');
 
-        const [username] = getCredentialsFromBasicAuth(request.authorization);
+        const [username] = request.header.getCredentials;
 
         const userTemplates = await userTemplateService.getUserTemplates({
             username,
+            pageType: request.pageType,
             year: request.year,
             offset: request.offset,
             limit: request.limit,
@@ -1005,6 +1005,7 @@ export default class UserIssueService {
             return {
                 pageType: register.pageType,
                 year: register.year,
+                month: register.month,
                 downloadUrl: this.PROTOCOL_URL! + this.BASE_URL! + this.PORT! + '/user-issues/download/' + register._id,
             };
         });

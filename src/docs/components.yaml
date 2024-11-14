@@ -1,5 +1,23 @@
 components:
   responses:
+    UnauthorizedError:
+        type: object
+        properties:
+          statusCode:
+            type: number
+            example: 401
+          message:
+            type: string
+            example: Unauthorized
+          error: 
+            type: object
+            properties:
+              code:
+                type: number
+                example: 4002
+              message:
+                type: string
+                example: "Authorization required"
     GeneralError:
       type: object
       properties:
@@ -36,6 +54,25 @@ components:
             message:
               type: string
               example: "\"month\" must be a number between 1 and 12"
+    NotFoundError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 404
+        message:
+          type: string
+          example: Not found error
+        error: 
+          type: object
+          properties:
+            code:
+              description: Internal code Error
+              type: number
+              example: 4003
+            message:
+              type: string
+              example: "The specified file path does not exist in the directory: example/example-test.docx"
   securitySchemes:
     basicAuth:
       type: http
