@@ -4,6 +4,7 @@ import getLogger from '../../../utils/logger';
 import INTERNAL_ERROR_CODES from '../constants/InternalErrorCodes';
 import IResponseStatus from '../../../interfaces/configurations/IResponseStatus';
 import IResponse from '../../../interfaces/configurations/IResponse';
+import IDownloadOutput from '../../../interfaces/IDownloadOutput';
 
 const log = getLogger('ResponseClass.ts');
 
@@ -24,7 +25,7 @@ export default class ResponseClass {
      * @returns {Promise<void>} void
      */
     public async send(req: core.Request, res: core.Response, responseStatus: IResponseStatus, method: string, message?: string): Promise<void> {
-        const response: IResponse = {
+        let response: IResponse = {
             message: message || responseStatus?.message,
             statusCode: responseStatus.statusCode,
         };
@@ -34,8 +35,7 @@ export default class ResponseClass {
             response.data = data ? data : {};
         } catch (error) {
             log.error('send method failed with error: ', error);
-
-            handleErrorResponse(error, response);
+            response = handleErrorResponse(error, response);
         }
 
         res.status(response.statusCode).send(response);
@@ -69,29 +69,25 @@ export default class ResponseClass {
      * @returns {Promise<void>} void
      */
     public async download(req: core.Request, res: core.Response, responseStatus: IResponseStatus, method: string, message?: string): Promise<any> {
-        const response: IResponse = {
+        let response: IResponse = {
             message: message || responseStatus?.message,
             statusCode: responseStatus.statusCode,
         };
 
-        let data: any;
+        let data: IDownloadOutput | undefined;
 
-        try {
-            data = await this.controllerInstance[method](req);
-        } catch (err) {
-            log.error('send method failed with error: ', err);
-            handleErrorResponse(err, response);
-        }
+        data = await this.controllerInstance[method](req);
 
         if (data && data.path) {
             res.status(response.statusCode).download(data.path);
         } else {
+            response = handleErrorResponse(data, response);
             res.status(response.statusCode).send(response);
         }
     }
 }
 
-export function handleErrorResponse(error: any, response: IResponse): void {
+export function handleErrorResponse(error: any, response: IResponse): IResponse {
     if (error instanceof BaseErrorClass) {
         response.statusCode = error.responseStatus.statusCode;
         response.message = error.responseStatus.message;
@@ -107,4 +103,5 @@ export function handleErrorResponse(error: any, response: IResponse): void {
             message: INTERNAL_ERROR_CODES.GENERAL_UNKNOWN.message,
         };
     }
+    return response;
 }

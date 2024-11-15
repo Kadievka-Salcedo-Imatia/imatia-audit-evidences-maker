@@ -1,7 +1,9 @@
 import UserIssueController from '../../controllers/userIssue.controller';
 import ICreateTemplateYearOutput from '../../interfaces/ICreateTemplateYearOutput';
 import IDataIssue from '../../interfaces/IDataIssue';
+import IDownloadOutput from '../../interfaces/IDownloadOutput';
 import IEvidence from '../../interfaces/IEvidence';
+import IGetDownloadLinksOutput from '../../interfaces/IGetDownloadLinksOutput';
 import ISyncRedmineUserIssuesOutput from '../../interfaces/ISyncRedmineUserIssuesOutput';
 import UserIssueService from '../../services/userIssue.service';
 import { getEvidenceInfoMock } from '../mocks/evidenceDescriptionResponseMock';
@@ -158,6 +160,89 @@ describe('UserIssueController', () => {
             expect(result).toMatchObject(expectedResult);
 
             expect(syncRedmineUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('getDownloadLinks method', () => {
+        it('should return download links in a list', async () => {
+            const request = {
+                header: getUserIssueReqHeaderMock.header,
+                query: {
+                    pageType: 'JIRA',
+                    year: '2024',
+                    offset: '0',
+                    limit: '100',
+                },
+            };
+
+            const expectedResult: IGetDownloadLinksOutput[] = [
+                {
+                    pageType: 'JIRA',
+                    year: 2024,
+                    month: 'MARZO',
+                    downloadUrl: 'http://localhost:3000/user-issues/download/6734c5429411eee699ab6257',
+                },
+            ];
+
+            const getDownloadLinksServiceMock = jest.spyOn(userIssueService, 'getDownloadLinks').mockImplementation(async () => expectedResult);
+
+            const userIssueController: UserIssueController = UserIssueController.getInstance();
+
+            const result = await userIssueController.getDownloadLinks(request);
+
+            expect(result).toMatchObject(expectedResult);
+
+            expect(getDownloadLinksServiceMock).toHaveBeenCalledTimes(1);
+        });
+        it('should return download links in a list with query empty', async () => {
+            const request = {
+                header: getUserIssueReqHeaderMock.header,
+                query: {},
+            };
+
+            const expectedResult: IGetDownloadLinksOutput[] = [
+                {
+                    pageType: 'JIRA',
+                    year: 2024,
+                    month: 'MARZO',
+                    downloadUrl: 'http://localhost:3000/user-issues/download/6734c5429411eee699ab6257',
+                },
+            ];
+
+            const getDownloadLinksServiceMock = jest.spyOn(userIssueService, 'getDownloadLinks').mockImplementation(async () => expectedResult);
+
+            const userIssueController: UserIssueController = UserIssueController.getInstance();
+
+            const result = await userIssueController.getDownloadLinks(request);
+
+            expect(result).toMatchObject(expectedResult);
+
+            expect(getDownloadLinksServiceMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('downloadTemplate method', () => {
+        it('should call downloadTemplate service a return a path to download', async () => {
+            const request = {
+                header: getUserIssueReqHeaderMock.header,
+                params: {
+                    id: '6734c5429411eee699ab6257',
+                },
+            };
+
+            const expectedResult: IDownloadOutput = {
+                path: 'http://localhost:3000/user-issues/download/6734c5429411eee699ab6257',
+            };
+
+            const downloadTemplateServiceMock = jest.spyOn(userIssueService, 'downloadTemplate').mockImplementation(async () => expectedResult);
+
+            const userIssueController: UserIssueController = UserIssueController.getInstance();
+
+            const result = await userIssueController.downloadTemplate(request);
+
+            expect(result).toMatchObject(expectedResult);
+
+            expect(downloadTemplateServiceMock).toHaveBeenCalledTimes(1);
         });
     });
 });

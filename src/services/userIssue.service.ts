@@ -26,6 +26,7 @@ import IGetDownloadLinksInput from '../interfaces/IGetDownloadLinksInput';
 import IGetDownloadLinksOutput from '../interfaces/IGetDownloadLinksOutput';
 import BaseErrorClass from '../resources/configurations/classes/BaseErrorClass';
 import INTERNAL_ERROR_CODES from '../resources/configurations/constants/InternalErrorCodes';
+import IDownloadOutput from '../interfaces/IDownloadOutput';
 
 const log = getLogger('userIssue.service.ts');
 
@@ -1016,7 +1017,7 @@ export default class UserIssueService {
      * @param {string} id year offset and limit get params
      * @returns {Promise<IUserTemplate[]>} returns user templates array with download url
      */
-    public async downloadTemplate(id?: string): Promise<Record<string, any>> {
+    public async downloadTemplate(id?: string): Promise<IDownloadOutput> {
         log.info('Start UserIssueService@downloadTemplate method with id:', id);
 
         if (!id) {

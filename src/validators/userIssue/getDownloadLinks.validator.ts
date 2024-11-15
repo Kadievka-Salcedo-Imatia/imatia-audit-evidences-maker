@@ -3,7 +3,7 @@ import getLogger from '../../utils/logger';
 
 const log = getLogger('getDownloadLinks.validator.ts');
 
-export default function getDownloadLinks(reqQuery: any): {
+export default function getDownloadLinksValidator(reqQuery: any): {
     validatorFailed: boolean;
     message: string;
 } {

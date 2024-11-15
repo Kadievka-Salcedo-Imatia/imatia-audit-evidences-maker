@@ -1,6 +1,7 @@
 import ICreateTemplateInput from '../interfaces/ICreateTemplateInput';
 import ICreateTemplateYearOutput from '../interfaces/ICreateTemplateYearOutput';
 import IDataIssue from '../interfaces/IDataIssue';
+import IDownloadOutput from '../interfaces/IDownloadOutput';
 import IEvidence from '../interfaces/IEvidence';
 import IGetDownloadLinksInput from '../interfaces/IGetDownloadLinksInput';
 import IGetDownloadLinksOutput from '../interfaces/IGetDownloadLinksOutput';
@@ -34,7 +35,7 @@ export default class UserIssueController {
         const request: IUserIssuesInput = {
             header: {
                 getCredentials: req.header.getCredentials,
-                authorization: req.headers.authorization,
+                authorization: req.header.authorization,
             },
             jira_base_url: req.body.jira_base_url,
             jira_url: req.body.jira_url,
@@ -55,7 +56,7 @@ export default class UserIssueController {
         const request: IUserIssuesInput = {
             header: {
                 getCredentials: req.header.getCredentials,
-                authorization: req.headers.authorization,
+                authorization: req.header.authorization,
             },
             jira_base_url: req.body.jira_base_url,
             jira_url: req.body.jira_url,
@@ -76,7 +77,7 @@ export default class UserIssueController {
         const request: ICreateTemplateInput = {
             header: {
                 getCredentials: req.header.getCredentials,
-                authorization: req.headers.authorization,
+                authorization: req.header.authorization,
             },
             month: req.body.month,
             year: req.body.year,
@@ -98,7 +99,7 @@ export default class UserIssueController {
         const request: ICreateTemplateInput = {
             header: {
                 getCredentials: req.header.getCredentials,
-                authorization: req.headers.authorization,
+                authorization: req.header.authorization,
             },
             month: getCurrentMonth(),
             year: req.body.year,
@@ -120,7 +121,7 @@ export default class UserIssueController {
         const request: IGetIssueFromRedmineInput = {
             header: {
                 getCredentials: req.header.getCredentials,
-                authorization: req.headers.authorization,
+                authorization: req.header.authorization,
             },
             status_id: req.body.status_id,
             limit: req.body.limit,
@@ -137,7 +138,7 @@ export default class UserIssueController {
         const request: IGetDownloadLinksInput = {
             header: {
                 getCredentials: req.header.getCredentials,
-                authorization: req.headers.authorization,
+                authorization: req.header.authorization,
             },
             pageType: req.query.pageType,
             year: req.query.year ? Number(req.query.year) : undefined,
@@ -151,7 +152,7 @@ export default class UserIssueController {
      * Maps request and calls getDownloadLinks service.
      * @returns file path string to download
      */
-    public async downloadTemplate(req: any): Promise<any> {
+    public async downloadTemplate(req: any): Promise<IDownloadOutput> {
         const id: string = req.params.id;
         return await userIssueService.downloadTemplate(id);
     }

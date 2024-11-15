@@ -6,6 +6,8 @@ import ControllerMockClassFailing from '../../../mocks/ControllerMockClassFailin
 import ControllerMockClassFailingWithBaseError from '../../../mocks/ControllerMockClassFailingWithBaseError';
 import ResponseClass from '../../../../resources/configurations/classes/ResponseClass';
 import RESPONSE_STATUS_CODES from '../../../../resources/configurations/constants/ResponseStatusCodes';
+import IResponseStatus from '../../../../interfaces/configurations/IResponseStatus';
+import ResponseStatus from '../../../../resources/configurations/constants/ResponseStatusCodes';
 
 const controllerMockClass = new ControllerMockClass();
 
@@ -158,6 +160,63 @@ describe('ResponseClass Unit Tests', () => {
                 error: { code: 1001, message: 'Bad request' },
                 message: 'Bad request',
                 statusCode: 400,
+            });
+        });
+    });
+
+    describe('download', () => {
+        it('should execute download function if data contains the path', async () => {
+            const responseClass: ResponseClass = new ResponseClass(controllerMockClass);
+
+            const downloadMock = jest.fn().mockImplementation((_path: string) => {});
+
+            const responseMock: any = {
+                status: (_statusCode: number) => ({
+                    download: downloadMock,
+                }),
+            };
+
+            const req: any = {};
+            const responseStatus: IResponseStatus = ResponseStatus.OK;
+            const method: string = 'downloadControllerMethod';
+            const message: string | undefined = undefined;
+
+            const result = await responseClass.download(req, responseMock, responseStatus, method, message);
+
+            expect(result).toBeUndefined();
+
+            expect(downloadMock).toHaveBeenCalledTimes(1);
+            expect(downloadMock).toHaveBeenCalledWith('pathMock');
+        });
+
+        it('should handleError if data throws error', async () => {
+            const responseClass: ResponseClass = new ResponseClass(controllerMockClass);
+
+            const sendMock = jest.fn().mockImplementation((_response) => {});
+
+            const responseMock: any = {
+                status: (_statusCode: number) => ({
+                    send: sendMock,
+                }),
+            };
+
+            const req: any = {};
+            const responseStatus: IResponseStatus = ResponseStatus.OK;
+            const method: string = 'downloadControllerMethodFails';
+            const message: string | undefined = undefined;
+
+            const result = await responseClass.download(req, responseMock, responseStatus, method, message);
+
+            expect(result).toBeUndefined();
+
+            expect(sendMock).toHaveBeenCalledTimes(1);
+            expect(sendMock).toHaveBeenCalledWith({
+                statusCode: 500,
+                message: 'Controller download method failed',
+                error: {
+                    code: 1000,
+                    message: 'General unknown error',
+                },
             });
         });
     });

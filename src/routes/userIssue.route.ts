@@ -5,7 +5,7 @@ import ResponseClass from '../resources/configurations/classes/ResponseClass';
 import getUserIssuesValidator from '../validators/userIssue/getUserIssues.validator';
 import getUserIssuesYearValidator from '../validators/userIssue/getUserIssuesYear.validator';
 import syncRedmineUserIssues from '../validators/userIssue/syncRedmineUserIssues.validator';
-import getDownloadLinks from '../validators/userIssue/getDownloadLinks';
+import getDownloadLinksValidator from '../validators/userIssue/getDownloadLinks.validator';
 
 const router = express.Router();
 
@@ -39,7 +39,7 @@ router.post('/sync-redmine', (req, res) => {
 });
 
 router.get('/download-links', (req, res) => {
-    const { validatorFailed, message } = getDownloadLinks(req.query);
+    const { validatorFailed, message } = getDownloadLinksValidator(req.query);
     validatorFailed ? response.sendBadRequest(res, message) : response.send(req, res, ResponseStatus.OK, 'getDownloadLinks');
 });
 
