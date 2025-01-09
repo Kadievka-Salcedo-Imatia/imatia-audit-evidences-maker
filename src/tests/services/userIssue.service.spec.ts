@@ -25,6 +25,8 @@ import { getEvidenceInfoMock } from '../mocks/evidenceDescriptionResponseMock';
 import UserTemplateService from '../../services/userTemplate.service';
 import IGetDownloadLinksInput from '../../interfaces/IGetDownloadLinksInput';
 import { userTemplateJiraMock, userTemplateRedmineMock } from '../mocks/userTemplateMock';
+import IUserIssueDetailInput from '../../interfaces/IUserIssueDetailInput';
+import IUserIssueDetail from '../../interfaces/IUserIssueDetail';
 
 const redmineIssue = redmineIssuesMock.issues[0];
 
@@ -325,6 +327,50 @@ describe('UserIssueService', () => {
         });
     });
 
+    describe('getDbRedmineUserIssueById method', () => {
+        it('should get issue by internal redmine id from db', async () => {
+            const findMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(userIssueFromDBMock.getProperties() as any);
+
+            const assignedToId: number = 1;
+            const id = "44224";
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.getDbRedmineUserIssueById(assignedToId, id);
+
+            expect(result).toMatchObject(userIssueFromDBMock.getProperties());
+            expect(findMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should return null if finds nothing', async () => {
+            const findMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(null as any);
+
+            const assignedToId: number = 1;
+            const id = "44224";
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.getDbRedmineUserIssueById(assignedToId, id);
+
+            expect(result).toBe(null);
+            expect(findMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw error if findOne throws error', async () => {
+            const findMock = jest.spyOn(mongooseModel, 'findOne').mockImplementation(()=>{
+                throw new Error('error finding db user issue');
+            });
+
+            const assignedToId: number = 1;
+            const id = "44224";
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            await expect(userIssueService.getDbRedmineUserIssueById(assignedToId, id)).rejects.toThrow('error finding db user issue');
+            expect(findMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('getUserIssues method', () => {
         it('should call jira service if jira_username is defined in the request', async () => {
             const jiraService: JiraService = JiraService.getInstance();
@@ -429,6 +475,71 @@ describe('UserIssueService', () => {
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
             expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
         });
+    });
+
+    describe('getUserIssueDetail method', () => {
+        it('should call jira service if jira_username is defined in the request', async () => {
+            const jiraService: JiraService = JiraService.getInstance();
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const screenshot = Buffer.from('');
+            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementation(async () => screenshot);
+
+            const request: IUserIssueDetailInput = {
+                header: getUserIssueReqHeaderMock.header,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                issue_id: "4224"
+            };
+
+            const result = await userIssueService.getUserIssueDetail(request);
+            const expectedResult: IUserIssueDetail = {...jiraIssuesMock.issues[0], screenshot};
+
+            expect(result).toMatchObject(expectedResult);
+            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call get user issues from db service if redmine_id is defined in the request', async () => {
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const getDbRedmineUserIssueByIdMock = jest.spyOn(userIssueService, 'getDbRedmineUserIssueById').mockImplementation((async () => userIssueMock) as any);
+
+            const screenshot = Buffer.from('');
+            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementation(async () => screenshot);
+
+            const request: IUserIssueDetailInput = {
+                header: getUserIssueReqHeaderMock.header,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                issue_id: "4224"
+            };
+
+            const result = await userIssueService.getUserIssueDetail(request);
+            const expectedResult: IUserIssueDetail = {
+                screenshot,
+                id: userIssueMock.id,
+                key: userIssueMock.key,
+                type: userIssueMock.type,
+                created: userIssueMock.created,
+                updated: userIssueMock.updated,
+                assignee: userIssueMock.assignee,
+                assignedToId: userIssueMock.assignedToId,
+                status: userIssueMock.status,
+                description: userIssueMock.description,
+                summary: userIssueMock.summary,
+                project: userIssueMock.project,
+                projectTypeKey: userIssueMock.projectTypeKey,
+                self: userIssueMock.self,
+                creator: userIssueMock.creator,
+                reporter: userIssueMock.reporter,
+                pageType: userIssueMock.pageType,
+            };
+
+            expect(result).toMatchObject(expectedResult);
+            expect(getDbRedmineUserIssueByIdMock).toHaveBeenCalledTimes(1);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
+        });
+
     });
 
     describe('getUserIssuesDescriptions method', () => {
