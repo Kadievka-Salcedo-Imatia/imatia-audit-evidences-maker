@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { getUserIssueReqBodyMock } from './../mocks/getUserIssueRequestMock';
 import { PageTypeEnum } from '../../enums/PageTypeEnum';
 import IDataIssue from '../../interfaces/IDataIssue';
@@ -18,10 +17,8 @@ import IEvidence from '../../interfaces/IEvidence';
 import { MONTHS } from '../../resources/configurations/constants/Months';
 import IIssueDescription from '../../interfaces/IIssueDescription';
 import { Paragraph } from 'docx';
-import puppeteer from 'puppeteer';
 import ICreateTemplateInput from '../../interfaces/ICreateTemplateInput';
 import { createTemplateResponseMock } from '../mocks/createTemplateResponseMock';
-import { getEvidenceInfoMock } from '../mocks/evidenceDescriptionResponseMock';
 import UserTemplateService from '../../services/userTemplate.service';
 import IGetDownloadLinksInput from '../../interfaces/IGetDownloadLinksInput';
 import { userTemplateJiraMock, userTemplateRedmineMock } from '../mocks/userTemplateMock';
@@ -332,7 +329,7 @@ describe('UserIssueService', () => {
             const findMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(userIssueFromDBMock.getProperties() as any);
 
             const assignedToId: number = 1;
-            const id = "44224";
+            const id = '44224';
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -346,7 +343,7 @@ describe('UserIssueService', () => {
             const findMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(null as any);
 
             const assignedToId: number = 1;
-            const id = "44224";
+            const id = '44224';
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -357,12 +354,12 @@ describe('UserIssueService', () => {
         });
 
         it('should throw error if findOne throws error', async () => {
-            const findMock = jest.spyOn(mongooseModel, 'findOne').mockImplementation(()=>{
+            const findMock = jest.spyOn(mongooseModel, 'findOne').mockImplementation(() => {
                 throw new Error('error finding db user issue');
             });
 
             const assignedToId: number = 1;
-            const id = "44224";
+            const id = '44224';
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -388,30 +385,6 @@ describe('UserIssueService', () => {
 
             const result = await userIssueService.getUserIssues(request);
             const expectedResult: IDataIssue = jiraIssuesProcessedMock();
-
-            expect(result).toMatchObject(expectedResult);
-            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
-        });
-
-        it('should call jira service if jira_username is defined in the request and other jira params', async () => {
-            const jiraService: JiraService = JiraService.getInstance();
-
-            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
-
-            const request: IUserIssuesInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
-                jira_url: getUserIssueReqBodyMock.jira_url,
-                jql: getUserIssueReqBodyMock.jql,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const result = await userIssueService.getUserIssues(request);
-            const expectedResult: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
 
             expect(result).toMatchObject(expectedResult);
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
@@ -444,37 +417,6 @@ describe('UserIssueService', () => {
             expect(result).toMatchObject(expectedResult);
             expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
         });
-
-        it('should handle full request', async () => {
-            const jiraService: JiraService = JiraService.getInstance();
-
-            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
-
-            const request: IUserIssuesInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
-                jira_url: getUserIssueReqBodyMock.jira_url,
-                jql: getUserIssueReqBodyMock.jql,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const issuesMock: IUserIssue[] = [userIssueMock, userIssueMock, userIssueMock];
-            const getDbUserIssuesMock = jest.spyOn(userIssueService, 'getDbUserIssues').mockImplementation((async () => issuesMock) as any);
-
-            const result = await userIssueService.getUserIssues(request);
-            const expectedResult: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
-            expectedResult.issues = expectedResult.issues.concat(issuesMock);
-            expectedResult.total = 6;
-
-            expect(result).toMatchObject(expectedResult);
-            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
-            expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
-        });
     });
 
     describe('getUserIssueDetail method', () => {
@@ -490,11 +432,11 @@ describe('UserIssueService', () => {
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
-                issue_id: "4224"
+                issue_id: '4224',
             };
 
             const result = await userIssueService.getUserIssueDetail(request);
-            const expectedResult: IUserIssueDetail = {...jiraIssuesMock.issues[0], screenshot};
+            const expectedResult: IUserIssueDetail = { ...jiraIssuesMock.issues[0], screenshot };
 
             expect(result).toMatchObject(expectedResult);
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
@@ -511,7 +453,7 @@ describe('UserIssueService', () => {
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
-                issue_id: "4224"
+                issue_id: '4224',
             };
 
             const result = await userIssueService.getUserIssueDetail(request);
@@ -539,104 +481,9 @@ describe('UserIssueService', () => {
             expect(getDbRedmineUserIssueByIdMock).toHaveBeenCalledTimes(1);
             expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
         });
-
     });
 
     describe('getUserIssuesDescriptions method', () => {
-        it('should call jira service if jira_username is defined in the request', async () => {
-            const jiraService: JiraService = JiraService.getInstance();
-            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
-
-            const request: IUserIssuesInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-            const result = await userIssueService.getUserIssuesDescriptions(request);
-
-            const issuesDescriptionsMock: IIssueDescription[] = [];
-
-            const getIssuesResultMock: IDataIssue = jiraIssuesProcessedMock();
-            getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
-                const title: string = `${issue.type} #${issue.key}: `;
-                const summary: string = UserIssueService.getIssueSummary(issue);
-                const link: string = issue.self;
-
-                issuesDescriptionsMock.push({
-                    title,
-                    summary,
-                    link,
-                    pageType: issue.pageType,
-                    closed: issue.closed!,
-                    project: issue.project,
-                });
-            });
-
-            const expectedResult: IEvidence = {
-                project: getIssuesResultMock.project,
-                userDisplayName: getIssuesResultMock.userDisplayName,
-                date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
-                month: getIssuesResultMock.month.toUpperCase(),
-                evidenceStart: 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ',
-                total: 3,
-                issues: issuesDescriptionsMock,
-            };
-
-            expect(result).toMatchObject(expectedResult);
-            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
-        });
-
-        it('should call jira service if jira_username is defined in the request and other jira params', async () => {
-            const jiraService: JiraService = JiraService.getInstance();
-            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
-
-            const request: IUserIssuesInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
-                jira_url: getUserIssueReqBodyMock.jira_url,
-                jql: getUserIssueReqBodyMock.jql,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-            const result = await userIssueService.getUserIssuesDescriptions(request);
-
-            const issuesDescriptionsMock: IIssueDescription[] = [];
-
-            const getIssuesResultMock: IDataIssue = jiraIssuesProcessedMock(request.jira_base_url);
-            getIssuesResultMock.issues.forEach((issue: IUserIssue) => {
-                const title: string = `${issue.type} #${issue.key}: `;
-                const summary: string = UserIssueService.getIssueSummary(issue);
-                const link: string = issue.self;
-
-                issuesDescriptionsMock.push({
-                    title,
-                    summary,
-                    link,
-                    pageType: issue.pageType,
-                    closed: issue.closed!,
-                    project: issue.project,
-                });
-            });
-            const expectedResult: IEvidence = {
-                project: getIssuesResultMock.project,
-                userDisplayName: getIssuesResultMock.userDisplayName,
-                date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
-                month: getIssuesResultMock.month.toUpperCase(),
-                evidenceStart: 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ',
-                total: 3,
-                issues: issuesDescriptionsMock,
-            };
-
-            expect(result).toMatchObject(expectedResult);
-            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
-        });
-
         it('should call get user issues from db service if redmine_id is defined in the request', async () => {
             const request: IUserIssuesInput = {
                 header: getUserIssueReqHeaderMock.header,
@@ -686,649 +533,6 @@ describe('UserIssueService', () => {
 
             expect(result).toMatchObject(expectedResult);
             expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
-        });
-
-        it('should handle full request', async () => {
-            const jiraService: JiraService = JiraService.getInstance();
-            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
-
-            const request: IUserIssuesInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
-                jira_url: getUserIssueReqBodyMock.jira_url,
-                jql: getUserIssueReqBodyMock.jql,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-            const result = await userIssueService.getUserIssuesDescriptions(request);
-
-            const issuesMock: IUserIssue[] = [userIssueMock, userIssueMock, userIssueMock];
-
-            const getDbUserIssuesMock = jest.spyOn(userIssueService, 'getDbUserIssues').mockImplementation((async () => issuesMock) as any);
-
-            const expectedResult: IEvidence = getEvidenceInfoMock(issuesMock, request);
-
-            expect(result).toMatchObject(expectedResult);
-            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
-            expect(getDbUserIssuesMock).toHaveBeenCalledTimes(1);
-        });
-    });
-
-    describe('takeScreenshot', () => {
-        it('should take screenshot when issue is from jira', async () => {
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([]);
-
-            const issue: IIssueDescription = evidenceInfoMock.issues![0];
-
-            const pageMock = {
-                setViewport: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                goto: jest.fn().mockImplementation((_url) => {
-                    return Promise.resolve();
-                }),
-                screenshot: jest.fn().mockImplementation(() => {
-                    return Promise.resolve(Buffer.from(''));
-                }),
-                waitForSelector: jest.fn().mockImplementation((_selector) => {
-                    return Promise.resolve();
-                }),
-                type: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                focus: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                click: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                waitForNavigation: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                evaluate: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                close: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-            };
-
-            const browserLaunchMock = {
-                newPage() {
-                    return Promise.resolve(pageMock);
-                },
-            } as any;
-
-            const isLogin: boolean = true;
-            const getCredentials: string[] = getUserIssueReqHeaderMock.header.getCredentials;
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-            const result = await userIssueService.takeScreenshot(issue, browserLaunchMock, isLogin, getCredentials);
-
-            expect(result).toBeInstanceOf(Buffer);
-            expect(pageMock.setViewport).toHaveBeenCalledTimes(1);
-            expect(pageMock.goto).toHaveBeenCalledTimes(1);
-            expect(pageMock.screenshot).toHaveBeenCalledTimes(1);
-            expect(pageMock.waitForSelector).toHaveBeenCalledTimes(0);
-            expect(pageMock.type).toHaveBeenCalledTimes(2);
-            expect(pageMock.focus).toHaveBeenCalledTimes(1);
-            expect(pageMock.click).toHaveBeenCalledTimes(1);
-            expect(pageMock.waitForNavigation).toHaveBeenCalledTimes(1);
-            expect(pageMock.evaluate).toHaveBeenCalledTimes(1);
-            expect(pageMock.close).toHaveBeenCalledTimes(1);
-        });
-
-        it('should take screenshot when issue is from redmine', async () => {
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock, userIssueMock]);
-
-            const issue: IIssueDescription = evidenceInfoMock.issues![3];
-
-            const pageMock = {
-                setViewport: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                goto: jest.fn().mockImplementation((_url) => {
-                    return Promise.resolve();
-                }),
-                screenshot: jest.fn().mockImplementation(() => {
-                    return Promise.resolve(Buffer.from(''));
-                }),
-                waitForSelector: jest.fn().mockImplementation((_selector) => {
-                    return Promise.resolve();
-                }),
-                type: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                focus: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                click: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                waitForNavigation: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                evaluate: jest.fn().mockImplementation((_fn) => {
-                    return Promise.resolve();
-                }),
-                close: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-            };
-
-            const browserLaunchMock = {
-                newPage() {
-                    return Promise.resolve(pageMock);
-                },
-            } as any;
-
-            const isLogin: boolean = true;
-            const getCredentials: string[] = getUserIssueReqHeaderMock.header.getCredentials;
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-            const result = await userIssueService.takeScreenshot(issue, browserLaunchMock, isLogin, getCredentials);
-
-            expect(result).toBeInstanceOf(Buffer);
-            expect(pageMock.setViewport).toHaveBeenCalledTimes(1);
-            expect(pageMock.goto).toHaveBeenCalledTimes(1);
-            expect(pageMock.screenshot).toHaveBeenCalledTimes(1);
-            expect(pageMock.waitForSelector).toHaveBeenCalledTimes(0);
-            expect(pageMock.type).toHaveBeenCalledTimes(2);
-            expect(pageMock.focus).toHaveBeenCalledTimes(1);
-            expect(pageMock.click).toHaveBeenCalledTimes(1);
-            expect(pageMock.waitForNavigation).toHaveBeenCalledTimes(1);
-            expect(pageMock.evaluate).toHaveBeenCalledTimes(1);
-            expect(pageMock.close).toHaveBeenCalledTimes(1);
-        });
-    });
-
-    describe('getEvidenceImages', () => {
-        it('should return an array of paragraphs with the taken screenshots of jira', async () => {
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([]);
-            const request = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementation(async () => Buffer.from(''));
-            const launchBrowserMock = jest.spyOn(puppeteer, 'launch').mockImplementation(
-                async (_options) =>
-                    ({
-                        close: async () => {},
-                    }) as any,
-            );
-
-            const result = await userIssueService.getEvidenceImages(evidenceInfoMock, request);
-
-            expect(result[0]).toBeInstanceOf(Paragraph);
-            expect(takeScreenshotMock).toHaveBeenCalledTimes(3);
-            expect(launchBrowserMock).toHaveBeenCalledTimes(1);
-        });
-
-        it('should return an array of paragraphs with the taken screenshots of redmine', async () => {
-            const pageMock = {
-                setViewport: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-                goto: jest.fn().mockImplementation((_url) => {
-                    return Promise.resolve();
-                }),
-                waitForSelector: jest.fn().mockImplementation((_selector) => {
-                    return Promise.resolve({
-                        screenshot: () => '',
-                    });
-                }),
-                close: jest.fn().mockImplementation(() => {
-                    return Promise.resolve();
-                }),
-            };
-
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock, userIssueMock], undefined, false);
-            const request = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementation(async () => Buffer.from(''));
-            const launchBrowserMock = jest.spyOn(puppeteer, 'launch').mockImplementation(
-                async (_options) =>
-                    ({
-                        close: async () => {},
-                        newPage: async () => pageMock,
-                    }) as any,
-            );
-
-            const result = await userIssueService.getEvidenceImages(evidenceInfoMock, request);
-
-            expect(result[0]).toBeInstanceOf(Paragraph);
-            expect(takeScreenshotMock).toHaveBeenCalledTimes(3);
-            expect(launchBrowserMock).toHaveBeenCalledTimes(1);
-            expect(pageMock.setViewport).toHaveBeenCalledTimes(1);
-            expect(pageMock.goto).toHaveBeenCalledTimes(1);
-            expect(pageMock.waitForSelector).toHaveBeenCalledTimes(1);
-            expect(pageMock.close).toHaveBeenCalledTimes(1);
-        });
-
-        it('should continue taking screenshots even if one throws error', async () => {
-            const evidenceInfoMock: IEvidence = getEvidenceInfoMock([]);
-            const request = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const takeScreenshotMock = jest
-                .spyOn(userIssueService, 'takeScreenshot')
-                .mockImplementationOnce(async () => {
-                    throw new Error('error getting screenshot');
-                })
-                .mockImplementation(async () => Buffer.from(''));
-            const launchBrowserMock = jest.spyOn(puppeteer, 'launch').mockImplementation(
-                async (_options) =>
-                    ({
-                        close: async () => {},
-                    }) as any,
-            );
-
-            const result = await userIssueService.getEvidenceImages(evidenceInfoMock, request);
-
-            expect(result[0]).toBeInstanceOf(Paragraph);
-            expect(takeScreenshotMock).toHaveBeenCalledTimes(3);
-            expect(launchBrowserMock).toHaveBeenCalledTimes(1);
-        });
-    });
-
-    describe('createTemplate', () => {
-        const createUserTemplateMock = jest.spyOn(userTemplateService, 'createUserTemplate').mockImplementation((async () => {}) as any);
-
-        it('should return and empty array of issues if the user has not evidences', async () => {
-            const request: ICreateTemplateInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
-
-            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request, false));
-
-            const result = await userIssueService.createTemplate(request);
-
-            expect(result).toHaveProperty('project', 'Project Name Test');
-            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
-            expect(result).toHaveProperty('date', '30/11/2024');
-            expect(result).toHaveProperty('month', 'NOVIEMBRE');
-            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
-            expect(result).toHaveProperty('total', 0);
-            expect(result.issues?.length).toBe(0);
-
-            expect(result.path).toBeUndefined();
-
-            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
-            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(0);
-
-            expect(createUserTemplateMock).toHaveBeenCalledTimes(0);
-        });
-
-        it('should create a new folder for the year if it does no exist and the evidences files too', async () => {
-            const fsExistsSyncMock = jest
-                .spyOn(fs, 'existsSync')
-                .mockImplementationOnce((_pathName) => false) // exist the folder of the year?
-                .mockImplementationOnce((_pathName) => false); // exist the file of evidences?
-
-            const fsMkdirSync = jest.spyOn(fs, 'mkdirSync').mockImplementationOnce((_pathName, _options) => ''); // creates the folder of the year if does not exist
-
-            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
-
-            const request: ICreateTemplateInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
-
-            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
-
-            const result = await userIssueService.createTemplate(request);
-
-            expect(result).toHaveProperty('project', 'Project Name Test');
-            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
-            expect(result).toHaveProperty('date', '30/11/2024');
-            expect(result).toHaveProperty('month', 'NOVIEMBRE');
-            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
-            expect(result).toHaveProperty('total', 3);
-            expect(result.issues?.length).toBe(3);
-            expect(result).toHaveProperty('path');
-
-            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
-                result.path?.includes(word),
-            );
-            expect(includesTheWords).toBe(true);
-
-            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
-            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(1);
-
-            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
-            expect(fsMkdirSync).toHaveBeenCalledTimes(1);
-            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
-
-            expect(createUserTemplateMock).toHaveBeenCalledTimes(1);
-        });
-
-        it('should log error if create user template on the DB fails', async () => {
-            createUserTemplateMock.mockImplementationOnce(() => {
-                throw new Error('create the template on DB error');
-            });
-
-            const fsExistsSyncMock = jest
-                .spyOn(fs, 'existsSync')
-                .mockImplementationOnce((_pathName) => false) // exist the folder of the year?
-                .mockImplementationOnce((_pathName) => false); // exist the file of evidences?
-
-            const fsMkdirSync = jest.spyOn(fs, 'mkdirSync').mockImplementationOnce((_pathName, _options) => ''); // creates the folder of the year if does not exist
-
-            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
-
-            const request: ICreateTemplateInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
-
-            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
-
-            const result = await userIssueService.createTemplate(request);
-
-            expect(result).toHaveProperty('project', 'Project Name Test');
-            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
-            expect(result).toHaveProperty('date', '30/11/2024');
-            expect(result).toHaveProperty('month', 'NOVIEMBRE');
-            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
-            expect(result).toHaveProperty('total', 3);
-            expect(result.issues?.length).toBe(3);
-            expect(result).toHaveProperty('path');
-
-            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
-                result.path?.includes(word),
-            );
-            expect(includesTheWords).toBe(true);
-
-            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
-            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(1);
-
-            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
-            expect(fsMkdirSync).toHaveBeenCalledTimes(1);
-            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
-
-            expect(createUserTemplateMock).toHaveBeenCalledTimes(1);
-        });
-
-        it('should return only the template info if evidence files already exists and rewrite files request is false', async () => {
-            const fsExistsSyncMock = jest
-                .spyOn(fs, 'existsSync')
-                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
-                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
-
-            const request: ICreateTemplateInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
-
-            const result = await userIssueService.createTemplate(request);
-
-            expect(result).toHaveProperty('project', 'Project Name Test');
-            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
-            expect(result).toHaveProperty('date', '30/11/2024');
-            expect(result).toHaveProperty('month', 'NOVIEMBRE');
-            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
-            expect(result).toHaveProperty('total', 3);
-            expect(result.issues?.length).toBe(3);
-            expect(result).toHaveProperty('path');
-
-            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
-                result.path?.includes(word),
-            );
-            expect(includesTheWords).toBe(true);
-
-            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
-
-            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
-            expect(createUserTemplateMock).toHaveBeenCalledTimes(0);
-        });
-
-        it('should delete and create again the evidence document if evidence files already exists and rewrite files request is true', async () => {
-            const fsExistsSyncMock = jest
-                .spyOn(fs, 'existsSync')
-                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
-                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
-
-            const fsRmSync = jest.spyOn(fs, 'rmSync').mockImplementationOnce((_pathName) => {}); // remove file if exists and rewrite is true
-
-            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
-
-            const request: ICreateTemplateInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-                rewrite_files: true,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
-
-            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
-
-            const result = await userIssueService.createTemplate(request);
-
-            expect(result).toHaveProperty('project', 'Project Name Test');
-            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
-            expect(result).toHaveProperty('date', '30/11/2024');
-            expect(result).toHaveProperty('month', 'NOVIEMBRE');
-            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
-            expect(result).toHaveProperty('total', 3);
-            expect(result.issues?.length).toBe(3);
-            expect(result).toHaveProperty('path');
-
-            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
-                result.path?.includes(word),
-            );
-            expect(includesTheWords).toBe(true);
-
-            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
-            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(1);
-
-            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
-            expect(fsRmSync).toHaveBeenCalledTimes(1);
-            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
-
-            expect(createUserTemplateMock).toHaveBeenCalledTimes(1);
-        });
-
-        it('should handle request with redmine_id only', async () => {
-            const fsExistsSyncMock = jest
-                .spyOn(fs, 'existsSync')
-                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
-                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
-
-            const fsRmSync = jest.spyOn(fs, 'rmSync').mockImplementationOnce((_pathName) => {}); // remove file if exists and rewrite is true
-
-            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
-
-            const request: ICreateTemplateInput = {
-                header: getUserIssueReqHeaderMock.header,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-                rewrite_files: true,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
-
-            const getUserIssuesDescriptionsMock = jest
-                .spyOn(userIssueService, 'getUserIssuesDescriptions')
-                .mockImplementation(async () => getEvidenceInfoMock([userIssueMock, userIssueMock, userIssueMock], request, false));
-
-            const result = await userIssueService.createTemplate(request);
-
-            expect(result).toHaveProperty('project', 'Project Name Test');
-            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
-            expect(result).toHaveProperty('date', '30/11/2024');
-            expect(result).toHaveProperty('month', 'NOVIEMBRE');
-            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
-            expect(result).toHaveProperty('total', 3);
-            expect(result.issues?.length).toBe(3);
-            expect(result).toHaveProperty('path');
-
-            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
-                result.path?.includes(word),
-            );
-            expect(includesTheWords).toBe(true);
-
-            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
-            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(1);
-
-            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
-            expect(fsRmSync).toHaveBeenCalledTimes(1);
-            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
-        });
-
-        it('should handle request with redmine_id and jira_username', async () => {
-            const fsExistsSyncMock = jest
-                .spyOn(fs, 'existsSync')
-                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
-                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
-
-            const fsRmSync = jest.spyOn(fs, 'rmSync').mockImplementationOnce((_pathName) => {}); // remove file if exists and rewrite is true
-
-            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
-
-            const request: ICreateTemplateInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-                rewrite_files: true,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const getEvidenceImagesMock = jest.spyOn(userIssueService, 'getEvidenceImages').mockImplementation(async () => []);
-
-            const getUserIssuesDescriptionsMock = jest
-                .spyOn(userIssueService, 'getUserIssuesDescriptions')
-                .mockImplementation(async () => getEvidenceInfoMock([userIssueMock, userIssueMock, userIssueMock], request));
-
-            const result = await userIssueService.createTemplate(request);
-
-            expect(result).toHaveProperty('project', 'Project Name Test');
-            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
-            expect(result).toHaveProperty('date', '30/11/2024');
-            expect(result).toHaveProperty('month', 'NOVIEMBRE');
-            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
-            expect(result).toHaveProperty('total', 6);
-            expect(result.issues?.length).toBe(6);
-            expect(result).toHaveProperty('path');
-
-            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
-                result.path?.includes(word),
-            );
-            expect(includesTheWords).toBe(true);
-
-            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
-            expect(getEvidenceImagesMock).toHaveBeenCalledTimes(2);
-
-            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
-            expect(fsRmSync).toHaveBeenCalledTimes(1);
-            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
-        });
-
-        it('should handle request with jira_base_url', async () => {
-            const fsExistsSyncMock = jest
-                .spyOn(fs, 'existsSync')
-                .mockImplementationOnce((_pathName) => true) // exist the folder of the year?
-                .mockImplementationOnce((_pathName) => true); // exist the file of evidences?
-
-            const fsRmSync = jest.spyOn(fs, 'rmSync').mockImplementationOnce((_pathName) => {}); // remove file if exists and rewrite is true
-
-            const fsWriteFileSync = jest.spyOn(fs, 'writeFileSync').mockImplementation((_pathName, _options) => ''); // creates the file
-
-            const request: ICreateTemplateInput = {
-                header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
-                jira_base_url: getUserIssueReqBodyMock.jira_base_url,
-                jira_url: getUserIssueReqBodyMock.jira_url,
-                month: getUserIssueReqBodyMock.month,
-                year: getUserIssueReqBodyMock.year,
-                rewrite_files: true,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const getUserIssuesDescriptionsMock = jest.spyOn(userIssueService, 'getUserIssuesDescriptions').mockImplementation(async () => getEvidenceInfoMock([], request));
-
-            const result = await userIssueService.createTemplate(request);
-
-            expect(result).toHaveProperty('project', 'Project Name Test');
-            expect(result).toHaveProperty('userDisplayName', 'Jhon Doe');
-            expect(result).toHaveProperty('date', '30/11/2024');
-            expect(result).toHaveProperty('month', 'NOVIEMBRE');
-            expect(result).toHaveProperty('evidenceStart', 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ');
-            expect(result).toHaveProperty('total', 3);
-            expect(result.issues?.length).toBe(3);
-            expect(result).toHaveProperty('path');
-
-            const includesTheWords: boolean = ['templates', 'EVIDENCIAS 2024', 'Jhon Doe', 'NOVIEMBRE', 'Plantilla Evidencias - noviembre.docx'].every((word) =>
-                result.path?.includes(word),
-            );
-            expect(includesTheWords).toBe(true);
-
-            expect(getUserIssuesDescriptionsMock).toHaveBeenCalledTimes(1);
-
-            expect(fsExistsSyncMock).toHaveBeenCalledTimes(2);
-            expect(fsRmSync).toHaveBeenCalledTimes(1);
-            expect(fsWriteFileSync).toHaveBeenCalledTimes(1);
-            expect(createUserTemplateMock).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -1583,23 +787,6 @@ describe('UserIssueService', () => {
             );
 
             expect(getByIdMock).toHaveBeenCalledTimes(1);
-        });
-
-        it('should throw error if the file does not exist', async () => {
-            const getByIdMock = jest.spyOn(userTemplateService, 'getById').mockImplementation(async () => ({
-                path: '/test_path',
-            }));
-
-            const fsExistsSyncMock = jest.spyOn(fs, 'existsSync').mockImplementationOnce((_pathName) => true);
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-
-            const result = await userIssueService.downloadTemplate('6734c5429411eee699ab6257');
-
-            expect(result).toMatchObject({ path: '/test_path' });
-
-            expect(getByIdMock).toHaveBeenCalledTimes(1);
-            expect(fsExistsSyncMock).toHaveBeenCalledTimes(1);
         });
     });
 });
