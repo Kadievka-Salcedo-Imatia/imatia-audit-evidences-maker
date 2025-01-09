@@ -1,8 +1,6 @@
-export default interface IGetDownloadLinksInput {
-    header: {
-        getCredentials: string[];
-        authorization: string;
-    };
+import IHeader from './IHeader';
+
+export default interface IGetDownloadLinksInput extends IHeader {
     pageType?: string;
     year?: number;
     offset?: number;

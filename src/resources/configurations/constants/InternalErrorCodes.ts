@@ -22,6 +22,16 @@ const INTERNAL_ERROR_CODES: Record<string, BaseError> = {
         message: 'The specified file path does not exist in the directory: ',
         responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
     },
+    JIRA_ISSUE_NOT_FOUND: {
+        code: 4004,
+        message: 'The specified jira issue is not found, please verify the params you passed are right',
+        responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
+    },
+    REDMINE_ISSUE_NOT_FOUND: {
+        code: 4005,
+        message: 'The specified redmine issue is not found, please verify the params you passed are right',
+        responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
+    },
     USER_TEMPLATE_NOT_FOUND: {
         code: 4004,
         message: 'The specified user template id does not exist in the DB: ',

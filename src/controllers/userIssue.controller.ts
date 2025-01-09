@@ -7,6 +7,8 @@ import IGetDownloadLinksInput from '../interfaces/IGetDownloadLinksInput';
 import IGetDownloadLinksOutput from '../interfaces/IGetDownloadLinksOutput';
 import IGetIssueFromRedmineInput from '../interfaces/IGetIssueFromRedmineInput';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
+import IUserIssueDetail from '../interfaces/IUserIssueDetail';
+import IUserIssueDetailInput from '../interfaces/IUserIssueDetailInput';
 import IUserIssuesInput from '../interfaces/IUserIssuesInput';
 import UserIssueService from '../services/userIssue.service';
 import { getCurrentMonth } from '../utils/dates';
@@ -46,6 +48,23 @@ export default class UserIssueController {
             year: req.body.year,
         };
         return await userIssueService.getUserIssues(request);
+    }
+
+    /**
+     * Calls get user issues details service.
+     * @returns Specific userIssue with an screenshot buffer
+     */
+    public async getUserIssueDetails(req: any): Promise<IUserIssueDetail> {
+        const request: IUserIssueDetailInput = {
+            header: {
+                getCredentials: req.header.getCredentials,
+                authorization: req.header.authorization,
+            },
+            jira_username: req.body.jira_username,
+            redmine_id: req.body.redmine_id,
+            issue_id: req.body.issue_id,
+        };
+        return await userIssueService.getUserIssueDetail(request);
     }
 
     /**

@@ -1,3 +1,5 @@
+import IHeader from '../../interfaces/IHeader';
+
 export const getUserIssueReqBodyMock = {
     jira_username: 'jhon.doe',
     redmine_id: 9999,
@@ -9,7 +11,7 @@ export const getUserIssueReqBodyMock = {
     jql: 'other-jql',
 };
 
-export const getUserIssueReqHeaderMock = {
+export const getUserIssueReqHeaderMock: IHeader = {
     header: {
         getCredentials: ['jhon.doe', '1234809832474091'],
         authorization: 'basic user@password',

@@ -172,6 +172,103 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/responses/GeneralError"
+  /user-issues/schema/details:
+    post:
+      tags:
+        - User Issue Details
+      summary: User Issue Details, with an screenshot Schema from Imatia Jira Cloud and Redmine
+      produces:
+        - application/json
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/requestBodies/GetUserIssueDetails"
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 200
+                  message:
+                    type: string
+                    example: Ok
+                  data: 
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 36971
+                      key:
+                        type: string
+                        example: OUINT-311
+                      self:
+                        type: string
+                        example: https://jira.imatia.com/rest/api/2/issue/36971
+                      type:
+                        type: string
+                        example: Tarea
+                      created:
+                        type: string
+                        example: 2023-12-11T11:05:00.000+0100
+                      updated:
+                        type: string
+                        example: 2024-01-15T09:32:42.000+0100
+                      assignee:
+                        type: string
+                        example: Jhon Doe
+                      status:
+                        type: string
+                        example: Listo
+                      description:
+                        type: string
+                        example: Realizar pase de la versión de core 3.39.006 que lleva los cambios de PID y un jar facilitado por Ourense.\r\n\r\nEstablecer en el pom.xml el connector viejo de place.\r\n\r\nPase el miércoles 10/01/2024\r\n\r\n 
+                      summary:
+                        type: string
+                        example: OURENSE - Pase PRO - PID
+                      project:
+                        type: string
+                        example: Project Name Test
+                      projectTypeKey:
+                        type: string
+                        example: software
+                      screenshot:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: Buffer
+                          data:
+                            type: array
+                            items:
+                              type: number
+                            example: [ 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,6,64,0,0,5]
+        400:
+          description: Bad Request error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/BadRequestError"
+        401:
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/UnauthorizedError"
+        500:
+          description: General error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/GeneralError"
   /user-issues/description:
     post:
       tags:

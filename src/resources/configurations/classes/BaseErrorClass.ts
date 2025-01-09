@@ -3,7 +3,7 @@ import IResponseStatus from '../../../interfaces/configurations/IResponseStatus'
 
 export default class BaseErrorClass extends Error implements IBaseError {
     public code: number;
-    public message: string;
+    public message: any;
     public responseStatus: IResponseStatus;
 
     constructor(baseError: IBaseError) {

@@ -27,6 +27,9 @@ import IGetDownloadLinksOutput from '../interfaces/IGetDownloadLinksOutput';
 import BaseErrorClass from '../resources/configurations/classes/BaseErrorClass';
 import INTERNAL_ERROR_CODES from '../resources/configurations/constants/InternalErrorCodes';
 import IDownloadOutput from '../interfaces/IDownloadOutput';
+import IUserIssueDetailInput from '../interfaces/IUserIssueDetailInput';
+import IUserIssueDetail from '../interfaces/IUserIssueDetail';
+import RESPONSE_STATUS_CODES from '../resources/configurations/constants/ResponseStatusCodes';
 
 const log = getLogger('userIssue.service.ts');
 
@@ -270,6 +273,30 @@ export default class UserIssueService {
     }
 
     /**
+     * Gets user issue redmine by issue_id from MongoDB.
+     * @param {number} assignedToId The user redmine_id
+     * @param {string} id issue id internal redmine id
+     * @returns {Promise<FindCursor>} user issues information comes from the database
+     */
+    public async getDbRedmineUserIssueById(assignedToId: number, id: string): Promise<any> {
+        log.info('  Start UserIssueService@getDbRedmineUserIssueById method with params:', { assignedToId, id });
+        let dbUserIssue;
+
+        try {
+            dbUserIssue = await mongooseModel.findOne({
+                assignedToId,
+                id,
+            });
+        } catch (error) {
+            log.error('  Error UserIssueService@getDbRedmineUserIssueById method', error);
+            throw error;
+        }
+
+        log.info('  Finish UserIssueService@getDbRedmineUserIssueById method');
+        return dbUserIssue;
+    }
+
+    /**
      * Returns the user issues as schema
      * @param {IUserIssuesInput} request - request body with jira_username, redmine_id, startDate and endDate
      * @returns {Promise<IDataIssue>} Async user issues as schema
@@ -328,6 +355,136 @@ export default class UserIssueService {
 
         log.info('  Finish UserIssueService@getUserIssues method');
         return userIssue;
+    }
+
+    /**
+     * Returns the user issue detail with screenshot as schema
+     * @param {IUserIssueDetailInput} request - request body with jira_username, redmine_id, startDate and endDate
+     * @returns {Promise<IUserIssueDetail>} Async user issue detail with screenshot as schema
+     */
+    public async getUserIssueDetail(request: IUserIssueDetailInput): Promise<IUserIssueDetail> {
+        log.info('  Start UserIssueService@getUserIssueDetail method with params:', {
+            username: request.header.getCredentials[0],
+            jira_username: request.jira_username,
+            redmine_id: request.redmine_id,
+            issue_id: request.issue_id,
+        });
+
+        let data: any = {};
+
+        let userIssue: IUserIssue = {
+            id: '',
+            key: '',
+            type: '',
+            created: '',
+            updated: '',
+            assignee: '',
+            assignedToId: '',
+            status: '',
+            description: '',
+            summary: '',
+            project: '',
+            projectTypeKey: '',
+            self: '',
+            creator: '',
+            reporter: '',
+            pageType: PageTypeEnum.JIRA,
+        };
+
+        if (request.jira_username) {
+            try {
+                data = await jiraService.getUserIssues({
+                    authorization: request.header.authorization,
+                    jql: `assignee in (${request.jira_username}) AND id=${request.issue_id}`,
+                });
+            } catch (error: any) {
+                log.error('Error UserIssueService@getUserIssueDetail on "data = await jiraService.getUserIssues"', error);
+
+                if (error.name === 'AxiosError') {
+                    throw new BaseErrorClass({
+                        responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
+                        code: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.code,
+                        message: {
+                            message: error.message,
+                            name: error.name,
+                            code: error.code,
+                            status: error.status,
+                            config: {
+                                baseURL: error.config.baseURL,
+                                params: error.config.params,
+                                method: error.config.method,
+                                url: error.config.url,
+                            },
+                        },
+                    });
+                }
+
+                throw new BaseErrorClass({
+                    responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
+                    code: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.code,
+                    message: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.code,
+                });
+            }
+
+            data.issues = UserIssueService.mapIssuesFromJira(data.issues);
+
+            userIssue = data.issues[0];
+        }
+
+        if (request.redmine_id) {
+            try {
+                data = await this.getDbRedmineUserIssueById(request.redmine_id, request.issue_id);
+            } catch (error) {
+                log.error('Error UserIssueService@getUserIssueDetail on "data = await this.getDbRedmineUserIssueById"', error);
+                throw error;
+            }
+
+            if (!data) {
+                throw new BaseErrorClass({
+                    responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
+                    code: INTERNAL_ERROR_CODES.REDMINE_ISSUE_NOT_FOUND.code,
+                    message: INTERNAL_ERROR_CODES.REDMINE_ISSUE_NOT_FOUND.message,
+                });
+            }
+
+            userIssue = data;
+        }
+
+        const issueDescription: IIssueDescription = {
+            title: `${userIssue.type} #${userIssue.key}: `,
+            summary: UserIssueService.getIssueSummary(userIssue),
+            link: userIssue.self,
+            pageType: userIssue.pageType,
+            closed: userIssue.closed!,
+            project: userIssue.project,
+        };
+
+        const browser: Browser = await puppeteer.launch(this.PUPPETEER_LAUNCH_OPTIONS);
+
+        const imageBase64Data = await this.takeScreenshot(issueDescription, browser, true, request.header.getCredentials);
+
+        await browser.close();
+
+        log.info('  Finish UserIssueService@getUserIssueDetail method');
+        return {
+            id: userIssue.id,
+            key: userIssue.key,
+            type: userIssue.type,
+            created: userIssue.created,
+            updated: userIssue.updated,
+            assignee: userIssue.assignee,
+            assignedToId: userIssue.assignedToId,
+            status: userIssue.status,
+            description: userIssue.description,
+            summary: userIssue.summary,
+            project: userIssue.project,
+            projectTypeKey: userIssue.projectTypeKey,
+            self: userIssue.self,
+            creator: userIssue.creator,
+            reporter: userIssue.reporter,
+            pageType: userIssue.pageType,
+            screenshot: imageBase64Data,
+        };
     }
 
     /**
@@ -450,7 +607,7 @@ export default class UserIssueService {
                                 new Paragraph({
                                     children: [
                                         new TextRun({
-                                            text: 'Plataforma Colaboración Corporativa',
+                                            text: evidence.project,
                                             size: this.SIZE,
                                             font: this.FONT,
                                         }),

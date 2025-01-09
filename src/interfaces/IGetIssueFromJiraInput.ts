@@ -4,6 +4,6 @@ export default interface IGetIssueFromJiraInput {
     jira_url?: string;
     jql?: string;
     jira_username?: string;
-    startDate: string;
-    endDate: string;
+    startDate?: string;
+    endDate?: string;
 }

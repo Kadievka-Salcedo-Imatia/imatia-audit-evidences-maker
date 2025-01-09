@@ -6,6 +6,7 @@ import getUserIssuesValidator from '../validators/userIssue/getUserIssues.valida
 import getUserIssuesYearValidator from '../validators/userIssue/getUserIssuesYear.validator';
 import syncRedmineUserIssues from '../validators/userIssue/syncRedmineUserIssues.validator';
 import getDownloadLinksValidator from '../validators/userIssue/getDownloadLinks.validator';
+import getUserIssueDetailsValidator from '../validators/userIssue/getUserIssueDetails.validator';
 
 const router = express.Router();
 
@@ -16,6 +17,11 @@ const response: ResponseClass = new ResponseClass(userIssueController);
 router.post('/schema', (req, res) => {
     const { validatorFailed, message } = getUserIssuesValidator(req.body);
     validatorFailed ? response.sendBadRequest(res, message) : response.send(req, res, ResponseStatus.OK, 'getUserIssues');
+});
+
+router.post('/schema/details', (req, res) => {
+    const { validatorFailed, message } = getUserIssueDetailsValidator(req.body);
+    validatorFailed ? response.sendBadRequest(res, message) : response.send(req, res, ResponseStatus.OK, 'getUserIssueDetails');
 });
 
 router.post('/description', (req, res) => {

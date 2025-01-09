@@ -1,8 +1,6 @@
-export default interface IUserIssuesInput {
-    header: {
-        getCredentials: string[];
-        authorization: string;
-    };
+import IHeader from './IHeader';
+
+export default interface IUserIssuesInput extends IHeader {
     jira_base_url?: string;
     jira_url?: string;
     jql?: string;
