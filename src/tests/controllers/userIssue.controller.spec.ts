@@ -5,11 +5,12 @@ import IDownloadOutput from '../../interfaces/IDownloadOutput';
 import IEvidence from '../../interfaces/IEvidence';
 import IGetDownloadLinksOutput from '../../interfaces/IGetDownloadLinksOutput';
 import ISyncRedmineUserIssuesOutput from '../../interfaces/ISyncRedmineUserIssuesOutput';
+import IUserIssueDetail from '../../interfaces/IUserIssueDetail';
 import UserIssueService from '../../services/userIssue.service';
 import { getEvidenceInfoMock } from '../mocks/evidenceDescriptionResponseMock';
-import { getUserIssueReqBodyMock, getUserIssueReqHeaderMock } from '../mocks/getUserIssueRequestMock';
+import { getUserIssueDetailReqBodyMock, getUserIssueReqBodyMock, getUserIssueReqHeaderMock } from '../mocks/getUserIssueRequestMock';
 import { jiraIssuesProcessedMock } from '../mocks/jiraIssuesMock';
-import { userIssueMock, userIssueMock2 } from '../mocks/userIssueMock';
+import { userIssueDetailMock, userIssueMock, userIssueMock2 } from '../mocks/userIssueMock';
 
 const userIssueService: UserIssueService = UserIssueService.getInstance();
 
@@ -46,6 +47,31 @@ describe('UserIssueController', () => {
             const userIssueController: UserIssueController = UserIssueController.getInstance();
 
             const result = await userIssueController.getUserIssues(request);
+
+            expect(result).toBe(expectedResult);
+
+            expect(getUserIssuesServiceMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('getUserIssueDetails method', () => {
+        it('should map the request parameters and return the service response', async () => {
+            const request = {
+                header: getUserIssueReqHeaderMock.header,
+                body: {
+                    jira_username: getUserIssueDetailReqBodyMock.jira_username,
+                    redmine_id: getUserIssueDetailReqBodyMock.redmine_id,
+                    issue_id: getUserIssueDetailReqBodyMock.issue_id,
+                },
+            };
+
+            const expectedResult: IUserIssueDetail = userIssueDetailMock;
+
+            const getUserIssuesServiceMock = jest.spyOn(userIssueService, 'getUserIssueDetail').mockImplementation(async () => expectedResult);
+
+            const userIssueController: UserIssueController = UserIssueController.getInstance();
+
+            const result = await userIssueController.getUserIssueDetails(request);
 
             expect(result).toBe(expectedResult);
 

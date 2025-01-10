@@ -402,13 +402,14 @@ export default class UserIssueService {
 
                 if (error.name === 'AxiosError') {
                     throw new BaseErrorClass({
-                        responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
-                        code: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.code,
-                        message: {
+                        responseStatus: {
+                            statusCode: error.status,
                             message: error.message,
-                            name: error.name,
+                        },
+                        code: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.code,
+                        message: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.message,
+                        error: {
                             code: error.code,
-                            status: error.status,
                             config: {
                                 baseURL: error.config.baseURL,
                                 params: error.config.params,
@@ -422,7 +423,7 @@ export default class UserIssueService {
                 throw new BaseErrorClass({
                     responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
                     code: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.code,
-                    message: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.code,
+                    message: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.message,
                 });
             }
 

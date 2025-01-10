@@ -24,6 +24,9 @@ import IGetDownloadLinksInput from '../../interfaces/IGetDownloadLinksInput';
 import { userTemplateJiraMock, userTemplateRedmineMock } from '../mocks/userTemplateMock';
 import IUserIssueDetailInput from '../../interfaces/IUserIssueDetailInput';
 import IUserIssueDetail from '../../interfaces/IUserIssueDetail';
+import BaseErrorClass from '../../resources/configurations/classes/BaseErrorClass';
+import INTERNAL_ERROR_CODES from '../../resources/configurations/constants/InternalErrorCodes';
+import RESPONSE_STATUS_CODES from '../../resources/configurations/constants/ResponseStatusCodes';
 
 const redmineIssue = redmineIssuesMock.issues[0];
 
@@ -42,6 +45,29 @@ describe('UserIssueService', () => {
             const userIssueService2 = UserIssueService.getInstance();
             expect(userIssueService).toBeInstanceOf(UserIssueService);
             expect(userIssueService).toStrictEqual(userIssueService2);
+        });
+    });
+
+    describe('mapIssuesFromJira method', () => {
+        it('should take jira response issue and transform it into the standar schema for user issues', () => {
+            const result = UserIssueService.mapIssuesFromJira(jiraIssuesMock.issues, 'https://jira.testing.com');
+
+            expect(result.length).toBe(3);
+            expect(result[0]).toMatchObject({
+                assignee: 'Jhon Doe',
+                created: '2024-06-06T10:31:32.000+0200',
+                description: 'Llevar a PRO de ourense las tareas relacionadas. Sólo cividas.',
+                id: '40517',
+                key: 'OUINT-333',
+                pageType: 'JIRA',
+                project: 'Project Name Test',
+                projectTypeKey: 'software',
+                self: 'https://jira.testing.com/browse/OUINT-333',
+                status: 'Listo',
+                summary: 'OUR - Llevar a PRO última versión cividas core',
+                type: 'Tarea',
+                updated: '2024-07-17T17:04:08.000+0200',
+            });
         });
     });
 
@@ -443,6 +469,81 @@ describe('UserIssueService', () => {
             expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
         });
 
+        it('should throw an Axios Error when the request to jira fails, maybe id the issue_id is not found in jira', async () => {
+            const axiosError = {
+                name: 'AxiosError',
+                message: 'Request failed with status code 400',
+                code: 'ERR_BAD_REQUEST',
+                status: 400,
+                config: {
+                    baseURL: 'https://jira.testing.com',
+                    params: {
+                        jql: 'assignee in (jhon doe) AND id=42242',
+                    },
+                    method: 'get',
+                    url: '/rest/api/2/search',
+                },
+            } as any;
+
+            const jiraService: JiraService = JiraService.getInstance();
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation(async () => {
+                throw axiosError;
+            });
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const request: IUserIssueDetailInput = {
+                header: getUserIssueReqHeaderMock.header,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                issue_id: '4224',
+            };
+
+            await expect(userIssueService.getUserIssueDetail(request)).rejects.toThrow(
+                new BaseErrorClass({
+                    responseStatus: {
+                        statusCode: axiosError.status,
+                        message: axiosError.message,
+                    },
+                    code: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.code,
+                    message: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.message,
+                    error: {
+                        code: axiosError.code,
+                        config: {
+                            baseURL: axiosError.config.baseURL,
+                            params: axiosError.config.params,
+                            method: axiosError.config.method,
+                            url: axiosError.config.url,
+                        },
+                    },
+                }),
+            );
+            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw an Notfound Error when the request to jira fails', async () => {
+            const jiraService: JiraService = JiraService.getInstance();
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation(async () => {
+                throw new Error('random error');
+            });
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const request: IUserIssueDetailInput = {
+                header: getUserIssueReqHeaderMock.header,
+                jira_username: getUserIssueReqBodyMock.jira_username,
+                issue_id: '4224',
+            };
+
+            await expect(userIssueService.getUserIssueDetail(request)).rejects.toThrow(
+                new BaseErrorClass({
+                    responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
+                    code: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.code,
+                    message: INTERNAL_ERROR_CODES.JIRA_ISSUE_NOT_FOUND.message,
+                }),
+            );
+            expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+        });
+
         it('should call get user issues from db service if redmine_id is defined in the request', async () => {
             const userIssueService: UserIssueService = UserIssueService.getInstance();
             const getDbRedmineUserIssueByIdMock = jest.spyOn(userIssueService, 'getDbRedmineUserIssueById').mockImplementation((async () => userIssueMock) as any);
@@ -480,6 +581,42 @@ describe('UserIssueService', () => {
             expect(result).toMatchObject(expectedResult);
             expect(getDbRedmineUserIssueByIdMock).toHaveBeenCalledTimes(1);
             expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw a General Error when the request to redmine fails', async () => {
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const getDbRedmineUserIssueByIdMock = jest.spyOn(userIssueService, 'getDbRedmineUserIssueById').mockImplementation((async () => {
+                throw new Error('Error getting the redmine issue from DB');
+            }) as any);
+
+            const request: IUserIssueDetailInput = {
+                header: getUserIssueReqHeaderMock.header,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                issue_id: '4224',
+            };
+
+            await expect(userIssueService.getUserIssueDetail(request)).rejects.toThrow('Error getting the redmine issue from DB');
+            expect(getDbRedmineUserIssueByIdMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw an Not found Error when the request to redmine fails', async () => {
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const getDbRedmineUserIssueByIdMock = jest.spyOn(userIssueService, 'getDbRedmineUserIssueById').mockImplementation((async () => null) as any);
+
+            const request: IUserIssueDetailInput = {
+                header: getUserIssueReqHeaderMock.header,
+                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                issue_id: '4224',
+            };
+
+            await expect(userIssueService.getUserIssueDetail(request)).rejects.toThrow(
+                new BaseErrorClass({
+                    responseStatus: RESPONSE_STATUS_CODES.NOT_FOUND,
+                    code: INTERNAL_ERROR_CODES.REDMINE_ISSUE_NOT_FOUND.code,
+                    message: INTERNAL_ERROR_CODES.REDMINE_ISSUE_NOT_FOUND.message,
+                }),
+            );
+            expect(getDbRedmineUserIssueByIdMock).toHaveBeenCalledTimes(1);
         });
     });
 

@@ -94,6 +94,7 @@ export function handleErrorResponse(error: any, response: IResponse): IResponse 
         response.error = {
             code: error.code,
             message: error.message,
+            error: error.error,
         };
     } else {
         response.statusCode = INTERNAL_ERROR_CODES.GENERAL_UNKNOWN.responseStatus.statusCode;
