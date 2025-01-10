@@ -938,7 +938,7 @@ export default class UserIssueService {
      * @returns {Paragraph[]} returns the list of paragraphs
      */
     public getIssuesParagraphs(evidences: IEvidence): Paragraph[] {
-        log.info(' Start UserIssueService@getIssues method');
+        log.info(' Start UserIssueService@getIssuesParagraphs method');
         const paragraphs: Paragraph[] = [
             new Paragraph({
                 children: [
@@ -980,7 +980,7 @@ export default class UserIssueService {
                 }),
             );
         });
-        log.info(' Finish UserIssueService@getIssues method');
+        log.info(' Finish UserIssueService@getIssuesParagraphs method');
         return paragraphs;
     }
 

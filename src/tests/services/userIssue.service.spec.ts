@@ -10,7 +10,7 @@ import UserIssueService from '../../services/userIssue.service';
 import { getUserIssueReqHeaderMock } from '../mocks/getUserIssueRequestMock';
 import { redmineIssuesMock } from '../mocks/redmineIssuesMock';
 import { syncRedmineUserIssuesReqBodyMock } from '../mocks/syncRedmineUserIssuesRequestMock';
-import { userIssueMock } from '../mocks/userIssueMock';
+import { userIssueMock, userIssueMock2 } from '../mocks/userIssueMock';
 import JiraService from '../../services/jira.service';
 import { jiraIssuesMock, jiraIssuesProcessedMock } from '../mocks/jiraIssuesMock';
 import IUserIssue from '../../interfaces/IUserIssue';
@@ -28,6 +28,29 @@ import IUserIssueDetail from '../../interfaces/IUserIssueDetail';
 import BaseErrorClass from '../../resources/configurations/classes/BaseErrorClass';
 import INTERNAL_ERROR_CODES from '../../resources/configurations/constants/InternalErrorCodes';
 import RESPONSE_STATUS_CODES from '../../resources/configurations/constants/ResponseStatusCodes';
+import puppeteer, { Browser } from 'puppeteer';
+import { getEvidenceInfoMock } from '../mocks/evidenceDescriptionResponseMock';
+
+const launchMock = jest.spyOn(puppeteer, 'launch').mockImplementation(
+    async () =>
+        ({
+            close: () => {},
+            newPage: async () => ({
+                setViewport: () => {},
+                goto: () => {},
+                type: () => ({}),
+                focus: () => ({}),
+                click: () => ({}),
+                waitForNavigation: () => ({}),
+                evaluate: () => ({}),
+                screenshot: () => new Uint8Array(0),
+                close: () => ({}),
+                waitForSelector: () => ({
+                    screenshot: () => new Uint8Array(0),
+                }),
+            }),
+        }) as unknown as Browser,
+);
 
 const redmineIssue = redmineIssuesMock.issues[0];
 
@@ -453,9 +476,6 @@ describe('UserIssueService', () => {
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
-            const screenshot = Buffer.from('');
-            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementation(async () => screenshot);
-
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
                 jira_username: getUserIssueReqBodyMock.jira_username,
@@ -463,11 +483,10 @@ describe('UserIssueService', () => {
             };
 
             const result = await userIssueService.getUserIssueDetail(request);
-            const expectedResult: IUserIssueDetail = { ...jiraIssuesMock.issues[0], screenshot };
+            const expectedResult: IUserIssueDetail = { ...jiraIssuesMock.issues[0], screenshot: Buffer.from('') };
 
             expect(result).toMatchObject(expectedResult);
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
-            expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
         });
 
         it('should throw an Axios Error when the request to jira fails, maybe id the issue_id is not found in jira', async () => {
@@ -549,9 +568,6 @@ describe('UserIssueService', () => {
             const userIssueService: UserIssueService = UserIssueService.getInstance();
             const getDbRedmineUserIssueByIdMock = jest.spyOn(userIssueService, 'getDbRedmineUserIssueById').mockImplementation((async () => userIssueMock) as any);
 
-            const screenshot = Buffer.from('');
-            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementation(async () => screenshot);
-
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
                 redmine_id: getUserIssueReqBodyMock.redmine_id,
@@ -560,7 +576,7 @@ describe('UserIssueService', () => {
 
             const result = await userIssueService.getUserIssueDetail(request);
             const expectedResult: IUserIssueDetail = {
-                screenshot,
+                screenshot: Buffer.from(''),
                 id: userIssueMock.id,
                 key: userIssueMock.key,
                 type: userIssueMock.type,
@@ -581,7 +597,6 @@ describe('UserIssueService', () => {
 
             expect(result).toMatchObject(expectedResult);
             expect(getDbRedmineUserIssueByIdMock).toHaveBeenCalledTimes(1);
-            expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
         });
 
         it('should throw a General Error when the request to redmine fails', async () => {
@@ -852,30 +867,6 @@ describe('UserIssueService', () => {
         });
     });
 
-    describe('splitIssuesByTypeAndGetImages', () => {
-        it('should test the case issues are empty', async () => {
-            const request: ICreateTemplateInput = {
-                header: getUserIssueReqHeaderMock.header,
-                month: 11,
-                year: 2024,
-            };
-
-            const evidence: IEvidence = {
-                project: 'Project name',
-                userDisplayName: 'Jhon Doe',
-                date: 'Noviembre 2024',
-                month: 'NOVIEMBRE',
-                evidenceStart: '1',
-                total: 0,
-            };
-
-            const userIssueService: UserIssueService = UserIssueService.getInstance();
-            const result: Paragraph[] = await userIssueService.splitIssuesByTypeAndGetImages(evidence, request);
-
-            expect(result.length === 0).toBeTruthy();
-        });
-    });
-
     describe('forceScroll', () => {
         it('should test forceScroll method', () => {
             const userIssueService: UserIssueService = UserIssueService.getInstance();
@@ -917,6 +908,176 @@ describe('UserIssueService', () => {
             });
 
             expect(getUserTemplatesMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('splitIssuesByTypeAndGetImages', () => {
+        it('should test the case issues are empty', async () => {
+            const request: ICreateTemplateInput = {
+                header: getUserIssueReqHeaderMock.header,
+                month: 11,
+                year: 2024,
+            };
+
+            const evidence: IEvidence = {
+                project: 'Project name',
+                userDisplayName: 'Jhon Doe',
+                date: 'Noviembre 2024',
+                month: 'NOVIEMBRE',
+                evidenceStart: '1',
+                total: 0,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result: Paragraph[] = await userIssueService.splitIssuesByTypeAndGetImages(evidence, request);
+
+            expect(result.length === 0).toBeTruthy();
+        });
+
+        it('should return paragraphs from issues array', async () => {
+            const request: IUserIssuesInput = {
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                header: getUserIssueReqHeaderMock.header,
+                jira_username: 'jhon doe',
+            };
+
+            const evidence: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock2, userIssueMock], request, true);
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.splitIssuesByTypeAndGetImages(evidence, request);
+
+            expect(result.length).toBe(3);
+            expect(result[0]).toBeInstanceOf(Paragraph);
+        });
+    });
+
+    describe('getIssuesParagraphs', () => {
+        it('should return paragraphs from issues array', async () => {
+            const request: IUserIssuesInput = {
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                header: getUserIssueReqHeaderMock.header,
+                jira_username: 'jhon doe',
+            };
+
+            const evidence: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock2, userIssueMock], request, true);
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = userIssueService.getIssuesParagraphs(evidence);
+
+            expect(result.length).toBe(7);
+            expect(result[0]).toBeInstanceOf(Paragraph);
+        });
+    });
+
+    describe('takeScreenshot', () => {
+        it('should take screenshot with jira issue', async () => {
+            const browser: Browser = await puppeteer.launch();
+
+            const request: IUserIssuesInput = {
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                header: getUserIssueReqHeaderMock.header,
+                jira_username: 'jhon doe',
+            };
+            const evidence: IEvidence = getEvidenceInfoMock([userIssueMock], request, true);
+
+            const issue: IIssueDescription = evidence.issues![0];
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.takeScreenshot(issue, browser, true, request.header.getCredentials);
+
+            expect(result).toBeInstanceOf(Buffer);
+            expect(launchMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should take screenshot with redmine issue', async () => {
+            const browser: Browser = await puppeteer.launch();
+
+            const request: IUserIssuesInput = {
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                header: getUserIssueReqHeaderMock.header,
+                redmine_id: 100,
+            };
+            const evidence: IEvidence = getEvidenceInfoMock([userIssueMock], request, false);
+
+            const issue: IIssueDescription = evidence.issues![0];
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.takeScreenshot(issue, browser, true, request.header.getCredentials);
+
+            expect(result).toBeInstanceOf(Buffer);
+            expect(launchMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('getEvidenceImages', () => {
+        it('should get jira evidence images', async () => {
+            const request: IUserIssuesInput = {
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                header: getUserIssueReqHeaderMock.header,
+                jira_username: 'jhon doe',
+            };
+            const evidence: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock2, userIssueMock], request, true);
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementation(async () => Buffer.from('abc'));
+
+            const result = await userIssueService.getEvidenceImages(evidence, request);
+
+            expect(result.length).toBe(3);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(3);
+            expect(launchMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should continue if takeScreenshot fails get jira evidence images', async () => {
+            const request: IUserIssuesInput = {
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                header: getUserIssueReqHeaderMock.header,
+                jira_username: 'jhon doe',
+            };
+            const evidence: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock2, userIssueMock], request, true);
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const takeScreenshotMock = jest
+                .spyOn(userIssueService, 'takeScreenshot')
+                .mockImplementationOnce(async () => {
+                    throw new Error('Error taking screenshot');
+                })
+                .mockImplementation(async () => Buffer.from('abc'));
+
+            const result = await userIssueService.getEvidenceImages(evidence, request);
+
+            expect(result.length).toBe(2);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(3);
+            expect(launchMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should get redmine evidence images', async () => {
+            const request: IUserIssuesInput = {
+                month: getUserIssueReqBodyMock.month,
+                year: getUserIssueReqBodyMock.year,
+                header: getUserIssueReqHeaderMock.header,
+                redmine_id: 200,
+            };
+            const evidence: IEvidence = getEvidenceInfoMock([userIssueMock, userIssueMock2, userIssueMock], request, false);
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.getEvidenceImages(evidence, request);
+
+            expect(result.length).toBe(4);
+            expect(launchMock).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -990,7 +1151,7 @@ describe('UserIssueService', () => {
 
             const result = await userIssueService.downloadTemplate('6734c5429411eee699ab6257');
 
-            expect(result).toStrictEqual({path: '/templates/template-test.doc'})
+            expect(result).toStrictEqual({ path: '/templates/template-test.doc' });
             expect(getByIdMock).toHaveBeenCalledTimes(1);
             expect(existsSyncMock).toHaveBeenCalledTimes(1);
         });
