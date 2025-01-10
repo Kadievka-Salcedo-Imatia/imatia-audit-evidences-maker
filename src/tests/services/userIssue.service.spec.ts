@@ -673,6 +673,58 @@ describe('UserIssueService', () => {
         });
     });
 
+    describe('getPageType method', () => {
+        it('returns JIRA if jira_username only is passed', async () => {
+            const request: ICreateTemplateInput = {
+                month: 1,
+                year: 20024,
+                header: {
+                    getCredentials: ['jhon doe', '123'],
+                    authorization: 'dsfdssfsdfds',
+                },
+                jira_username: 'jhon doe',
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = userIssueService.getPageType(request);
+
+            expect(result).toBe('JIRA');
+        });
+        it('returns REDMINE if redmine_id only is passed', async () => {
+            const request: ICreateTemplateInput = {
+                month: 1,
+                year: 20024,
+                header: {
+                    getCredentials: ['jhon doe', '123'],
+                    authorization: 'dsfdssfsdfds',
+                },
+                redmine_id: 9999,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = userIssueService.getPageType(request);
+
+            expect(result).toBe('REDMINE');
+        });
+        it('returns undefined', async () => {
+            const request: ICreateTemplateInput = {
+                month: 1,
+                year: 20024,
+                header: {
+                    getCredentials: ['jhon doe', '123'],
+                    authorization: 'dsfdssfsdfds',
+                },
+                jira_username: 'jhon doe',
+                redmine_id: 9999,
+            };
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const result = userIssueService.getPageType(request);
+
+            expect(result).toBeUndefined();
+        });
+    });
+
     describe('createTemplatesYear', () => {
         it('should create evidences of the year', async () => {
             const request: ICreateTemplateInput = {
