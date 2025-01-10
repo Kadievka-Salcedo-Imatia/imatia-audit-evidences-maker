@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { getUserIssueReqBodyMock } from './../mocks/getUserIssueRequestMock';
 import { PageTypeEnum } from '../../enums/PageTypeEnum';
 import IDataIssue from '../../interfaces/IDataIssue';
@@ -976,6 +977,22 @@ describe('UserIssueService', () => {
             );
 
             expect(getByIdMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should return the path', async () => {
+            const getByIdMock = jest.spyOn(userTemplateService, 'getById').mockImplementation(async () => ({
+                path: '/templates/template-test.doc',
+            }));
+
+            const existsSyncMock = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+
+            const result = await userIssueService.downloadTemplate('6734c5429411eee699ab6257');
+
+            expect(result).toStrictEqual({path: '/templates/template-test.doc'})
+            expect(getByIdMock).toHaveBeenCalledTimes(1);
+            expect(existsSyncMock).toHaveBeenCalledTimes(1);
         });
     });
 });
