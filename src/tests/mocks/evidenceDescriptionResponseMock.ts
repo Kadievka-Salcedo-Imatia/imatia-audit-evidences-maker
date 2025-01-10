@@ -44,10 +44,10 @@ export function getEvidenceInfoMock(issuesMock: IUserIssue[], request?: IUserIss
     });
 
     return {
-        project: 'escribir proyecto',
-        userDisplayName: 'escribir nombre',
+        project: 'Project Name Test',
+        userDisplayName: 'Jhon Doe',
         date: `${MONTHS(request.year)[request.month - 1].days}/${request.month}/${request.year}`,
-        month: 'escribir mes',
+        month: 'NOVIEMBRE',
         evidenceStart: 'En el mes de Noviembre de 2024 se realizaron las siguientes tareas por Jhon Doe: ',
         total: issuesDescriptionsMock.length,
         issues: issuesDescriptionsMock,
