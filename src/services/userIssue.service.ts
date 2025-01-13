@@ -581,6 +581,55 @@ export default class UserIssueService {
             }
         }
 
+        let children: FileChild[] = this.buildTemplateTables(evidence);
+
+        if (!Boolean(request.jira_base_url)) {
+            // can not take screenshots of external jira boards because they could have custom authentication with phone number and other information
+            const images: Paragraph[] = await this.splitIssuesByTypeAndGetImages(evidence, request);
+
+            children = children.concat(images);
+        }
+
+        const doc = new Document({
+            sections: [
+                {
+                    children,
+                },
+            ],
+        });
+
+        const newBuffer = await Packer.toBuffer(doc);
+        fs.writeFileSync(newFileName, newBuffer);
+
+        const [username] = request.header.getCredentials;
+        const createTemplateInput: IUserTemplate = {
+            username,
+            path: newFileName,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            evidenceUserDisplayName: evidence.userDisplayName,
+            pageType: this.getPageType(request),
+            year: request.year,
+            month: evidence.month,
+        };
+        try {
+            await userTemplateService.createUserTemplate(createTemplateInput);
+        } catch (error) {
+            log.error('Error UserIssueService@createTemplate creating the user template in DB', error);
+        }
+
+        const endTime = performance.now();
+        log.info(`Finish UserIssueService@createTemplate path: ${newFileName} in time: ${endTime - startTime} ms:`);
+
+        return { ...evidence, path: newFileName };
+    }
+
+    /**
+     * Takes evidence array and builds the template tables with docx
+     * @param {IEvidence} evidence - evidences array
+     * @returns {FileChild[]} an array of tables and paragraphs
+     */
+    public buildTemplateTables(evidence: IEvidence): FileChild[] {
         const table1 = new Table({
             width: this.TABLE_WIDTH,
             rows: [
@@ -778,7 +827,7 @@ export default class UserIssueService {
             ],
         });
 
-        let children = [
+        return [
             table1,
             new Paragraph(''),
             table2,
@@ -792,46 +841,6 @@ export default class UserIssueService {
             table6,
             new Paragraph(''),
         ];
-
-        if (!Boolean(request.jira_base_url)) {
-            // can not take screenshots of external jira boards because they could have custom authentication with phone number and other information
-            const images: Paragraph[] = await this.splitIssuesByTypeAndGetImages(evidence, request);
-
-            children = children.concat(images);
-        }
-
-        const doc = new Document({
-            sections: [
-                {
-                    children: children as FileChild[],
-                },
-            ],
-        });
-
-        const newBuffer = await Packer.toBuffer(doc);
-        fs.writeFileSync(newFileName, newBuffer);
-
-        const [username] = request.header.getCredentials;
-        const createTemplateInput: IUserTemplate = {
-            username,
-            path: newFileName,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            evidenceUserDisplayName: evidence.userDisplayName,
-            pageType: this.getPageType(request),
-            year: request.year,
-            month: evidence.month,
-        };
-        try {
-            await userTemplateService.createUserTemplate(createTemplateInput);
-        } catch (error) {
-            log.error('Error UserIssueService@createTemplate creating the user template in DB', error);
-        }
-
-        const endTime = performance.now();
-        log.info(`Finish UserIssueService@createTemplate path: ${newFileName} in time: ${endTime - startTime} ms:`);
-
-        return { ...evidence, path: newFileName };
     }
 
     /**
