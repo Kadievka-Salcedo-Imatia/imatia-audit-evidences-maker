@@ -827,20 +827,7 @@ export default class UserIssueService {
             ],
         });
 
-        return [
-            table1,
-            new Paragraph(''),
-            table2,
-            new Paragraph(''),
-            table3,
-            new Paragraph(''),
-            table4,
-            new Paragraph(''),
-            table5,
-            new Paragraph(''),
-            table6,
-            new Paragraph(''),
-        ];
+        return [table1, new Paragraph(''), table2, new Paragraph(''), table3, new Paragraph(''), table4, new Paragraph(''), table5, new Paragraph(''), table6, new Paragraph('')];
     }
 
     /**
