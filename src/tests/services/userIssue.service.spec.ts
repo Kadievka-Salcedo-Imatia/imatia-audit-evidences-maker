@@ -378,12 +378,11 @@ describe('UserIssueService', () => {
         it('should get issue by internal redmine id from db', async () => {
             const findMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(userIssueFromDBMock.getProperties() as any);
 
-            const assignedToId: number = 1;
             const id = '44224';
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
-            const result = await userIssueService.getDbRedmineUserIssueById(assignedToId, id);
+            const result = await userIssueService.getDbRedmineUserIssueById(id);
 
             expect(result).toMatchObject(userIssueFromDBMock.getProperties());
             expect(findMock).toHaveBeenCalledTimes(1);
@@ -392,12 +391,11 @@ describe('UserIssueService', () => {
         it('should return null if finds nothing', async () => {
             const findMock = jest.spyOn(mongooseModel, 'findOne').mockReturnValue(null as any);
 
-            const assignedToId: number = 1;
             const id = '44224';
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
-            const result = await userIssueService.getDbRedmineUserIssueById(assignedToId, id);
+            const result = await userIssueService.getDbRedmineUserIssueById(id);
 
             expect(result).toBe(null);
             expect(findMock).toHaveBeenCalledTimes(1);
@@ -408,12 +406,11 @@ describe('UserIssueService', () => {
                 throw new Error('error finding db user issue');
             });
 
-            const assignedToId: number = 1;
             const id = '44224';
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
-            await expect(userIssueService.getDbRedmineUserIssueById(assignedToId, id)).rejects.toThrow('error finding db user issue');
+            await expect(userIssueService.getDbRedmineUserIssueById(id)).rejects.toThrow('error finding db user issue');
             expect(findMock).toHaveBeenCalledTimes(1);
         });
     });
@@ -470,20 +467,39 @@ describe('UserIssueService', () => {
     });
 
     describe('getUserIssueDetail method', () => {
-        it('should call jira service if jira_username is defined in the request', async () => {
+        it('should call jira service if pageType JIRA is defined in the request', async () => {
             const jiraService: JiraService = JiraService.getInstance();
-            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation((async () => jiraIssuesMock) as any);
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssueDetailById').mockImplementation((async () => jiraIssuesMock.issues[0]) as any);
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
 
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
+                page_type: 'JIRA',
                 issue_id: '4224',
             };
 
             const result = await userIssueService.getUserIssueDetail(request);
-            const expectedResult: IUserIssueDetail = { ...jiraIssuesMock.issues[0], screenshot: Buffer.from('') };
+
+            const expectedResult: IUserIssueDetail = {
+                id: '40517',
+                key: 'OUINT-333',
+                type: 'Tarea',
+                created: '2024-06-06T10:31:32.000+0200',
+                updated: '2024-07-17T17:04:08.000+0200',
+                assignee: 'Jhon Doe',
+                assignedToId: undefined,
+                status: 'Listo',
+                description: 'Llevar a PRO de ourense las tareas relacionadas. Sólo cividas.',
+                summary: 'OUR - Llevar a PRO última versión cividas core',
+                project: 'Project Name Test',
+                projectTypeKey: 'software',
+                self: 'https://jiracloud-example.com/browse/OUINT-333',
+                creator: undefined,
+                reporter: undefined,
+                pageType: 'JIRA',
+                screenshot: Buffer.from(''),
+            };
 
             expect(result).toMatchObject(expectedResult);
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
@@ -506,7 +522,7 @@ describe('UserIssueService', () => {
             } as any;
 
             const jiraService: JiraService = JiraService.getInstance();
-            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation(async () => {
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssueDetailById').mockImplementation(async () => {
                 throw axiosError;
             });
 
@@ -514,7 +530,7 @@ describe('UserIssueService', () => {
 
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
+                page_type: 'JIRA',
                 issue_id: '4224',
             };
 
@@ -542,7 +558,7 @@ describe('UserIssueService', () => {
 
         it('should throw an Notfound Error when the request to jira fails', async () => {
             const jiraService: JiraService = JiraService.getInstance();
-            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssues').mockImplementation(async () => {
+            const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssueDetailById').mockImplementation(async () => {
                 throw new Error('random error');
             });
 
@@ -550,7 +566,7 @@ describe('UserIssueService', () => {
 
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
-                jira_username: getUserIssueReqBodyMock.jira_username,
+                page_type: 'JIRA',
                 issue_id: '4224',
             };
 
@@ -564,13 +580,13 @@ describe('UserIssueService', () => {
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
         });
 
-        it('should call get user issues from db service if redmine_id is defined in the request', async () => {
+        it('should call get user issues from db service if page_type REDMINE is defined in the request', async () => {
             const userIssueService: UserIssueService = UserIssueService.getInstance();
             const getDbRedmineUserIssueByIdMock = jest.spyOn(userIssueService, 'getDbRedmineUserIssueById').mockImplementation((async () => userIssueMock) as any);
 
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                page_type: 'REDMINE',
                 issue_id: '4224',
             };
 
@@ -607,7 +623,7 @@ describe('UserIssueService', () => {
 
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                page_type: 'REDMINE',
                 issue_id: '4224',
             };
 
@@ -621,7 +637,7 @@ describe('UserIssueService', () => {
 
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
-                redmine_id: getUserIssueReqBodyMock.redmine_id,
+                page_type: 'REDMINE',
                 issue_id: '4224',
             };
 

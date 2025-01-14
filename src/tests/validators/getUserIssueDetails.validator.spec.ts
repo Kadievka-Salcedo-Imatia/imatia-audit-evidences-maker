@@ -1,5 +1,4 @@
 import getUserIssueDetailsValidator from '../../validators/userIssue/getUserIssueDetails.validator';
-import { getUserIssueReqBodyMock } from '../mocks/getUserIssueRequestMock';
 
 describe('getUserIssueDetailsValidator Unit Tests', () => {
     it('should return validator failed true and message that body can not be empty', () => {
@@ -16,9 +15,9 @@ describe('getUserIssueDetailsValidator Unit Tests', () => {
         expect(result).toHaveProperty('message', 'the property "randomProperty" is invalid. Please removed it.');
     });
 
-    it('should return validator failed true and message that year is missing', () => {
+    it('should return validator failed true and message that issue_id is required', () => {
         const result = getUserIssueDetailsValidator({
-            jira_username: getUserIssueReqBodyMock.jira_username,
+            page_type: 'JIRA',
         });
         expect(result).toHaveProperty('validatorFailed', true);
         expect(result).toHaveProperty('message', '\"issue_id\" is required');
@@ -26,7 +25,7 @@ describe('getUserIssueDetailsValidator Unit Tests', () => {
 
     it('should return validator failed false and message that validation passed with the minimum required fields', () => {
         const result = getUserIssueDetailsValidator({
-            jira_username: getUserIssueReqBodyMock.jira_username,
+            page_type: 'JIRA',
             issue_id: '44224',
         });
         expect(result).toHaveProperty('validatorFailed', false);
@@ -35,7 +34,7 @@ describe('getUserIssueDetailsValidator Unit Tests', () => {
 
     it('should return validator failed false and message that validation passed with the minimum required fields redmine_id', () => {
         const result = getUserIssueDetailsValidator({
-            redmine_id: getUserIssueReqBodyMock.redmine_id,
+            page_type: 'REDMINE',
             issue_id: '44224',
         });
         expect(result).toHaveProperty('validatorFailed', false);

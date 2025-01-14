@@ -3,6 +3,7 @@ import JiraService from '../../services/jira.service';
 import IGetIssueFromJiraInput from '../../interfaces/IGetIssueFromJiraInput';
 import { getUserIssueReqBodyMock, getUserIssueReqHeaderMock } from '../mocks/getUserIssueRequestMock';
 import { jiraIssuesMock } from '../mocks/jiraIssuesMock';
+import IGetIssueDetailJiraInput from '../../interfaces/IGetIssueDetailJiraInput';
 
 jest.mock('axios');
 
@@ -27,6 +28,11 @@ describe('JiraService', () => {
             (axios.create as jest.Mock).mockImplementation(() => ({
                 get: (_url: string, _options?: any) => ({
                     data: jiraIssuesMock,
+                    config: {
+                        method: 'get',
+                        baseURL: 'jira-example.com/',
+                        url: 'api/rest/2/search',
+                    },
                 }),
             }));
 
@@ -49,6 +55,11 @@ describe('JiraService', () => {
             (axios.create as jest.Mock).mockImplementation(() => ({
                 get: (_url: string, _options?: any) => ({
                     data: jiraIssuesMock,
+                    config: {
+                        method: 'get',
+                        baseURL: 'jira-example.com/',
+                        url: 'api/rest/2/search',
+                    },
                 }),
             }));
 
@@ -85,6 +96,52 @@ describe('JiraService', () => {
             };
 
             await expect(jiraService.getUserIssues(getIssueInput)).rejects.toThrow();
+        });
+    });
+
+    describe('getUserIssueDetailById method', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('should map request body a return jira data with axios instance by default', async () => {
+            (axios.create as jest.Mock).mockImplementation(() => ({
+                get: (_url: string, _options?: any) => ({
+                    data: jiraIssuesMock,
+                    config: {
+                        method: 'get',
+                        baseURL: 'jira-example.com/',
+                        url: 'api/rest/2/issue/11',
+                    },
+                }),
+            }));
+
+            const getIssueInput: IGetIssueDetailJiraInput = {
+                authorization: getUserIssueReqHeaderMock.header.authorization,
+                issue_id: '11',
+            };
+            const result: Record<string, any> = await jiraService.getUserIssueDetailById(getIssueInput);
+
+            expect(result).toEqual(jiraIssuesMock);
+            expect(axios.create).toHaveBeenCalledWith({
+                baseURL: 'https://jiracloud-example.com',
+                timeout: 5000,
+            });
+        });
+
+        it('should throw an error when fetching data fails', async () => {
+            (axios.create as jest.Mock).mockImplementation(() => ({
+                get: (_url: string, _options?: any) => {
+                    throw new Error('error');
+                },
+            }));
+
+            const getIssueInput: IGetIssueDetailJiraInput = {
+                authorization: getUserIssueReqHeaderMock.header.authorization,
+                issue_id: '11',
+            };
+
+            await expect(jiraService.getUserIssueDetailById(getIssueInput)).rejects.toThrow();
         });
     });
 });

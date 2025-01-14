@@ -8,6 +8,7 @@ process.env.PORT=3000
 // Jira
 process.env.JIRA_CLOUD_URL='https://jiracloud-example.com'
 process.env.JIRA_REST_API_2_SEARCH_URL='/rest/api/2/search'
+process.env.JIRA_REST_API_2_ISSUE_BY_ID='/rest/api/2/issue'
 process.env.DEFAULT_JQL='assignee in ({{jira_username}}) AND updated >= {{startDate}} AND {{updated}} <= endDate'
 
 // Redmine

@@ -3,7 +3,7 @@ export default interface IIssueDescription {
     title: string;
     summary: string;
     link: string;
-    pageType: PageTypeEnum;
+    pageType: PageTypeEnum | string;
     closed: string;
     project: string;
 }

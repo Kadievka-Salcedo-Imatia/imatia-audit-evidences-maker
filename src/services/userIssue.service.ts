@@ -278,13 +278,12 @@ export default class UserIssueService {
      * @param {string} id issue id internal redmine id
      * @returns {Promise<FindCursor>} user issues information comes from the database
      */
-    public async getDbRedmineUserIssueById(assignedToId: number, id: string): Promise<any> {
-        log.info('  Start UserIssueService@getDbRedmineUserIssueById method with params:', { assignedToId, id });
+    public async getDbRedmineUserIssueById(id: string): Promise<any> {
+        log.info('  Start UserIssueService@getDbRedmineUserIssueById method with params:', { id });
         let dbUserIssue;
 
         try {
             dbUserIssue = await mongooseModel.findOne({
-                assignedToId,
                 id,
             });
         } catch (error) {
@@ -365,8 +364,7 @@ export default class UserIssueService {
     public async getUserIssueDetail(request: IUserIssueDetailInput): Promise<IUserIssueDetail> {
         log.info('  Start UserIssueService@getUserIssueDetail method with params:', {
             username: request.header.getCredentials[0],
-            jira_username: request.jira_username,
-            redmine_id: request.redmine_id,
+            page_type: request.page_type,
             issue_id: request.issue_id,
         });
 
@@ -391,11 +389,11 @@ export default class UserIssueService {
             pageType: PageTypeEnum.JIRA,
         };
 
-        if (request.jira_username) {
+        if (request.page_type === PageTypeEnum.JIRA) {
             try {
-                data = await jiraService.getUserIssues({
+                data = await jiraService.getUserIssueDetailById({
                     authorization: request.header.authorization,
-                    jql: `assignee in (${request.jira_username}) AND id=${request.issue_id}`,
+                    issue_id: request.issue_id,
                 });
             } catch (error: any) {
                 log.error('Error UserIssueService@getUserIssueDetail on "data = await jiraService.getUserIssues"', error);
@@ -427,14 +425,12 @@ export default class UserIssueService {
                 });
             }
 
-            data.issues = UserIssueService.mapIssuesFromJira(data.issues);
-
-            userIssue = data.issues[0];
+            userIssue = UserIssueService.mapIssuesFromJira([data])[0];
         }
 
-        if (request.redmine_id) {
+        if (request.page_type === PageTypeEnum.REDMINE) {
             try {
-                data = await this.getDbRedmineUserIssueById(request.redmine_id, request.issue_id);
+                data = await this.getDbRedmineUserIssueById(request.issue_id);
             } catch (error) {
                 log.error('Error UserIssueService@getUserIssueDetail on "data = await this.getDbRedmineUserIssueById"', error);
                 throw error;

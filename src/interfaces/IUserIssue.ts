@@ -8,14 +8,14 @@ export default interface IUserIssue {
     updated: string;
     closed?: string;
     assignee: string;
-    assignedToId: string;
+    assignedToId?: string;
     status: string;
     description: string;
     summary: string;
     project: string;
     projectTypeKey: string;
     self: string;
-    creator: string;
-    reporter: string;
-    pageType: PageTypeEnum;
+    creator?: string;
+    reporter?: string;
+    pageType: PageTypeEnum | string;
 }

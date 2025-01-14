@@ -46,7 +46,7 @@ export default class UserIssueModel {
     public self: string;
     public creator: string;
     public reporter: string;
-    public pageType: PageTypeEnum;
+    public pageType: PageTypeEnum | string;
 
     constructor(userIssue: IUserIssue) {
         this.id = userIssue.id;
@@ -56,15 +56,15 @@ export default class UserIssueModel {
         this.updated = new Date(userIssue.updated);
         this.closed = userIssue.closed ? new Date(userIssue.closed) : undefined;
         this.assignee = userIssue.assignee;
-        this.assignedToId = userIssue.assignedToId;
+        this.assignedToId = userIssue.assignedToId ? userIssue.assignedToId : '';
         this.status = userIssue.status;
         this.description = userIssue.description;
         this.summary = userIssue.summary;
         this.project = userIssue.project;
         this.projectTypeKey = userIssue.projectTypeKey;
         this.self = userIssue.self;
-        this.creator = userIssue.creator;
-        this.reporter = userIssue.reporter;
+        this.creator = userIssue.creator ? userIssue.creator : '';
+        this.reporter = userIssue.reporter ? userIssue.reporter : '';
         this.pageType = userIssue.pageType;
     }
 

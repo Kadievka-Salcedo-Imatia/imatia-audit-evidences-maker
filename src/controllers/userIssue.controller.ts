@@ -60,8 +60,7 @@ export default class UserIssueController {
                 getCredentials: req.header.getCredentials,
                 authorization: req.header.authorization,
             },
-            jira_username: req.body.jira_username,
-            redmine_id: req.body.redmine_id,
+            page_type: req.body.page_type,
             issue_id: req.body.issue_id,
         };
         return await userIssueService.getUserIssueDetail(request);

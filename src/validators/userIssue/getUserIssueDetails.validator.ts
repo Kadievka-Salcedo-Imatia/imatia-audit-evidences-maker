@@ -8,8 +8,7 @@ export default function getUserIssueDetailsValidator(reqBody: any): {
     message: string;
 } {
     const schema = {
-        jira_username: Joi.string().optional(),
-        redmine_id: Joi.number().positive().optional(),
+        page_type: Joi.string().required(),
         issue_id: Joi.string().required(),
     };
 
