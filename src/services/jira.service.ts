@@ -66,6 +66,12 @@ export default class JiraService {
 
         try {
             const promiseAxios = await axiosInstance.get(url, axiosConfig);
+
+            log.info(' JiraService@getUserIssues method, axios request details:', {
+                method: promiseAxios.config.method,
+                requestUrl: promiseAxios.config.baseURL + promiseAxios.config.url + '?jql=' + jql,
+            });
+
             data = promiseAxios.data;
         } catch (error: any) {
             log.error('JiraService@getUserIssues', { error });
