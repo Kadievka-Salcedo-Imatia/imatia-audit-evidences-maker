@@ -7,6 +7,7 @@ import getUserIssuesYearValidator from '../validators/userIssue/getUserIssuesYea
 import syncRedmineUserIssues from '../validators/userIssue/syncRedmineUserIssues.validator';
 import getDownloadLinksValidator from '../validators/userIssue/getDownloadLinks.validator';
 import getUserIssueDetailsValidator from '../validators/userIssue/getUserIssueDetails.validator';
+import getIssueScreenshotValidator from '../validators/userIssue/getIssueScreenshotValidator';
 
 const router = express.Router();
 
@@ -51,6 +52,11 @@ router.get('/download-links', (req, res) => {
 
 router.get('/download/:id', (req, res) => {
     response.download(req, res, ResponseStatus.OK, 'downloadTemplate');
+});
+
+router.post('/get-screenshot', (req, res) => {
+    const { validatorFailed, message } = getIssueScreenshotValidator(req.body);
+    validatorFailed ? response.sendBadRequest(res, message) : response.send(req, res, ResponseStatus.OK, 'getIssueScreenshot');
 });
 
 export default router;

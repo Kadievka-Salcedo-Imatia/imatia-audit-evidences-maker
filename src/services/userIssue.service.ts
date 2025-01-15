@@ -30,6 +30,8 @@ import IDownloadOutput from '../interfaces/IDownloadOutput';
 import IUserIssueDetailInput from '../interfaces/IUserIssueDetailInput';
 import IUserIssueDetail from '../interfaces/IUserIssueDetail';
 import RESPONSE_STATUS_CODES from '../resources/configurations/constants/ResponseStatusCodes';
+import IIssueInfoToTakeScreenshot from '../interfaces/IIssueInfoToTakeScreenshot';
+import IGetScreenshotInput from '../interfaces/IGetScreenshotInput';
 
 const log = getLogger('userIssue.service.ts');
 
@@ -67,7 +69,7 @@ export default class UserIssueService {
                     type: issue.fields.issuetype.name,
                     created: issue.fields.created,
                     updated: issue.fields.updated,
-                    assignee: issue.fields.assignee.displayName,
+                    assignee: issue.fields.assignee?.displayName || '',
                     status: issue.fields.status.name,
                     description: issue.fields.description,
                     summary: issue.fields.summary,
@@ -358,7 +360,7 @@ export default class UserIssueService {
 
     /**
      * Returns the user issue detail with screenshot as schema
-     * @param {IUserIssueDetailInput} request - request body with jira_username, redmine_id, startDate and endDate
+     * @param {IUserIssueDetailInput} request - request body with page_type and issue_id
      * @returns {Promise<IUserIssueDetail>} Async user issue detail with screenshot as schema
      */
     public async getUserIssueDetail(request: IUserIssueDetailInput): Promise<IUserIssueDetail> {
@@ -480,6 +482,30 @@ export default class UserIssueService {
             creator: userIssue.creator,
             reporter: userIssue.reporter,
             pageType: userIssue.pageType,
+            screenshot: imageBase64Data,
+        };
+    }
+
+    /**
+     * Returns the user issue screenshot Buffer
+     * @param {IGetScreenshotInput} request - request body with pageType
+     * @returns {Promise<IUserIssueDetail>} Async user issue screenshot buffer
+     */
+    public async getIssueScreenshot(request: IGetScreenshotInput): Promise<{ screenshot: Buffer }> {
+        log.info('  Start UserIssueService@getIssueScreenshot method with params:', {
+            username: request.header.getCredentials[0],
+            page_type: request.pageType,
+            issue_id: request.link,
+        });
+
+        const browser: Browser = await puppeteer.launch(this.PUPPETEER_LAUNCH_OPTIONS);
+
+        const imageBase64Data = await this.takeScreenshot(request, browser, true, request.header.getCredentials);
+
+        await browser.close();
+
+        log.info('  Finish UserIssueService@getIssueScreenshot method');
+        return {
             screenshot: imageBase64Data,
         };
     }
@@ -984,8 +1010,8 @@ export default class UserIssueService {
      * @param {string} getCredentials - getCredentials header to make login
      * @returns {Promise<Buffer>} returns the image buffer to be copied into the template
      */
-    public async takeScreenshot(issue: IIssueDescription, browser: Browser, isLogin: boolean, getCredentials: string[]): Promise<Buffer> {
-        log.info('  Start UserIssueService@getIssues takeScreenshot with params:', { id: issue.title, url: issue.link });
+    public async takeScreenshot(issue: IIssueInfoToTakeScreenshot, browser: Browser, isLogin: boolean, getCredentials: string[]): Promise<Buffer> {
+        log.info('  Start UserIssueService@getIssues takeScreenshot with params:', { url: issue.link });
         const page = await browser.newPage();
 
         if (issue.pageType === PageTypeEnum.JIRA) {

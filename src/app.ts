@@ -32,7 +32,8 @@ const options = {
 };
 const swaggerSpec = swaggerJSDoc(options);
 
-// APP
+/*--- Routes ---*/
+
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(bodyParser.urlencoded({ extended: true }));

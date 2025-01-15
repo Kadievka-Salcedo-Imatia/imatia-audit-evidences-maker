@@ -1,9 +1,7 @@
-import { PageTypeEnum } from './../enums/PageTypeEnum';
-export default interface IIssueDescription {
+import IIssueInfoToTakeScreenshot from './IIssueInfoToTakeScreenshot';
+export default interface IIssueDescription extends IIssueInfoToTakeScreenshot {
     title: string;
     summary: string;
-    link: string;
-    pageType: PageTypeEnum | string;
     closed: string;
     project: string;
 }

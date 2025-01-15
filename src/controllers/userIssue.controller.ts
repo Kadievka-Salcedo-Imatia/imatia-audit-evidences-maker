@@ -6,6 +6,7 @@ import IEvidence from '../interfaces/IEvidence';
 import IGetDownloadLinksInput from '../interfaces/IGetDownloadLinksInput';
 import IGetDownloadLinksOutput from '../interfaces/IGetDownloadLinksOutput';
 import IGetIssueFromRedmineInput from '../interfaces/IGetIssueFromRedmineInput';
+import IGetScreenshotInput from '../interfaces/IGetScreenshotInput';
 import ISyncRedmineUserIssuesOutput from '../interfaces/ISyncRedmineUserIssuesOutput';
 import IUserIssueDetail from '../interfaces/IUserIssueDetail';
 import IUserIssueDetailInput from '../interfaces/IUserIssueDetailInput';
@@ -173,5 +174,21 @@ export default class UserIssueController {
     public async downloadTemplate(req: any): Promise<IDownloadOutput> {
         const id: string = req.params.id;
         return await userIssueService.downloadTemplate(id);
+    }
+
+    /**
+     * Uses the link to take an issue screenshot.
+     * @returns a buffer image
+     */
+    public async getIssueScreenshot(req: any): Promise<{ screenshot: Buffer }> {
+        const request: IGetScreenshotInput = {
+            header: {
+                getCredentials: req.header.getCredentials,
+                authorization: req.header.authorization,
+            },
+            pageType: req.body.page_type,
+            link: req.body.link,
+        };
+        return await userIssueService.getIssueScreenshot(request);
     }
 }
