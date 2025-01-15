@@ -86,6 +86,62 @@ describe('basicAuthMiddleware', () => {
         });
     });
 
+    it('should throw error if password is undefined', async () => {
+        const sendMock = jest.fn().mockImplementation((_response) => {});
+
+        const req: any = {
+            header: (_property: string) => 'Basic amhvbi5kb2U6=',
+        };
+
+        const res: any = {
+            status: (_statusCode: number) => ({
+                send: sendMock,
+            }),
+        };
+
+        const next: NextFunction = () => {};
+
+        await basicAuthMiddleware(req, res, next);
+
+        expect(sendMock).toHaveBeenCalledTimes(1);
+        expect(sendMock).toHaveBeenCalledWith({
+            message: 'Bad request',
+            statusCode: 400,
+            error: {
+                code: 1001,
+                message: 'Invalid Basic authorization, missing user or password',
+            },
+        });
+    });
+
+    it('should throw error if username is undefined', async () => {
+        const sendMock = jest.fn().mockImplementation((_response) => {});
+
+        const req: any = {
+            header: (_property: string) => 'Basic OjEyM2FiYy4=',
+        };
+
+        const res: any = {
+            status: (_statusCode: number) => ({
+                send: sendMock,
+            }),
+        };
+
+        const next: NextFunction = () => {};
+
+        await basicAuthMiddleware(req, res, next);
+
+        expect(sendMock).toHaveBeenCalledTimes(1);
+        expect(sendMock).toHaveBeenCalledWith({
+            message: 'Bad request',
+            statusCode: 400,
+            error: {
+                code: 1001,
+                message: 'Invalid Basic authorization, missing user or password',
+            },
+        });
+    });
+
     it('should pass validation and call next()', async () => {
         const sendMock = jest.fn().mockImplementation((_response) => {});
 

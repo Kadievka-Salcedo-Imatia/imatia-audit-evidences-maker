@@ -49,6 +49,15 @@ export const basicAuthMiddleware = async (req: any, res: Response, next: NextFun
 
         const [username, password] = getCredentialsFromBasicAuth(authorization);
 
+        if (!username || !password) {
+            log.error(' basicAuthMiddleware bad request error: missing user or password');
+            throw new BaseErrorClass({
+                responseStatus: RESPONSE_STATUS_CODES.BAD_REQUEST,
+                code: INTERNAL_ERROR_CODES.BAD_REQUEST.code,
+                message: 'Invalid Basic authorization, missing user or password',
+            });
+        }
+
         req.header.getCredentials = [username, password];
         req.header.authorization = authorization;
 

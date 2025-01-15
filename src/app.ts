@@ -43,12 +43,13 @@ app.use('/user-issues', basicAuthMiddleware, userIssueRoutes);
 app.use('/', mainRoutes);
 
 app.listen(port, () => {
+    log.info(() => `imatia-audit-evidences-maker app listen on port ${port}!`);
+    log.info('Waiting to Mongoose to connect with MongoDB...');
     mongoose
         .connect(process.env.MONGODB_CONNECTION_STRING!, {
             dbName: process.env.MONGODB_DB_NAME!,
         })
         .then(() => {
-            log.info('Mongoose connected to MongoDB successfully dbName:', process.env.MONGODB_DB_NAME);
+            log.info(`Mongoose connected to MongoDB successfully dbName: ${process.env.MONGODB_DB_NAME}`);
         });
-    log.info(() => `imatia-audit-evidences-maker app listen on port ${port}!`);
 });
