@@ -116,19 +116,16 @@ components:
     GetUserIssueDetails:
       type: object
       properties:
-        jira_username:
-          description: you can fill this field without fill redmine_id if you want to get an issue schema with screenshot from jira
+        page_type:
+          description: you must fill this field with "JIRA" or "REDMINE"
           type: string
-          example: carles.dulcet
-        redmine_id:
-          description: you can fill this field without fill jira_username if you want get an issue schema with screenshot from redmine
-          type: number
-          example: 800
+          example: JIRA
         issue_id:
-          description: this field represents the internal issue id from jira or redmine that you want to get information
+          description: this field represents the internal issue id from jira or redmine that you want to get information from
           type: string
           example: "42229"
       required:
+        - page_type
         - issue_id
     CreateUserIssuesTemplate:
       type: object
