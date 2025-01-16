@@ -1,6 +1,6 @@
 import { PageTypeEnum } from '../../enums/PageTypeEnum';
 import UserIssueModel, { mongooseModel } from '../../models/UserIssueModel';
-import { userIssueMock, userIssueMock2 } from '../mocks/userIssueMock';
+import { userIssueMock, userIssueMock2, userIssueMock3 } from '../mocks/userIssueMock';
 
 describe('UserIssueModel', () => {
     describe('create new UserIssueModel', () => {
@@ -54,6 +54,32 @@ describe('UserIssueModel', () => {
             expect(userIssueProps).toHaveProperty('creator', 'Eloy Rodil Carreira');
             expect(userIssueProps).toHaveProperty('reporter', 'Eloy Rodil Carreira');
             expect(userIssueProps).toHaveProperty('pageType', PageTypeEnum.REDMINE);
+        });
+
+        it('should create a new UserIssueModel and get properties 3 (without assignee user)', () => {
+            const userIssueModel: UserIssueModel = new UserIssueModel(userIssueMock3);
+
+            expect(userIssueModel).toBeInstanceOf(UserIssueModel);
+
+            const userIssueProps = userIssueModel.getProperties();
+
+            expect(userIssueProps).toHaveProperty('id', '34re354gr43');
+            expect(userIssueProps).toHaveProperty('key', 'JX-213');
+            expect(userIssueProps).toHaveProperty('type', 'ERROR');
+            expect(userIssueProps).toHaveProperty('created', new Date('10/12/2024'));
+            expect(userIssueProps).toHaveProperty('updated', new Date('10/12/2024'));
+            expect(userIssueProps).toHaveProperty('closed', undefined);
+            expect(userIssueProps).toHaveProperty('assignee', '');
+            expect(userIssueProps).toHaveProperty('assignedToId', '');
+            expect(userIssueProps).toHaveProperty('status', 'backlog');
+            expect(userIssueProps).toHaveProperty('description', '');
+            expect(userIssueProps).toHaveProperty('summary', 'toggle bar doesn\'t work');
+            expect(userIssueProps).toHaveProperty('project', 'Jira project example');
+            expect(userIssueProps).toHaveProperty('projectTypeKey', '01');
+            expect(userIssueProps).toHaveProperty('self', 'https://www.jira-example.com/browse/JX-213');
+            expect(userIssueProps).toHaveProperty('creator', 'Jhon Doe');
+            expect(userIssueProps).toHaveProperty('reporter', 'Zack Smith');
+            expect(userIssueProps).toHaveProperty('pageType', 'JIRA');
         });
     });
 

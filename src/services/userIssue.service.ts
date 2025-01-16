@@ -54,30 +54,37 @@ export default class UserIssueService {
     }
 
     /**
-     * Maps data from jira and returns the user issues as standard user issues
+     * Maps data from jira and returns the user issues as standard user issues array
      * @param {Array<Record<string, any>>} issues jira array of issues
      * @param {string | undefined} jiraBaseUrl if there's a external jira url
      * @returns {IUserIssue[]} array of user issues
      */
     public static mapIssuesFromJira(issues: Array<Record<string, any>>, jiraBaseUrl?: string): IUserIssue[] {
-        return issues.map(
-            (issue: Record<string, any>) =>
-                ({
-                    id: issue.id,
-                    key: issue.key,
-                    self: Boolean(jiraBaseUrl) ? jiraBaseUrl + '/browse/' + issue.key : process.env.JIRA_CLOUD_URL! + '/browse/' + issue.key,
-                    type: issue.fields.issuetype.name,
-                    created: issue.fields.created,
-                    updated: issue.fields.updated,
-                    assignee: issue.fields.assignee?.displayName || '',
-                    status: issue.fields.status.name,
-                    description: issue.fields.description,
-                    summary: issue.fields.summary,
-                    project: issue.fields.project.name,
-                    projectTypeKey: issue.fields.project.projectTypeKey,
-                    pageType: PageTypeEnum.JIRA,
-                }) as IUserIssue,
-        );
+        return issues.map((issue: Record<string, any>) => this.transcribeJiraIssueToUserIssue(issue, jiraBaseUrl));
+    }
+
+    /**
+     * Maps data from a single jira issue and returns user issues standard
+     * @param {Record<string, any>} issue jira issue
+     * @param {string | undefined} jiraBaseUrl if there's a external jira url
+     * @returns {IUserIssue} user issue structure
+     */
+    public static transcribeJiraIssueToUserIssue(issue: Record<string, any>, jiraBaseUrl?: string): IUserIssue {
+        return {
+            id: issue.id,
+            key: issue.key,
+            self: Boolean(jiraBaseUrl) ? jiraBaseUrl + '/browse/' + issue.key : process.env.JIRA_CLOUD_URL! + '/browse/' + issue.key,
+            type: issue.fields.issuetype.name,
+            created: issue.fields.created,
+            updated: issue.fields.updated,
+            assignee: issue.fields.assignee?.displayName || '',
+            status: issue.fields.status.name,
+            description: issue.fields.description,
+            summary: issue.fields.summary,
+            project: issue.fields.project.name,
+            projectTypeKey: issue.fields.project.projectTypeKey,
+            pageType: PageTypeEnum.JIRA,
+        };
     }
 
     /**
@@ -336,7 +343,7 @@ export default class UserIssueService {
 
             userIssue.total = data.total;
             userIssue.issues = UserIssueService.mapIssuesFromJira(data.issues, request.jira_base_url);
-            userIssue.userDisplayName = userIssue.issues[0]?.assignee;
+            userIssue.userDisplayName = userIssue.issues[0]?.assignee || '';
             userIssue.project = userIssue.issues[0]?.project;
         }
 
@@ -427,7 +434,7 @@ export default class UserIssueService {
                 });
             }
 
-            userIssue = UserIssueService.mapIssuesFromJira([data])[0];
+            userIssue = UserIssueService.transcribeJiraIssueToUserIssue(data);
         }
 
         if (request.page_type === PageTypeEnum.REDMINE) {

@@ -7,7 +7,7 @@ import getUserIssuesYearValidator from '../validators/userIssue/getUserIssuesYea
 import syncRedmineUserIssues from '../validators/userIssue/syncRedmineUserIssues.validator';
 import getDownloadLinksValidator from '../validators/userIssue/getDownloadLinks.validator';
 import getUserIssueDetailsValidator from '../validators/userIssue/getUserIssueDetails.validator';
-import getIssueScreenshotValidator from '../validators/userIssue/getIssueScreenshotValidator';
+import getIssueScreenshotValidator from '../validators/userIssue/getIssueScreenshot.validator';
 
 const router = express.Router();
 

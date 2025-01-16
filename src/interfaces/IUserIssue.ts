@@ -7,7 +7,7 @@ export default interface IUserIssue {
     created: string;
     updated: string;
     closed?: string;
-    assignee: string;
+    assignee?: string;
     assignedToId?: string;
     status: string;
     description: string;

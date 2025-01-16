@@ -45,6 +45,26 @@ export const userIssueMock2: IUserIssue = {
     pageType: PageTypeEnum.REDMINE,
 };
 
+export const userIssueMock3: IUserIssue = {
+    id: '34re354gr43',
+    key: 'JX-213',
+    self: 'https://www.jira-example.com/browse/JX-213',
+    type: 'ERROR',
+    created: '10/12/2024',
+    updated: '10/12/2024',
+    closed: undefined,
+    assignee: undefined,
+    assignedToId: undefined,
+    status: 'backlog',
+    description: '',
+    summary: 'toggle bar doesn\'t work',
+    project: 'Jira project example',
+    projectTypeKey: '01',
+    creator: 'Jhon Doe',
+    reporter: 'Zack Smith',
+    pageType: 'JIRA',
+};
+
 export const userIssueDetailMock: IUserIssueDetail = {
     id: redmineIssue.id,
     key: redmineIssue.id,

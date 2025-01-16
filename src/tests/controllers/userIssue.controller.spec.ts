@@ -271,4 +271,28 @@ describe('UserIssueController', () => {
             expect(downloadTemplateServiceMock).toHaveBeenCalledTimes(1);
         });
     });
+
+    describe('getIssueScreenshot method', () => {
+        it('should map the request parameters and return the service response', async () => {
+            const request = {
+                header: getUserIssueReqHeaderMock.header,
+                body: {
+                    page_type: 'JIRA',
+                    link: 'https://www.jira-example.com/browse/JX-5798',
+                },
+            };
+
+            const expectedResult = { screenshot: Buffer.from('') };
+
+            const getUserIssuesServiceMock = jest.spyOn(userIssueService, 'getIssueScreenshot').mockImplementation(async () => expectedResult);
+
+            const userIssueController: UserIssueController = UserIssueController.getInstance();
+
+            const result = await userIssueController.getIssueScreenshot(request);
+
+            expect(result).toBe(expectedResult);
+
+            expect(getUserIssuesServiceMock).toHaveBeenCalledTimes(1);
+        });
+    });
 });

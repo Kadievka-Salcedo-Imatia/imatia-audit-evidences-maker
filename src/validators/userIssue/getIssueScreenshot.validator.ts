@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import getLogger from '../../utils/logger';
 
-const log = getLogger('getUserIssueDetails.validator.ts');
+const log = getLogger('getIssueScreenshotValidator.validator.ts');
 
 export default function getIssueScreenshotValidator(reqBody: any): {
     validatorFailed: boolean;

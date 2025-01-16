@@ -36,8 +36,8 @@ export default class UserIssueModel {
     public created: Date;
     public updated: Date;
     public closed?: Date;
-    public assignee: string;
-    public assignedToId: string;
+    public assignee?: string;
+    public assignedToId?: string;
     public status: string;
     public description: string;
     public summary: string;
@@ -55,7 +55,7 @@ export default class UserIssueModel {
         this.created = new Date(userIssue.created);
         this.updated = new Date(userIssue.updated);
         this.closed = userIssue.closed ? new Date(userIssue.closed) : undefined;
-        this.assignee = userIssue.assignee;
+        this.assignee = userIssue.assignee ? userIssue.assignee : '';
         this.assignedToId = userIssue.assignedToId ? userIssue.assignedToId : '';
         this.status = userIssue.status;
         this.description = userIssue.description;

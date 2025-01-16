@@ -30,6 +30,7 @@ import INTERNAL_ERROR_CODES from '../../resources/configurations/constants/Inter
 import RESPONSE_STATUS_CODES from '../../resources/configurations/constants/ResponseStatusCodes';
 import puppeteer, { Browser } from 'puppeteer';
 import { getEvidenceInfoMock } from '../mocks/evidenceDescriptionResponseMock';
+import IGetScreenshotInput from '../../interfaces/IGetScreenshotInput';
 
 const launchMock = jest.spyOn(puppeteer, 'launch').mockImplementation(
     async () =>
@@ -472,6 +473,7 @@ describe('UserIssueService', () => {
             const jiraServiceGetUserIssuesMock = jest.spyOn(jiraService, 'getUserIssueDetailById').mockImplementation((async () => jiraIssuesMock.issues[0]) as any);
 
             const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementationOnce(async () => Buffer.from(''));
 
             const request: IUserIssueDetailInput = {
                 header: getUserIssueReqHeaderMock.header,
@@ -503,6 +505,7 @@ describe('UserIssueService', () => {
 
             expect(result).toMatchObject(expectedResult);
             expect(jiraServiceGetUserIssuesMock).toHaveBeenCalledTimes(1);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
         });
 
         it('should throw an Axios Error when the request to jira fails, maybe id the issue_id is not found in jira', async () => {
@@ -582,6 +585,8 @@ describe('UserIssueService', () => {
 
         it('should call get user issues from db service if page_type REDMINE is defined in the request', async () => {
             const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementationOnce(async () => Buffer.from(''));
+
             const getDbRedmineUserIssueByIdMock = jest.spyOn(userIssueService, 'getDbRedmineUserIssueById').mockImplementation((async () => userIssueMock) as any);
 
             const request: IUserIssueDetailInput = {
@@ -613,6 +618,7 @@ describe('UserIssueService', () => {
 
             expect(result).toMatchObject(expectedResult);
             expect(getDbRedmineUserIssueByIdMock).toHaveBeenCalledTimes(1);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
         });
 
         it('should throw a General Error when the request to redmine fails', async () => {
@@ -649,6 +655,43 @@ describe('UserIssueService', () => {
                 }),
             );
             expect(getDbRedmineUserIssueByIdMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('getIssueScreenshot method', () => {
+        it('should call takeScreenshot method with link and pageType parameters', async () => {
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementationOnce(async () => Buffer.from(''));
+
+            const request: IGetScreenshotInput = {
+                header: getUserIssueReqHeaderMock.header,
+                pageType: 'JIRA',
+                link: 'www.jira-example.com/browse/JX-123',
+            };
+
+            const result = await userIssueService.getIssueScreenshot(request);
+            const expectedResult = {
+                screenshot: Buffer.from(''),
+            };
+
+            expect(result).toMatchObject(expectedResult);
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw error if takeScreenshot method throws an error', async () => {
+            const userIssueService: UserIssueService = UserIssueService.getInstance();
+            const takeScreenshotMock = jest.spyOn(userIssueService, 'takeScreenshot').mockImplementationOnce(async () => {
+                throw new Error('timeout');
+            });
+
+            const request: IGetScreenshotInput = {
+                header: getUserIssueReqHeaderMock.header,
+                pageType: 'JIRA',
+                link: 'www.jira-example.com/browse/JX-123',
+            };
+
+            await expect(userIssueService.getIssueScreenshot(request)).rejects.toThrow('timeout');
+            expect(takeScreenshotMock).toHaveBeenCalledTimes(1);
         });
     });
 

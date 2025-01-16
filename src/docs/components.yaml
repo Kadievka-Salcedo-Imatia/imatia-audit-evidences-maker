@@ -203,3 +203,18 @@ components:
         - jira_username
         - redmine_id
         - year
+    GetIssueScreenshot:
+      type: object
+      properties:
+        properties:
+          page_type:
+            description: you must fill this field with "JIRA" or "REDMINE"
+            type: string
+            example: JIRA
+          link:
+            description: you must fill this field with a jira or redmine url issue to take an screenshot from it
+            type: string
+            example: 'https://www.jira-example/browse/JX-1234'
+      required:
+        - page_type
+        - link
